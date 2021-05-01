@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="何为原子操作前面介绍了多线程间是通过互斥锁与条件变量来保证共享数据的同步的，互斥锁主要是针对过程加锁来实现对共享资源的排他性访问。很多时候，对共享资源的访问主要是对某一数据结构的读写操作，如果数据结构本身就带有排他性访问的特性，也就相当于该数据结构自带一个细粒度的锁，对该数据结构的并发访问就能更加简单高效，这就是C++11提供的原子数据类型&lt; atomic &gt;。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++多线程（五）---原子操作与无锁编程">
+<meta property="og:url" content="http://example.com/2021/02/20/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%88%E4%BA%94%EF%BC%89-%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C%E4%B8%8E%E6%97%A0%E9%94%81%E7%BC%96%E7%A8%8B/index.html">
+<meta property="og:site_name" content="Hi! Yh">
+<meta property="og:description" content="何为原子操作前面介绍了多线程间是通过互斥锁与条件变量来保证共享数据的同步的，互斥锁主要是针对过程加锁来实现对共享资源的排他性访问。很多时候，对共享资源的访问主要是对某一数据结构的读写操作，如果数据结构本身就带有排他性访问的特性，也就相当于该数据结构自带一个细粒度的锁，对该数据结构的并发访问就能更加简单高效，这就是C++11提供的原子数据类型&lt; atomic &gt;。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/2021/02/20/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%88%E4%BA%94%EF%BC%89-%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C%E4%B8%8E%E6%97%A0%E9%94%81%E7%BC%96%E7%A8%8B/1.png">
+<meta property="og:image" content="http://example.com/2021/02/20/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%88%E4%BA%94%EF%BC%89-%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C%E4%B8%8E%E6%97%A0%E9%94%81%E7%BC%96%E7%A8%8B/2.png">
+<meta property="article:published_time" content="2021-02-20T11:05:00.000Z">
+<meta property="article:modified_time" content="2021-02-20T11:57:25.651Z">
+<meta property="article:author" content="Yu Hong">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="多线程">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2021/02/20/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%88%E4%BA%94%EF%BC%89-%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C%E4%B8%8E%E6%97%A0%E9%94%81%E7%BC%96%E7%A8%8B/1.png">
+
+<link rel="canonical" href="http://example.com/2021/02/20/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%88%E4%BA%94%EF%BC%89-%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C%E4%B8%8E%E6%97%A0%E9%94%81%E7%BC%96%E7%A8%8B/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>C++多线程（五）---原子操作与无锁编程 | Hi! Yh</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hi! Yh</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/02/20/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%88%E4%BA%94%EF%BC%89-%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C%E4%B8%8E%E6%97%A0%E9%94%81%E7%BC%96%E7%A8%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Yu Hong">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hi! Yh">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          C++多线程（五）---原子操作与无锁编程
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-02-20 19:05:00 / 修改时间：19:57:25" itemprop="dateCreated datePublished" datetime="2021-02-20T19:05:00+08:00">2021-02-20</time>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>6.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="何为原子操作"><a href="#何为原子操作" class="headerlink" title="何为原子操作"></a>何为原子操作</h2><p>前面介绍了多线程间是通过互斥锁与条件变量来保证共享数据的同步的，互斥锁主要是针对过程加锁来实现对共享资源的排他性访问。很多时候，对共享资源的访问主要是对某一数据结构的读写操作，如果数据结构本身就带有排他性访问的特性，也就相当于该数据结构自带一个细粒度的锁，对该数据结构的并发访问就能更加简单高效，这就是C++11提供的原子数据类型&lt; atomic &gt;。<a id="more"></a>下面解释两个概念：</p>
+<ul>
+<li><strong>原子操作</strong>：顾名思义就是不可分割的操作，该操作只存在未开始和已完成两种状态，不存在中间状态；</li>
+<li><strong>原子类型</strong>：原子库中定义的数据类型，对这些类型的所有操作都是原子的，包括通过原子类模板std::atomic&lt; T &gt;实例化的数据类型，也都是支持原子操作的。</li>
+</ul>
+<h2 id="如何使用原子类型"><a href="#如何使用原子类型" class="headerlink" title="如何使用原子类型"></a>如何使用原子类型</h2><h3 id="原子库atomic支持的原子操作"><a href="#原子库atomic支持的原子操作" class="headerlink" title="原子库atomic支持的原子操作"></a>原子库atomic支持的原子操作</h3><p>原子库&lt; atomic &gt;中提供了一些基本原子类型，也可以通过原子类模板实例化一个原子对象，下面列出一些基本原子类型及相应的特化模板如下：</p>
+<img src="/2021/02/20/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%88%E4%BA%94%EF%BC%89-%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C%E4%B8%8E%E6%97%A0%E9%94%81%E7%BC%96%E7%A8%8B/1.png" class="" title="图片">
+
+<p>对原子类型的访问，最主要的就是读和写，但原子库提供的对应原子操作是load()与store(val)。原子类型支持的原子操作如下：</p>
+<img src="/2021/02/20/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%88%E4%BA%94%EF%BC%89-%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C%E4%B8%8E%E6%97%A0%E9%94%81%E7%BC%96%E7%A8%8B/2.png" class="" title="图片">
+
+<h3 id="原子操作中的内存访问模型"><a href="#原子操作中的内存访问模型" class="headerlink" title="原子操作中的内存访问模型"></a>原子操作中的内存访问模型</h3><p>原子操作保证了对数据的访问只有未开始和已完成两种状态，不会访问到中间状态，但我们访问数据一般是需要特定顺序的，比如想读取写入后的最新数据，原子操作函数是支持控制读写顺序的，即带有一个数据同步内存模型参数std::memory_order，用于对同一时间的读写操作进行排序。C++11定义的6种类型如下：</p>
+<ul>
+<li><strong>memory_order_relaxed</strong>: 宽松操作，没有同步或顺序制约，仅对此操作要求原子性；</li>
+<li><strong>memory_order_release &amp; memory_order_acquire</strong>: 两个线程A&amp;B，A线程Release后，B线程Acquire能保证一定读到的是最新被修改过的值；这种模型更强大的地方在于它能保证发生在A-Release前的所有写操作，在B-Acquire后都能读到最新值；</li>
+<li><strong>memory_order_release &amp; memory_order_consume</strong>: 上一个模型的同步是针对所有对象的，这种模型只针对依赖于该操作涉及的对象：比如这个操作发生在变量a上，而s = a + b; 那s依赖于a，但b不依赖于a; 当然这里也有循环依赖的问题，例如：t = s + 1，因为s依赖于a，那t其实也是依赖于a的；</li>
+<li><strong>memory_order_seq_cst</strong>: 顺序一致性模型，这是C++11原子操作的默认模型；大概行为为对每一个变量都进行Release-Acquire操作，当然这也是一个最慢的同步模型；</li>
+</ul>
+<h3 id="使用原子类型替代互斥锁编程"><a href="#使用原子类型替代互斥锁编程" class="headerlink" title="使用原子类型替代互斥锁编程"></a>使用原子类型替代互斥锁编程</h3><figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;chrono&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;atomic&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="built_in">std</span>::<span class="function">chrono::milliseconds <span class="title">interval</span><span class="params">(<span class="number">100</span>)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="built_in">std</span>::atomic&lt;<span class="keyword">bool</span>&gt; <span class="title">readyFlag</span><span class="params">(<span class="literal">false</span>)</span></span>;     <span class="comment">//原子布尔类型，取代互斥量</span></span><br><span class="line"><span class="function"><span class="built_in">std</span>::atomic&lt;<span class="keyword">int</span>&gt; <span class="title">job_shared</span><span class="params">(<span class="number">0</span>)</span></span>; <span class="comment">//两个线程都能修改'job_shared',将该变量特化为原子类型</span></span><br><span class="line"><span class="keyword">int</span> job_exclusive = <span class="number">0</span>; <span class="comment">//只有一个线程能修改'job_exclusive',不需要保护</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//此线程只能修改 'job_shared'</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">job_1</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>{</span><br><span class="line">    <span class="built_in">std</span>::this_thread::sleep_for(<span class="number">5</span> * interval);</span><br><span class="line">    job_shared.fetch_add(<span class="number">1</span>);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"job_1 shared ("</span> &lt;&lt; job_shared.load() &lt;&lt; <span class="string">")\n"</span>;</span><br><span class="line">    readyFlag.store(<span class="literal">true</span>);      <span class="comment">//改变布尔标记状态为真</span></span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="comment">// 此线程能修改'job_shared'和'job_exclusive'</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">job_2</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>{</span><br><span class="line">    <span class="keyword">while</span> (<span class="literal">true</span>) {    <span class="comment">//无限循环，直到可访问并修改'job_shared'</span></span><br><span class="line">        <span class="keyword">if</span> (readyFlag.load()) {     <span class="comment">//判断布尔标记状态是否为真，为真则修改‘job_shared’</span></span><br><span class="line">            job_shared.fetch_add(<span class="number">1</span>);</span><br><span class="line">            <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"job_2 shared ("</span> &lt;&lt; job_shared.load() &lt;&lt; <span class="string">")\n"</span>;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        } <span class="keyword">else</span> {      <span class="comment">//布尔标记为假,则修改'job_exclusive'</span></span><br><span class="line">            ++job_exclusive;</span><br><span class="line">            <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"job_2 exclusive ("</span> &lt;&lt; job_exclusive &lt;&lt; <span class="string">")\n"</span>;</span><br><span class="line">            <span class="built_in">std</span>::this_thread::sleep_for(interval);</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>{</span><br><span class="line">    <span class="function"><span class="built_in">std</span>::thread <span class="title">thread_1</span><span class="params">(job_1)</span></span>;</span><br><span class="line">    <span class="function"><span class="built_in">std</span>::thread <span class="title">thread_2</span><span class="params">(job_2)</span></span>;</span><br><span class="line">    thread_1.join();</span><br><span class="line">    thread_2.join();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>运行结果为：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">job_2 exclusive (1)</span><br><span class="line">job_2 exclusive (2)</span><br><span class="line">job_2 exclusive (3)</span><br><span class="line">job_1 shared (1)</span><br><span class="line">job_2 shared (2)</span><br></pre></td></tr></tbody></table></figure>
+
+<h3 id="使用原子类型实现自旋锁"><a href="#使用原子类型实现自旋锁" class="headerlink" title="使用原子类型实现自旋锁"></a>使用原子类型实现自旋锁</h3><p>自旋锁（spinlock）与互斥锁(mutex)类似，在任一时刻最多只能有一个持有者，但如果资源已被占用，互斥锁会让资源申请者进入睡眠状态，而自旋锁不会引起调用者睡眠，会一直循环判断该锁是否成功获取。自旋锁是专为防止多处理器并发而引入的一种锁，它在内核中大量应用于中断处理等部分（对于单处理器来说，防止中断处理中的并发可简单采用关闭中断的方式，即在标志寄存器中关闭/打开中断标志位，不需要自旋锁）。</p>
+<p>对于多核处理器来说，检测到锁可用与设置锁状态两个动作需要实现为一个原子操作，如果分为两个原子操作，则可能一个线程在获得锁后设置锁前被其余线程抢到该锁，导致执行错误。这就需要原子库提供对原子变量“读-修改-写(Read-Modify-Write)”的原子操作，上文原子类型支持的操作中就提供了RMW(Read-Modify-Write)原子操作，比如a.exchange(val)与a.compare_exchange(expected,desired)。</p>
+<p>标准库还专门提供了一个原子布尔类型std::atomic_flag，不同于所有 std::atomic 的特化，它保证是免锁的，不提供load()与store(val)操作，但提供了test_and_set()与clear()操作，其中test_and_set()就是支持RMW的原子操作，可用std::atomic_flag实现自旋锁的功能，代码如下：</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;atomic&gt;</span></span></span><br><span class="line"> </span><br><span class="line"><span class="built_in">std</span>::atomic_flag lock = ATOMIC_FLAG_INIT;       <span class="comment">//初始化原子布尔类型</span></span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span> n)</span></span></span><br><span class="line"><span class="function"></span>{</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> cnt = <span class="number">0</span>; cnt &lt; <span class="number">100</span>; ++cnt) {</span><br><span class="line">        <span class="keyword">while</span> (lock.test_and_set(<span class="built_in">std</span>::memory_order_acquire))  <span class="comment">// 获得锁</span></span><br><span class="line">             ; <span class="comment">// 自旋</span></span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; n &lt;&lt; <span class="string">" thread Output: "</span> &lt;&lt; cnt &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">        lock.clear(<span class="built_in">std</span>::memory_order_release);               <span class="comment">// 释放锁</span></span><br><span class="line">    }</span><br><span class="line">}</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>{</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="built_in">std</span>::thread&gt; v;     <span class="comment">//实例化一个元素类型为std::thread的向量</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> n = <span class="number">0</span>; n &lt; <span class="number">10</span>; ++n) {</span><br><span class="line">        v.emplace_back(f, n);       <span class="comment">//以参数(f,n)为初值的元素放到向量末尾，相当于启动新线程f(n)</span></span><br><span class="line">    }</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; t : v) {     <span class="comment">//遍历向量v中的元素，基于范围的for循环，auto&amp;自动推导变量类型并引用指针指向的内容</span></span><br><span class="line">        t.join();           <span class="comment">//阻塞主线程直至子线程执行完毕</span></span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    getchar();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">}</span><br><span class="line"></span><br></pre></td></tr></tbody></table></figure>
+
+<p>自旋锁除了使用atomic_flag的TAS(Test And Set)原子操作实现外，还可以使用普通的原子类型std::atomic实现：其中a.exchange(val)是支持TAS原子操作的，a.compare_exchange(expected,desired)是支持CAS(Compare And Swap)原子操作的。</p>
+<h2 id="如何进行无锁编程"><a href="#如何进行无锁编程" class="headerlink" title="如何进行无锁编程"></a>如何进行无锁编程</h2><h3 id="什么是无锁编程"><a href="#什么是无锁编程" class="headerlink" title="什么是无锁编程"></a>什么是无锁编程</h3><p>在原子操作出现之前，对共享数据的读写可能得到不确定的结果，所以多线程并发编程时要对使用锁机制对共享数据的访问过程进行保护。但锁的申请释放增加了访问共享资源的消耗，且可能引起线程阻塞、锁竞争、死锁、优先级反转、难以调试等问题。</p>
+<p>现在有了原子操作的支持，对单个基础数据类型的读、写访问可以不用锁保护了，但对于复杂数据类型比如链表，有可能出现多个核心在链表同一位置同时增删节点的情况，这将会导致操作失败或错序。所以我们在对某节点操作前，需要先判断该节点的值是否跟预期的一致，如果一致则进行操作，不一致则更新期望值，这几步操作依然需要实现为一个RMW(Read-Modify-Write)原子操作，这就是前面提到的CAS(Compare And Swap)原子操作，它是无锁编程中最常用的操作。</p>
+<p>既然无锁编程是为了解决锁机制带来的一些问题而出现的，那么无锁编程就可以理解为不使用锁机制就可保证多线程间原子变量同步的编程。无锁(lock-free)的实现只是将多条指令合并成了一条指令形成一个逻辑完备的最小单元，通过兼容CPU指令执行逻辑形成的一种多线程编程模型。</p>
+<p>无锁编程是基于原子操作的，对基本原子类型的共享访问由load()与store(val)即可保证其并发同步，对抽象复杂类型的共享访问则需要更复杂的CAS来保证其并发同步，并发访问过程只是不使用锁机制了，但还是可以理解为有锁止行为的，其粒度很小，性能更高。对于某个无法实现为一个原子操作的并发访问过程还是需要借助锁机制来实现。</p>
+<h3 id="CAS原子操作实现无锁编程"><a href="#CAS原子操作实现无锁编程" class="headerlink" title="CAS原子操作实现无锁编程"></a>CAS原子操作实现无锁编程</h3><p>CAS原子操作主要是通过函数a.compare_exchange(expected,desired)实现的，其语义为“我认为V的值应该为A，如果是，那么将V的值更新为B，否则不修改并告诉V的值实际为多少”，CAS算法的实现伪码如下：</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">compare_exchange_strong</span><span class="params">(T&amp; expected, T desired)</span> </span></span><br><span class="line"><span class="function"></span>{ </span><br><span class="line">    <span class="keyword">if</span>( <span class="keyword">this</span>-&gt;load() == expected ) { </span><br><span class="line">        <span class="keyword">this</span>-&gt;store(desired); </span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>; </span><br><span class="line">    } <span class="keyword">else</span> {</span><br><span class="line">        expected = <span class="keyword">this</span>-&gt;load();</span><br><span class="line">    	<span class="keyword">return</span> <span class="literal">false</span>; </span><br><span class="line">    } </span><br><span class="line">}</span><br><span class="line"></span><br></pre></td></tr></tbody></table></figure>
+
+<p>下面尝试实现一个无锁栈，代码如下：</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;atomic&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">lock_free_stack</span></span></span><br><span class="line"><span class="class">{</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">node</span></span></span><br><span class="line"><span class="class">    {</span></span><br><span class="line">        T data;</span><br><span class="line">        node* next;</span><br><span class="line">        node(<span class="keyword">const</span> T&amp; data) : data(data), next(<span class="literal">nullptr</span>) {}</span><br><span class="line">    };</span><br><span class="line">    <span class="built_in">std</span>::atomic&lt;node*&gt; head;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    lock_free_stack(): head(<span class="literal">nullptr</span>) {}</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">push</span><span class="params">(<span class="keyword">const</span> T&amp; data)</span></span></span><br><span class="line"><span class="function">    </span>{</span><br><span class="line">        node* new_node = <span class="keyword">new</span> node(data);</span><br><span class="line">        <span class="keyword">do</span>{</span><br><span class="line">            new_node-&gt;next = head.load();   <span class="comment">//将 head 的当前值放入new_node-&gt;next</span></span><br><span class="line">        }<span class="keyword">while</span>(!head.compare_exchange_strong(new_node-&gt;next, new_node));</span><br><span class="line">        <span class="comment">// 如果新元素new_node的next和栈顶head一样，证明在你之前没人操作它，使用新元素替换栈顶退出即可；</span></span><br><span class="line">        <span class="comment">// 如果不一样，证明在你之前已经有人操作它，栈顶已发生改变，该函数会自动更新新元素的next值为改变后的栈顶；</span></span><br><span class="line">        <span class="comment">// 然后继续循环检测直到状态1成立退出；</span></span><br><span class="line">    }</span><br><span class="line">    <span class="function">T <span class="title">pop</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>{</span><br><span class="line">        node* node;</span><br><span class="line">        <span class="keyword">do</span>{</span><br><span class="line">            node = head.load();</span><br><span class="line">        }<span class="keyword">while</span> (node &amp;&amp; !head.compare_exchange_strong(node, node-&gt;next));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span>(node)</span><br><span class="line">            <span class="keyword">return</span> node-&gt;data;</span><br><span class="line">    }</span><br><span class="line">};</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>{</span><br><span class="line">    lock_free_stack&lt;<span class="keyword">int</span>&gt; s;</span><br><span class="line">    s.push(<span class="number">1</span>);</span><br><span class="line">    s.push(<span class="number">2</span>);</span><br><span class="line">    s.push(<span class="number">3</span>);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; s.pop() &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; s.pop() &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>程序注释中已经解释的很清楚了，在将数据压栈前，先通过比较原子类型head与新元素的next指向对象是否相等来判断head是否已被其他线程修改，根据判断结果选择是继续操作还是更新期望，而这一切都是在一个原子操作中完成的，保证了在不使用锁的情况下实现共享数据的并发同步。</p>
+<p>CAS 看起来很厉害，但也有缺点，最著名的就是 ABA 问题，假设一个变量 A ，修改为 B之后又修改为 A，CAS 的机制是无法察觉的，但实际上已经被修改过了。如果在基本类型上是没有问题的，但是如果是引用类型呢？这个对象中有多个变量，我怎么知道有没有被改过？聪明的你一定想到了，加个版本号啊。每次修改就检查版本号，如果版本号变了，说明改过，就算你还是 A，也不行。</p>
+<p>上面的例子节点指针也属于引用类型，自然也存在ABA问题，比如在线程2执行pop操作，将A,B都删掉，然后创建一个新元素push进去，因为操作系统的内存分配机制会重复使用之前释放的内存，恰好push进去的内存地址和A一样，我们记为A’，这时候切换到线程1，CAS操作检查到A没变化成功将B设为栈顶，但B是一个已经被释放的内存块。该问题的解决方案就是上面说的通过打标签标识A和A’为不同的指针。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/C/" rel="tag"># C++</a>
+              <a href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" rel="tag"># 多线程</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/19/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%88%E5%9B%9B%EF%BC%89-%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B/" rel="prev" title="C++多线程（四）---异步编程">
+      <i class="fa fa-chevron-left"></i> C++多线程（四）---异步编程
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/24/GDB%E5%85%A5%E9%97%A8/" rel="next" title="GDB入门">
+      GDB入门 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%95%E4%B8%BA%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C"><span class="nav-number">1.</span> <span class="nav-text">何为原子操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8%E5%8E%9F%E5%AD%90%E7%B1%BB%E5%9E%8B"><span class="nav-number">2.</span> <span class="nav-text">如何使用原子类型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8E%9F%E5%AD%90%E5%BA%93atomic%E6%94%AF%E6%8C%81%E7%9A%84%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C"><span class="nav-number">2.1.</span> <span class="nav-text">原子库atomic支持的原子操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C%E4%B8%AD%E7%9A%84%E5%86%85%E5%AD%98%E8%AE%BF%E9%97%AE%E6%A8%A1%E5%9E%8B"><span class="nav-number">2.2.</span> <span class="nav-text">原子操作中的内存访问模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E5%8E%9F%E5%AD%90%E7%B1%BB%E5%9E%8B%E6%9B%BF%E4%BB%A3%E4%BA%92%E6%96%A5%E9%94%81%E7%BC%96%E7%A8%8B"><span class="nav-number">2.3.</span> <span class="nav-text">使用原子类型替代互斥锁编程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E5%8E%9F%E5%AD%90%E7%B1%BB%E5%9E%8B%E5%AE%9E%E7%8E%B0%E8%87%AA%E6%97%8B%E9%94%81"><span class="nav-number">2.4.</span> <span class="nav-text">使用原子类型实现自旋锁</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E8%BF%9B%E8%A1%8C%E6%97%A0%E9%94%81%E7%BC%96%E7%A8%8B"><span class="nav-number">3.</span> <span class="nav-text">如何进行无锁编程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E6%97%A0%E9%94%81%E7%BC%96%E7%A8%8B"><span class="nav-number">3.1.</span> <span class="nav-text">什么是无锁编程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CAS%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C%E5%AE%9E%E7%8E%B0%E6%97%A0%E9%94%81%E7%BC%96%E7%A8%8B"><span class="nav-number">3.2.</span> <span class="nav-text">CAS原子操作实现无锁编程</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Yu Hong</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">25</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+	
+	
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yu Hong</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">211k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">3:12</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="C++内存分配方式在C++中，内存分为：栈、堆、自由存储区、全局&#x2F;静态存储区、常量存储区。 栈，在执行函数时，函数内局部变量的存储单元都可以在栈上创建，函数执行结束是这些存储单元自动被释放。栈内存分配运算内置于处理器的指令集中，效率高，分配的内存容量有限。 堆，就是那些由malloc等分配的内存块，用free来释放内存。 自由存储区，那些由new分配的内存块，由应用程序去控制，一般一个new就要对">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++内存管理">
+<meta property="og:url" content="http://example.com/2021/01/28/C-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/index.html">
+<meta property="og:site_name" content="Hi! Yh">
+<meta property="og:description" content="C++内存分配方式在C++中，内存分为：栈、堆、自由存储区、全局&#x2F;静态存储区、常量存储区。 栈，在执行函数时，函数内局部变量的存储单元都可以在栈上创建，函数执行结束是这些存储单元自动被释放。栈内存分配运算内置于处理器的指令集中，效率高，分配的内存容量有限。 堆，就是那些由malloc等分配的内存块，用free来释放内存。 自由存储区，那些由new分配的内存块，由应用程序去控制，一般一个new就要对">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-01-28T07:36:37.000Z">
+<meta property="article:modified_time" content="2021-01-28T15:18:28.412Z">
+<meta property="article:author" content="Yu Hong">
+<meta property="article:tag" content="面试题">
+<meta property="article:tag" content="C++">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2021/01/28/C-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>C++内存管理 | Hi! Yh</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hi! Yh</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/28/C-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Yu Hong">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hi! Yh">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          C++内存管理
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-01-28 15:36:37 / 修改时间：23:18:28" itemprop="dateCreated datePublished" datetime="2021-01-28T15:36:37+08:00">2021-01-28</time>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>7.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>7 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="C-内存分配方式"><a href="#C-内存分配方式" class="headerlink" title="C++内存分配方式"></a>C++内存分配方式</h2><p>在C++中，内存分为：栈、堆、自由存储区、全局/静态存储区、常量存储区。</p>
+<p>栈，在执行函数时，函数内局部变量的存储单元都可以在栈上创建，函数执行结束是这些存储单元自动被释放。栈内存分配运算内置于处理器的指令集中，效率高，分配的内存容量有限。</p>
+<p>堆，就是那些由malloc等分配的内存块，用free来释放内存。</p>
+<p>自由存储区，那些由new分配的内存块，由应用程序去控制，一般一个new就要对应一个delete。如果程序员没有释放掉，那么在程序结束后，操作系统会自动回收。<a id="more"></a></p>
+<p>全局/静态存储区，全局变量和静态变量被分配到同一块内存中，在以前的C语言中，全局变量又分为初始化的和未初始化的，在C++里面没有这个区分了，他们共同占用同一块内存区。</p>
+<p>常量存储区，这是一块比较特殊的存储区，他们里面存放的是常量，不允许修改。</p>
+<h2 id="C-自由存储区和堆的区别"><a href="#C-自由存储区和堆的区别" class="headerlink" title="C++自由存储区和堆的区别"></a>C++自由存储区和堆的区别</h2><ul>
+<li>自由存储是C++中通过new与delete动态分配和释放对象的抽象概念，而堆（heap）是C语言和操作系统的术语，是操作系统维护的一块动态分配内存。</li>
+<li>new所申请的内存区域在C++中称为自由存储区，是藉由堆实现的自由存储，可以说new所申请的内存区域在堆上。</li>
+<li>堆与自由存储区还是有区别的，它们并非等价。</li>
+</ul>
+<h2 id="堆和栈的区别"><a href="#堆和栈的区别" class="headerlink" title="堆和栈的区别"></a>堆和栈的区别</h2><ul>
+<li>管理方式：对于栈来讲，是由编译器自动管理，无需我们手工控制；对于堆来说，释放工作由程序员控制，容易产生memory leak。</li>
+<li>空间大小：一般来讲在32位系统下，堆内存可以达到4G的空间，从这个角度来看堆内存几乎是没有什么限制的。但是对于栈来讲，一般都是有一定的空间大小的，默认的栈空间大小是1M（VS2017 项目-属性-链接器-系统可以修改）。</li>
+<li>碎片问题：对于堆来讲，频繁的malloc/free势必会造成内存空间的不连续，从而造成大量的碎片，使程序效率降低。栈是先进后出的队列，以至于永远都不可能有一个内存块从栈中间弹出。</li>
+<li>分配方式：堆都是动态分配的，没有静态分配的堆。栈有2种分配方式：静态分配和动态分配。静态分配是编译器完成的，比如局部变量的分配。动态分配由alloca函数进行分配，但是栈的动态分配和堆是不同的，他的动态分配是由编译器进行释放，无需我们手工实现。</li>
+<li>分配效率：栈是机器系统提供的数据结构，计算机会在底层对栈提供支持：分配专门的寄存器存放栈的地址，压栈出栈都有专门的指令执行，这就决定了栈的效率比较高。堆则是C/C++函数库提供的，它的机制是很复杂的，例如为了分配一块内存，库函数会按照一定的算法在堆内存中搜索可用的足够大小的空间，如果没有足够大小的空间（可能是由于内存碎片太多），就有可能调用系统功能去增加程序数据段的内存空间，这样就有机会分到足够大小的内存，然后进行返回。显然，堆的效率比栈要低得多。</li>
+</ul>
+<h2 id="malloc-free和new-delete的区别"><a href="#malloc-free和new-delete的区别" class="headerlink" title="malloc/free和new/delete的区别"></a><strong>malloc/free和new/delete的区别</strong></h2><p><strong>共同点：</strong></p>
+<p>都是从堆上申请空间。并且需要用户手动释放</p>
+<p><strong>不同点：</strong></p>
+<ol>
+<li>malloc和free是函数，new和delete是操作符</li>
+<li>malloc申请的空间不会初始化，new可以</li>
+<li>malloc申请空间时，需要手动计算空间的大小并传递，new只需要在其后边跟上空间的类型即可</li>
+<li>malloc的返回值是void*，在使用时必须强转，new不需要，因为new后跟的是空间的类型</li>
+<li>malloc在申请失败后返回的是NULL,因此使用时必须判空，new不需要，但是new需要捕获异常</li>
+<li>申请自定义类型对象时，malloc/free只会开辟空间，不会调用构造函数与析构函数，而new在申请空间后会调用构造函数完成对象的初始化，delete在释放空间前会调用析构函数完成空间中资源的清理 </li>
+<li>new/delete比malloc和free的效率稍微低点，因为new/delete的底层封装了malloc/free</li>
+</ol>
+<h2 id="设计一个类，该类只能在堆上创建对象"><a href="#设计一个类，该类只能在堆上创建对象" class="headerlink" title="设计一个类，该类只能在堆上创建对象"></a>设计一个类，该类只能在堆上创建对象</h2><ul>
+<li>将类的构造函数私有，拷贝构造声明成私有。防止别人调用拷贝在栈上生成对象。</li>
+<li>提供一个静态的成员函数，在该静态成员函数中完成堆对象的创建</li>
+</ul>
+<p>注意</p>
+<ol>
+<li>在堆和栈上创建对象都会调用构造函数，为了防止在栈上创建对象我们将构造函数私有化。</li>
+<li>拷贝构造函数是在栈上创建对象。</li>
+</ol>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">HeapOnly</span></span></span><br><span class="line"><span class="class">{</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">static</span> HeapOnly* <span class="title">CreateObject</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>{</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> HeapOnly;<span class="comment">//这使得创建该类对象都只能通过new，确保了该类只能在堆上创建对象</span></span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    HeapOnly(){}<span class="comment">//在堆和栈上创建对象都会调用构造函数，为了防止在栈上创建对象我们将构造函数私有化</span></span><br><span class="line">    HeapOnly(<span class="keyword">const</span> HeapOnly&amp;) = <span class="keyword">delete</span>;<span class="comment">//拷贝构造函数是在栈上创建对象</span></span><br><span class="line">};</span><br></pre></td></tr></tbody></table></figure>
+
+<h2 id="设计一个类，该类只能在栈上创建对象"><a href="#设计一个类，该类只能在栈上创建对象" class="headerlink" title="设计一个类，该类只能在栈上创建对象"></a>设计一个类，该类只能在栈上创建对象</h2><p>方法一：</p>
+<ul>
+<li>将类的构造函数私有。防止在堆上创建对象</li>
+<li>提供一个静态的成员函数，在该静态成员函数中完成栈对象的创建</li>
+</ul>
+<p>注意</p>
+<ol>
+<li>在堆和栈上创建对象都会调用构造函数，为了防止在堆上创建对象，应该将构造函数私有化。</li>
+</ol>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">StackOnly</span></span></span><br><span class="line"><span class="class">{</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">static</span> StackOnly <span class="title">CreateObject</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>{</span><br><span class="line">        <span class="keyword">return</span> StackOnly();<span class="comment">//确保了该类创建对象时不会使用new操作符，从而使得该类只能在栈上创建对象</span></span><br><span class="line">    }</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    StackOnly(){}<span class="comment">//在堆和栈上创建对象都会调用构造函数，为了防止在堆上创建对象，应该将构造函数私有化</span></span><br><span class="line">};</span><br></pre></td></tr></tbody></table></figure>
+
+<p>方法二:</p>
+<p> 只能在栈上创建对象，即不能在堆上创建，因此只要将new的功能屏蔽掉即可，即屏蔽掉operator new和定位new表达式，注意：屏蔽了operator new，实际也将定位new屏蔽掉。</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">StackOnly</span></span></span><br><span class="line"><span class="class">{</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    StackOnly()  {}</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span>* <span class="keyword">operator</span> <span class="title">new</span><span class="params">(<span class="keyword">size_t</span> size)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="keyword">operator</span> <span class="title">delete</span><span class="params">(<span class="keyword">void</span>* p)</span></span>;</span><br><span class="line">};</span><br></pre></td></tr></tbody></table></figure>
+
+<h2 id="C-单例模式"><a href="#C-单例模式" class="headerlink" title="C++单例模式"></a>C++单例模式</h2><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/sunchaothu/p/10389842.html">参考</a></p>
+<p>单例 Singleton 是设计模式的一种，其特点是只提供<strong>唯一</strong>一个类的实例,具有全局变量的特点，在任何位置都可以通过接口获取到那个唯一实例;</p>
+<p>有懒汉式和饿汉式两种单例模式</p>
+<p> <strong>1、饿汉式：即类产生的时候就创建好实例对象，这是一种空间换时间的方式</strong></p>
+<p>  <strong>2、懒汉式：即在需要的时候，才创建对象，这是一种时间换空间的方式</strong></p>
+<h3 id="有缺陷的懒汉式"><a href="#有缺陷的懒汉式" class="headerlink" title="有缺陷的懒汉式"></a>有缺陷的懒汉式</h3><p>懒汉式(Lazy-Initialization)的方法是直到使用时才实例化对象，也就说直到调用get_instance() 方法的时候才 new 一个单例的对象。好处是如果不被调用就不会占用内存。</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> {</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	<span class="comment">//1.把构造函数设为 private，以禁止用户自己声明并定义实例</span></span><br><span class="line">	Singleton() {</span><br><span class="line">		<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"constructor called!"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">	}</span><br><span class="line">	<span class="comment">//2.禁用拷贝构造函数和赋值运算符</span></span><br><span class="line">	Singleton(Singleton&amp;) = <span class="keyword">delete</span>;</span><br><span class="line">	Singleton&amp; <span class="keyword">operator</span>=(<span class="keyword">const</span> Singleton&amp;) = <span class="keyword">delete</span>;</span><br><span class="line">	<span class="comment">//3.单例指针设为静态变量</span></span><br><span class="line">	<span class="keyword">static</span> Singleton* m_instance_ptr;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	~Singleton() {</span><br><span class="line">		<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"destructor called!"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">	}</span><br><span class="line">	<span class="function"><span class="keyword">static</span> Singleton* <span class="title">get_instance</span><span class="params">()</span> </span>{</span><br><span class="line">		<span class="keyword">if</span> (m_instance_ptr == <span class="literal">nullptr</span>) {</span><br><span class="line">			m_instance_ptr = <span class="keyword">new</span> Singleton;</span><br><span class="line">		}</span><br><span class="line">		<span class="keyword">return</span> m_instance_ptr;</span><br><span class="line">	}</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">use</span><span class="params">()</span> <span class="keyword">const</span> </span>{ <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"in use"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>; }</span><br><span class="line">};</span><br><span class="line"></span><br><span class="line">Singleton* Singleton::m_instance_ptr = <span class="literal">nullptr</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>{</span><br><span class="line">	Singleton* instance = Singleton::get_instance();</span><br><span class="line">	Singleton* instance_2 = Singleton::get_instance();</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>运行结果：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">constructor called!</span><br></pre></td></tr></tbody></table></figure>
+
+<p>可以看到，获取了两次类的实例，却只有一次类的构造函数被调用，表明只生成了唯一实例，这是个最基础版本的单例实现，他有哪些问题呢？</p>
+<ol>
+<li><strong>线程安全的问题</strong>,当多线程获取单例时有可能引发竞态条件：第一个线程在if中判断 <code>m_instance_ptr</code>是空的，于是开始实例化单例;同时第2个线程也尝试获取单例，这个时候判断<code>m_instance_ptr</code>还是空的，于是也开始实例化单例;这样就会实例化出两个对象,这就是线程安全问题的由来; <strong>解决办法</strong>:加锁</li>
+<li><strong>内存泄漏</strong>. 注意到类中只负责new出对象，却没有负责delete对象，因此只有构造函数被调用，析构函数却没有被调用;因此会导致内存泄漏。<strong>解决办法</strong>： 使用共享指针;</li>
+</ol>
+<h2 id="线程安全、内存安全的懒汉式单例-（智能指针，锁）"><a href="#线程安全、内存安全的懒汉式单例-（智能指针，锁）" class="headerlink" title="线程安全、内存安全的懒汉式单例 （智能指针，锁）"></a>线程安全、内存安全的懒汉式单例 （智能指针，锁）</h2><figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;memory&gt; // shared_ptr</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;mutex&gt;  // mutex</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> {</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="keyword">typedef</span> <span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;Singleton&gt; Ptr; <span class="comment">//1.共享指针</span></span><br><span class="line">	~Singleton() {</span><br><span class="line">		<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"destructor called!"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">	}</span><br><span class="line">	Singleton(Singleton&amp;) = <span class="keyword">delete</span>;</span><br><span class="line">	Singleton&amp; <span class="keyword">operator</span>=(<span class="keyword">const</span> Singleton&amp;) = <span class="keyword">delete</span>;</span><br><span class="line">	<span class="function"><span class="keyword">static</span> Ptr <span class="title">get_instance</span><span class="params">()</span> </span>{</span><br><span class="line">		<span class="keyword">if</span> (m_instance_ptr == <span class="literal">nullptr</span>) {</span><br><span class="line">			<span class="function"><span class="built_in">std</span>::lock_guard&lt;<span class="built_in">std</span>::mutex&gt; <span class="title">lk</span><span class="params">(m_mutex)</span></span>;	<span class="comment">//2.加锁</span></span><br><span class="line">			<span class="keyword">if</span> (m_instance_ptr == <span class="literal">nullptr</span>) {</span><br><span class="line">				m_instance_ptr = <span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;Singleton&gt;(<span class="keyword">new</span> Singleton);</span><br><span class="line">			}</span><br><span class="line">		}</span><br><span class="line">		<span class="keyword">return</span> m_instance_ptr;</span><br><span class="line">	}</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	Singleton() {</span><br><span class="line">		<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"constructor called!"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">	}</span><br><span class="line">	<span class="keyword">static</span> Ptr m_instance_ptr;</span><br><span class="line">	<span class="keyword">static</span> <span class="built_in">std</span>::mutex m_mutex;</span><br><span class="line">};</span><br><span class="line"></span><br><span class="line"><span class="comment">// initialization static variables out of class</span></span><br><span class="line">Singleton::Ptr Singleton::m_instance_ptr = <span class="literal">nullptr</span>;</span><br><span class="line"><span class="built_in">std</span>::mutex Singleton::m_mutex;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>{</span><br><span class="line">	Singleton::Ptr instance = Singleton::get_instance();</span><br><span class="line">	Singleton::Ptr instance2 = Singleton::get_instance();</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>运行结果：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">constructor called!</span><br><span class="line">destructor called!</span><br></pre></td></tr></tbody></table></figure>
+
+<p>shared_ptr和mutex都是C++11的标准，以上这种方法的优点是</p>
+<ul>
+<li>基于 shared_ptr, 用了C++比较倡导的 RAII思想，用对象管理资源,当 shared_ptr 析构的时候，new 出来的对象也会被 delete掉。以此避免内存泄漏。</li>
+<li>加了锁，使用互斥量来达到线程安全。这里使用了两个 if判断语句的技术称为<strong>双检锁</strong>；好处是，只有判断指针为空的时候才加锁，避免每次调用 get_instance的方法都加锁，锁的开销毕竟还是有点大的。</li>
+</ul>
+<p>不足之处在于： 使用智能指针会要求用户也得使用智能指针，非必要不应该提出这种约束; 使用锁也有开销; 同时代码量也增多了，实现上我们希望越简单越好。</p>
+<p>还有更加严重的问题，在某些平台（与编译器和指令集架构有关），双检锁会失效！具体可以看<a target="_blank" rel="noopener" href="http://www.drdobbs.com/cpp/c-and-the-perils-of-double-checked-locki/184405726">这篇文章</a>，解释了为什么会发生这样的事情。</p>
+<h3 id="最推荐的懒汉式单例-magic-static-——局部静态变量"><a href="#最推荐的懒汉式单例-magic-static-——局部静态变量" class="headerlink" title="最推荐的懒汉式单例(magic static )——局部静态变量"></a>最推荐的懒汉式单例(magic static )——局部静态变量</h3><figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Singleton</span></span></span><br><span class="line"><span class="class">{</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    ~Singleton(){</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span>&lt;&lt;<span class="string">"destructor called!"</span>&lt;&lt;<span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    }</span><br><span class="line">    Singleton(<span class="keyword">const</span> Singleton&amp;)=<span class="keyword">delete</span>;</span><br><span class="line">    Singleton&amp; <span class="keyword">operator</span>=(<span class="keyword">const</span> Singleton&amp;)=<span class="keyword">delete</span>;</span><br><span class="line">    <span class="function"><span class="keyword">static</span> Singleton&amp; <span class="title">get_instance</span><span class="params">()</span></span>{</span><br><span class="line">        <span class="keyword">static</span> Singleton instance;	<span class="comment">//局部静态变量</span></span><br><span class="line">        <span class="keyword">return</span> instance;</span><br><span class="line"></span><br><span class="line">    }</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    Singleton(){</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span>&lt;&lt;<span class="string">"constructor called!"</span>&lt;&lt;<span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    }</span><br><span class="line">};</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span></span></span><br><span class="line"><span class="function"></span>{</span><br><span class="line">    Singleton&amp; instance_1 = Singleton::get_instance();</span><br><span class="line">    Singleton&amp; instance_2 = Singleton::get_instance();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">}</span><br><span class="line"></span><br></pre></td></tr></tbody></table></figure>
+
+<p>运行结果：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">constructor called!</span><br><span class="line">destructor called!</span><br></pre></td></tr></tbody></table></figure>
+
+<p>用到的特性是在C++11标准中的<a target="_blank" rel="noopener" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2008/n2660.htm">Magic Static</a>特性：</p>
+<p>如果当变量在初始化的时候，并发同时进入声明语句，并发线程将会阻塞等待初始化结束。</p>
+<p>这样保证了并发线程在获取静态局部变量的时候一定是初始化过的，所以具有线程安全性。</p>
+<p><strong>这是最推荐的一种单例实现方式：</strong></p>
+<ol>
+<li>通过局部静态变量的特性保证了线程安全 (C++11, GCC &gt; 4.3, VS2015支持该特性);</li>
+<li>不需要使用共享指针，代码简洁；</li>
+<li>注意在使用的时候需要声明单例的引用 <code>Single&amp;</code> 才能获取对象。</li>
+</ol>
+<h3 id="饿汉式"><a href="#饿汉式" class="headerlink" title="饿汉式"></a>饿汉式</h3><figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">// 饿汉式单例的实现</span></span><br><span class="line"> </span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CSingleton</span></span></span><br><span class="line"><span class="class">{</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	CSingleton(){ <span class="built_in">cout</span> &lt;&lt; <span class="string">"单例对象创建！"</span> &lt;&lt; <span class="built_in">endl</span>; };</span><br><span class="line">	CSingleton(<span class="keyword">const</span> CSingleton &amp;);</span><br><span class="line">	CSingleton&amp; <span class="keyword">operator</span>=(<span class="keyword">const</span> CSingleton &amp;);</span><br><span class="line">	~CSingleton(){ <span class="built_in">cout</span> &lt;&lt; <span class="string">"单例对象销毁！"</span> &lt;&lt; <span class="built_in">endl</span>; };</span><br><span class="line"> </span><br><span class="line">	<span class="keyword">static</span> CSingleton myInstance; <span class="comment">// 单例对象在这里！</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="function"><span class="keyword">static</span> CSingleton* <span class="title">getInstance</span><span class="params">()</span></span></span><br><span class="line"><span class="function">	</span>{		</span><br><span class="line">		<span class="keyword">return</span> &amp;myInstance;</span><br><span class="line">	}</span><br><span class="line">};</span><br><span class="line"></span><br><span class="line">CSingleton CSingleton::myInstance;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>{</span><br><span class="line">	CSingleton *ct1 = CSingleton::getInstance();</span><br><span class="line">	CSingleton *ct2 = CSingleton::getInstance();</span><br><span class="line">	CSingleton *ct3 = CSingleton::getInstance();</span><br><span class="line"> </span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>运行结果</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">单例对象创建！</span><br><span class="line">单例对象销毁！</span><br></pre></td></tr></tbody></table></figure>
+
+<p>只有一个对象创建，且线程安全。</p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/cjbct/article/details/79266057">饿汉式参考链接</a></p>
+<h2 id="内存泄漏"><a href="#内存泄漏" class="headerlink" title="内存泄漏"></a>内存泄漏</h2><p>内存泄漏是指因为疏忽或错误造成程序未能释放已经不再使用的内存的情况。内存泄漏并不是指内存在物理上的消失，而是应用程序分配某段内存后，因为设计错误，失去了对该段内存的控制，因而造成了内存的浪费。</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">MemoryLeaks</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>{</span><br><span class="line">	<span class="comment">//1.内存申请了忘记释放</span></span><br><span class="line">	<span class="keyword">int</span>* p1 = (<span class="keyword">int</span>*)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(<span class="keyword">int</span>));</span><br><span class="line">	<span class="keyword">int</span>* p2 = <span class="keyword">new</span> <span class="keyword">int</span>;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//2.异常安全问题</span></span><br><span class="line">	<span class="keyword">int</span>* p3 = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">10</span>];</span><br><span class="line"></span><br><span class="line">	Func();<span class="comment">// 这里Func函数抛异常导致 delete[] p3未执行，p3没被释放</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">delete</span>[] p3;</span><br><span class="line">}</span><br><span class="line"></span><br></pre></td></tr></tbody></table></figure>
+
+<p>C/C++程序中一般我们关心两种方面的内存泄漏：</p>
+<ol>
+<li><p>堆内存泄漏</p>
+<p>堆内存指的是程序执行中依据须要分配通过<strong>malloc / calloc / realloc / new等从堆中分配的一块内存， 用完后必须通过调用相应的 free或者delete 删掉</strong>。假设程序的设计错误导致这部分内存没有被释放，那 么以后这部分空间将无法再被使用，就会产生Heap Leak。</p>
+</li>
+<li><p>系统资源泄漏</p>
+<p>指程序使用系统分配的资源，比方套接字、文件描述符、管道等没有使用对应的函数释放掉，导致系统 资源的浪费，严重可导致系统效能减少，系统执行不稳定。</p>
+</li>
+</ol>
+<h2 id="如何解决内存泄漏"><a href="#如何解决内存泄漏" class="headerlink" title="如何解决内存泄漏"></a>如何解决内存泄漏</h2><p>内存泄漏非常常见，解决方案分为两种：<br>1、事前预防型。如智能指针等。<br>2、事后查错型。如泄漏检测工具。</p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/gatieme/article/details/51959654">Linux下几款C++程序中的内存泄露检查工具</a></p>
+<h2 id="STL空间配置器"><a href="#STL空间配置器" class="headerlink" title="STL空间配置器"></a>STL空间配置器</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/lf_2016/article/details/53511648">链接</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%9D%A2%E8%AF%95%E9%A2%98/" rel="tag"># 面试题</a>
+              <a href="/tags/C/" rel="tag"># C++</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/01/26/C-%E8%99%9A%E5%87%BD%E6%95%B0%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/" rel="prev" title="C++虚函数常见问题">
+      <i class="fa fa-chevron-left"></i> C++虚函数常见问题
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/01/30/%E5%8D%81%E5%A4%A7%E7%BB%8F%E5%85%B8%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95/" rel="next" title="十大经典排序算法">
+      十大经典排序算法 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#C-%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E6%96%B9%E5%BC%8F"><span class="nav-number">1.</span> <span class="nav-text">C++内存分配方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#C-%E8%87%AA%E7%94%B1%E5%AD%98%E5%82%A8%E5%8C%BA%E5%92%8C%E5%A0%86%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">2.</span> <span class="nav-text">C++自由存储区和堆的区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A0%86%E5%92%8C%E6%A0%88%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">3.</span> <span class="nav-text">堆和栈的区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#malloc-free%E5%92%8Cnew-delete%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">4.</span> <span class="nav-text">malloc&#x2F;free和new&#x2F;delete的区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E8%AE%A1%E4%B8%80%E4%B8%AA%E7%B1%BB%EF%BC%8C%E8%AF%A5%E7%B1%BB%E5%8F%AA%E8%83%BD%E5%9C%A8%E5%A0%86%E4%B8%8A%E5%88%9B%E5%BB%BA%E5%AF%B9%E8%B1%A1"><span class="nav-number">5.</span> <span class="nav-text">设计一个类，该类只能在堆上创建对象</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E8%AE%A1%E4%B8%80%E4%B8%AA%E7%B1%BB%EF%BC%8C%E8%AF%A5%E7%B1%BB%E5%8F%AA%E8%83%BD%E5%9C%A8%E6%A0%88%E4%B8%8A%E5%88%9B%E5%BB%BA%E5%AF%B9%E8%B1%A1"><span class="nav-number">6.</span> <span class="nav-text">设计一个类，该类只能在栈上创建对象</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#C-%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F"><span class="nav-number">7.</span> <span class="nav-text">C++单例模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%89%E7%BC%BA%E9%99%B7%E7%9A%84%E6%87%92%E6%B1%89%E5%BC%8F"><span class="nav-number">7.1.</span> <span class="nav-text">有缺陷的懒汉式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E3%80%81%E5%86%85%E5%AD%98%E5%AE%89%E5%85%A8%E7%9A%84%E6%87%92%E6%B1%89%E5%BC%8F%E5%8D%95%E4%BE%8B-%EF%BC%88%E6%99%BA%E8%83%BD%E6%8C%87%E9%92%88%EF%BC%8C%E9%94%81%EF%BC%89"><span class="nav-number">8.</span> <span class="nav-text">线程安全、内存安全的懒汉式单例 （智能指针，锁）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%80%E6%8E%A8%E8%8D%90%E7%9A%84%E6%87%92%E6%B1%89%E5%BC%8F%E5%8D%95%E4%BE%8B-magic-static-%E2%80%94%E2%80%94%E5%B1%80%E9%83%A8%E9%9D%99%E6%80%81%E5%8F%98%E9%87%8F"><span class="nav-number">8.1.</span> <span class="nav-text">最推荐的懒汉式单例(magic static )——局部静态变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A5%BF%E6%B1%89%E5%BC%8F"><span class="nav-number">8.2.</span> <span class="nav-text">饿汉式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F"><span class="nav-number">9.</span> <span class="nav-text">内存泄漏</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E8%A7%A3%E5%86%B3%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F"><span class="nav-number">10.</span> <span class="nav-text">如何解决内存泄漏</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#STL%E7%A9%BA%E9%97%B4%E9%85%8D%E7%BD%AE%E5%99%A8"><span class="nav-number">11.</span> <span class="nav-text">STL空间配置器</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Yu Hong</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">25</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+	
+	
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yu Hong</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">211k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">3:12</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

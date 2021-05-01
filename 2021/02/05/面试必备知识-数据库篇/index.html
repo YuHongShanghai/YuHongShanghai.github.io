@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="SQL 各种JOIN方式 INNER JOIN是最常见的一种连接，只连接匹配的行。 LEFT JOIN返回左表的全部行和右表满足ON条件的行，如果左表的行在右表中没有匹配，那么这一行右表中对应数据用NULL代替。 RIGHT JOIN返回右表的全部行和左表满足ON条件的行，如果右表的行在左表中没有匹配，那么这一行左表中对应数据用NULL代替。 FULL JOIN 会从左表 和右表 那里返回所有的行">
+<meta property="og:type" content="article">
+<meta property="og:title" content="面试必备知识-数据库篇">
+<meta property="og:url" content="http://example.com/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/index.html">
+<meta property="og:site_name" content="Hi! Yh">
+<meta property="og:description" content="SQL 各种JOIN方式 INNER JOIN是最常见的一种连接，只连接匹配的行。 LEFT JOIN返回左表的全部行和右表满足ON条件的行，如果左表的行在右表中没有匹配，那么这一行右表中对应数据用NULL代替。 RIGHT JOIN返回右表的全部行和左表满足ON条件的行，如果右表的行在左表中没有匹配，那么这一行左表中对应数据用NULL代替。 FULL JOIN 会从左表 和右表 那里返回所有的行">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/1.png">
+<meta property="og:image" content="http://example.com/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/6.png">
+<meta property="og:image" content="http://example.com/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/7.png">
+<meta property="og:image" content="http://example.com/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/E1.JPG">
+<meta property="og:image" content="http://example.com/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/E2.JPG">
+<meta property="og:image" content="http://example.com/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/2.png">
+<meta property="og:image" content="http://example.com/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/3.png">
+<meta property="og:image" content="http://example.com/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/4.png">
+<meta property="og:image" content="http://example.com/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/5.png">
+<meta property="og:image" content="http://example.com/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/1.jfif">
+<meta property="og:image" content="http://example.com/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/2.jfif">
+<meta property="og:image" content="http://example.com/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/3.jfif">
+<meta property="og:image" content="http://example.com/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/8.png">
+<meta property="og:image" content="http://example.com/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/9.png">
+<meta property="article:published_time" content="2021-02-05T11:38:54.000Z">
+<meta property="article:modified_time" content="2021-03-11T15:23:44.506Z">
+<meta property="article:author" content="Yu Hong">
+<meta property="article:tag" content="面试题">
+<meta property="article:tag" content="数据库">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/1.png">
+
+<link rel="canonical" href="http://example.com/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>面试必备知识-数据库篇 | Hi! Yh</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hi! Yh</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Yu Hong">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hi! Yh">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          面试必备知识-数据库篇
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-02-05 19:38:54" itemprop="dateCreated datePublished" datetime="2021-02-05T19:38:54+08:00">2021-02-05</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-11 23:23:44" itemprop="dateModified" datetime="2021-03-11T23:23:44+08:00">2021-03-11</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>24k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>22 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="SQL-各种JOIN方式"><a href="#SQL-各种JOIN方式" class="headerlink" title="SQL 各种JOIN方式"></a>SQL 各种JOIN方式</h2><ul>
+<li>INNER JOIN是最常见的一种连接，只连接匹配的行。</li>
+<li>LEFT JOIN返回左表的全部行和右表满足ON条件的行，如果左表的行在右表中没有匹配，那么这一行右表中对应数据用NULL代替。</li>
+<li>RIGHT JOIN返回右表的全部行和左表满足ON条件的行，如果右表的行在左表中没有匹配，那么这一行左表中对应数据用NULL代替。</li>
+<li>FULL JOIN 会从左表 和右表 那里返回所有的行。如果其中一个表的数据行在另一个表中没有匹配的行，那么对面的数据用NULL代替<a id="more"></a></li>
+</ul>
+<img src="/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/1.png" class="" title="图片">
+
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/reaptomorrow-flydream/p/8145610.html">实例参考</a></p>
+<h2 id="limit用法"><a href="#limit用法" class="headerlink" title="limit用法"></a>limit用法</h2><p><code>select * from table limit m,n</code><br>其中m是指记录开始的index，从0开始，表示第一条记录<br>n是指从第m+1条开始，取n条。</p>
+<p><code>select * from tablename limit 0,5</code><br>即取出第1条至第5条，5条记录</p>
+<p><code>select * from tablename limit 5,5</code><br>即取出第6条至第10条，5条记录</p>
+<h2 id="常见SQL函数"><a href="#常见SQL函数" class="headerlink" title="常见SQL函数"></a>常见SQL函数</h2><h3 id="AVG函数"><a href="#AVG函数" class="headerlink" title="AVG函数"></a>AVG函数</h3><p>AVG 函数返回数值列的平均值。NULL 值不包括在计算中。</p>
+<p><code>SELECT AVG(column_name) FROM table_name</code></p>
+<h3 id="COUNT-函数"><a href="#COUNT-函数" class="headerlink" title="COUNT 函数"></a>COUNT 函数</h3><p>COUNT(column_name) 函数返回指定列的值的数目（NULL 不计入）：</p>
+<p><code>SELECT COUNT(column_name) FROM table_name</code></p>
+<p>COUNT(*) 函数返回表中的记录数：</p>
+<p><code>SELECT COUNT(*) FROM table_name</code></p>
+<p>COUNT(DISTINCT column_name) 函数返回指定列的不同值的数目：</p>
+<p><code>SELECT COUNT(DISTINCT column_name) FROM table_name</code></p>
+<h3 id="MAX函数"><a href="#MAX函数" class="headerlink" title="MAX函数"></a>MAX函数</h3><p>MAX 函数返回一列中的最大值。NULL 值不包括在计算中。</p>
+<p><code>SELECT MAX(column_name) FROM table_name</code></p>
+<h3 id="SUM函数"><a href="#SUM函数" class="headerlink" title="SUM函数"></a>SUM函数</h3><p>SUM 函数返回数值列的总数（总额）。</p>
+<p><code>SELECT SUM(column_name) FROM table_name</code></p>
+<h3 id="GROUP-BY-语句"><a href="#GROUP-BY-语句" class="headerlink" title="GROUP BY 语句"></a>GROUP BY 语句</h3><p>GROUP BY 语句用于结合合计函数，根据一个或多个列对结果集进行分组。</p>
+<figure class="highlight sql"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> column_name, aggregate_function(column_name)</span><br><span class="line"><span class="keyword">FROM</span> table_name</span><br><span class="line"><span class="keyword">WHERE</span> column_name <span class="keyword">operator</span> <span class="keyword">value</span></span><br><span class="line"><span class="keyword">GROUP</span> <span class="keyword">BY</span> column_name</span><br></pre></td></tr></tbody></table></figure>
+
+<h2 id="drop、truncate和delete的区别"><a href="#drop、truncate和delete的区别" class="headerlink" title="drop、truncate和delete的区别"></a>drop、truncate和delete的区别</h2><p>一、delete</p>
+<p>1、delete是DML，执行delete操作时，每次从表中删除一行，并且同时将该行的的删除操作记录在redo和undo表空间中以便进行回滚（rollback）和重做操作，但要注意表空间要足够大，需要手动提交（commit）操作才能生效，可以通过rollback撤消操作。</p>
+<p>2、delete可根据条件删除表中满足条件的数据，如果不指定where子句，那么删除表中所有记录。</p>
+<p>3、delete语句不影响表所占用的extent，高水线(high watermark)保持原位置不变。</p>
+<p>二、truncate</p>
+<p>1、truncate是DDL，会隐式提交，所以，不能回滚，不会触发触发器。</p>
+<p>2、truncate会删除表中所有记录，并且将重新设置高水线和所有的索引，缺省情况下将空间释放到minextents个extent，除非使用reuse storage，。不会记录日志，所以执行速度很快，但不能通过rollback撤消操作（如果一不小心把一个表truncate掉，也是可以恢复的，只是不能通过rollback来恢复）。</p>
+<p>3、对于外键（foreignkey ）约束引用的表，不能使用 truncate table，而应使用不带 where 子句的 delete 语句。</p>
+<p>4、truncatetable不能用于参与了索引视图的表。</p>
+<p>三、drop</p>
+<p>1、drop是DDL，会隐式提交，所以，不能回滚，不会触发触发器。</p>
+<p>2、drop语句删除表结构及所有数据，并将表所占用的空间全部释放。</p>
+<p>3、drop语句将删除表的结构所依赖的约束，触发器，索引，依赖于该表的存储过程/函数将保留,但是变为invalid状态。</p>
+<p>总结：</p>
+<p>1、在速度上，一般来说，drop&gt; truncate &gt; delete。</p>
+<p>2、在使用drop和truncate时一定要注意，虽然可以恢复，但为了减少麻烦，还是要慎重。</p>
+<p>3、如果想删除部分数据用delete，注意带上where子句，回滚段要足够大；</p>
+<p>   如果想删除表，当然用drop； </p>
+<p>   如果想保留表而将所有数据删除，如果和事务无关，用truncate即可；</p>
+<p>   如果和事务有关，或者想触发trigger，还是用delete；</p>
+<p>   如果是整理表内部的碎片，可以用truncate跟上reuse stroage，再重新导入/插入数据。</p>
+<h2 id="为什么B-树比B树更适合数据库索引"><a href="#为什么B-树比B树更适合数据库索引" class="headerlink" title="为什么B+树比B树更适合数据库索引"></a>为什么B+树比B树更适合数据库索引</h2><p><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000020416577">B树和B+树的区别</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/tiancai/p/9024351.html">参考链接</a></p>
+<ol>
+<li><p>B+树的磁盘读写代价更低：B+树的内部节点并没有指向关键字具体信息的指针，因此其内部节点相对B树更小，如果把所有同一内部节点的关键字存放在同一盘块中，那么盘块所能容纳的关键字数量也越多，一次性读入内存的需要查找的关键字也就越多，相对IO读写次数就降低了。</p>
+</li>
+<li><p>B+树的查询效率更加稳定：由于非终结点并不是最终指向文件内容的结点，而只是叶子结点中关键字的索引。所以任何关键字的查找必须走一条从根结点到叶子结点的路。所有关键字查询的路径长度相同，导致每一个数据的查询效率相当。</p>
+</li>
+<li><p>由于B+树的数据都存储在叶子结点中，分支结点均为索引，方便扫库，只需要扫一遍叶子结点即可，但是B树因为其分支结点同样存储着数据，我们要找到具体的数据，需要进行一次中序遍历按序来扫，所以B+树更加适合在区间查询的情况，所以通常B+树用于数据库索引。</p>
+</li>
+</ol>
+<h2 id="聚集索引与非聚集索引"><a href="#聚集索引与非聚集索引" class="headerlink" title="聚集索引与非聚集索引"></a>聚集索引与非聚集索引</h2><p><strong>聚集索引</strong>（ clustered index） 就是按照每张表的主键构造一棵B+树，同时叶子节点中存放的即为整张表的行记录数据，也将聚集索引的叶子节点称为数据页。聚集索引的这个特性决定了索引组织表中数据也是索引的一部分。同B+树数据结构一样，每个数据页都通过一个双向链表来进行链接。</p>
+<blockquote>
+<p>由于实际的数据页只能按照 一 棵 B+ 树进行排序，因此每张表只能 拥有一个聚集 索引。在多数情况下，查询优化器倾向于采用聚集索引。 因为聚集索引能够 在 B+ 树索引的叶子节点上直接找到 数据。此外， 由于定义了数据的逻辑顺序，聚集索引能够特别快地访问针对范围值的查询。查询优化器能够快速发现某一段范围的数据页需要扫描。</p>
+</blockquote>
+<p><strong>辅助索引</strong>（ Secondary Index， 也称非聚集索引），叶子节点并不包含行记录的 全部 数据。叶子节点除了包含键值以外，每个叶子节点中的索引行中还包含了一个 书签（ bookmark）。 该书 签 用来 告诉 InnoDB 存储 引擎哪里可以找到与索引相 对应的行数据。由于 InnoDB 存储引擎 表是索引组织表，因此 InnoDB 存储 引擎 的辅助索引的书签就是相应行数据的聚集索引键。</p>
+<blockquote>
+<p>辅助索引的存在并不影响数据在聚集索引中的组织，因此每张表上可以有多个辅助索引。当通过辅助索引来寻找数据时，InnoDB存储引擎会遍历辅助索引并通过叶级别的指针获得指向主键索引的主键，然后再通过主键索引来找到一个完整的行记录。举例来说，如果在一棵高度为3的辅助索引树中查找数据，那需要对这棵辅助索引树遍历3次找到指定主键，如果聚集索引树的高度同样为3，那么还需要对聚集索引树进行3次查找，最终找到一个完整的行数据所在的页，因此一共需要6次逻辑IO访问以得到最终的一个数据页。</p>
+</blockquote>
+<p><strong>二者区别：</strong></p>
+<ul>
+<li>聚集索引一个表只能有一个，而非聚集索引一个表可以存在多个</li>
+<li>聚集索引存储记录是物理上连续存在，而非聚集索引是逻辑上的连续，物理存储并不连续</li>
+<li>聚集索引：物理存储按照索引排序；聚集索引是一种索引组织形式，索引的键值逻辑顺序决定了表数据行的物理存储顺序</li>
+<li>非聚集索引：物理存储不按照索引排序；非聚集索引则就是普通索引了，仅仅只是对数据列创建相应的索引，不影响整个表的物理存储顺序.</li>
+<li>索引是通过二叉树的数据结构来描述的，我们可以这么理解聚簇索引：索引的叶节点就是数据节点。而非聚簇索引的叶节点仍然是索引节点，只不过有一个指针指向对应的数据块。</li>
+</ul>
+<h2 id="联合索引"><a href="#联合索引" class="headerlink" title="联合索引"></a>联合索引</h2><p>联合索引是指对表上的多个列进行索引。</p>
+<h2 id="覆盖索引"><a href="#覆盖索引" class="headerlink" title="覆盖索引"></a>覆盖索引</h2><p>覆盖索引（coveringindex，或称索引覆盖），即从辅助索引中就可以得到查询的记录，而不需要查询聚集索引中的记录。使用覆盖索引的一个好处是辅助索引不包含整行记录的所有信息，故其大小要远小于聚集索引，因此可以减少大量的IO操作。</p>
+<p>覆盖索引的另一个好处是对某些统计问题而言的。当进行count等统计操作时，如果表上有辅助索引，而辅助索引远小于聚集索引，选择辅助索引可以减少IO操作，故优化器会选择辅助索引。另外，当表上有联合索引(a,b)，进行统计操作时，若使用b列信息，优化器仍可以选择使用联合索引(a,b)。</p>
+<h2 id="数据库表索引过多会产生哪些问题"><a href="#数据库表索引过多会产生哪些问题" class="headerlink" title="数据库表索引过多会产生哪些问题"></a>数据库表索引过多会产生哪些问题</h2><ol>
+<li>建立索引的字段越多,那数据量大的时候,文件就会越大,查找数据就会变慢.这是最显著的问题</li>
+<li>一个索引会在 update 或 insert 时增加一次 I/O，对于操作系统底层来说是非常损耗性能的</li>
+</ol>
+<h2 id="怎样判断某个字段是否适合建立索引"><a href="#怎样判断某个字段是否适合建立索引" class="headerlink" title="怎样判断某个字段是否适合建立索引"></a>怎样判断某个字段是否适合建立索引</h2><p>一个字段是否合适建索引，一个重要的参考是区分度。区分度是指字段中的值不重复的比例，这个比例越大，越适合建索引。区分度= count( distinct(col) )  / count(col) ，主键的区分度是1，效率最高；如状态status 只有几个值的列不太适合建索引。其实原因很简单通过索引找到的值仍然是非常多，无法提供效率。</p>
+<h2 id="索引的创建时机"><a href="#索引的创建时机" class="headerlink" title="索引的创建时机"></a>索引的创建时机</h2><h3 id="适合创建索引的情况"><a href="#适合创建索引的情况" class="headerlink" title="适合创建索引的情况"></a>适合创建索引的情况</h3><ul>
+<li>主键自动建立唯一索引；</li>
+<li>频繁作为查询条件的字段应该创建索引</li>
+<li>查询中与其它表关联的字段， 外键关系建立索引</li>
+<li>单键/组合索引的选择问题， 组合索引性价比更高</li>
+<li>查询中排序的字段， 排序字段若通过索引去访问将大大提高排序速度</li>
+<li>查询中统计或者分组字段  </li>
+</ul>
+<h3 id="不适合创建索引的情况"><a href="#不适合创建索引的情况" class="headerlink" title="不适合创建索引的情况"></a>不适合创建索引的情况</h3><ul>
+<li>表记录太少</li>
+<li>经常增删改的表或者字段</li>
+<li>Where 条件里用不到的字段不创建索</li>
+<li>过滤性不好的不适合建索引</li>
+</ul>
+<h2 id="MYSQL-MyISAM与InnoDB-存储引擎的区别"><a href="#MYSQL-MyISAM与InnoDB-存储引擎的区别" class="headerlink" title="MYSQL MyISAM与InnoDB 存储引擎的区别"></a>MYSQL MyISAM与InnoDB 存储引擎的区别</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_35642036/article/details/82820178">参考链接</a></p>
+<ol>
+<li>InnoDB支持事务，MyISAM不支持，对于InnoDB每一条SQL语言都默认封装成事务，自动提交，这样会影响速度，所以最好把多条SQL语言放在begin和commit之间，组成一个事务； </li>
+<li>InnoDB支持外键，而MyISAM不支持。对一个包含外键的InnoDB表转为MYISAM会失败； </li>
+<li>InnoDB是聚集索引，使用B+Tree作为索引结构，数据文件是和（主键）索引绑在一起的（表数据文件本身就是按B+Tree组织的一个索引结构），必须要有主键，通过主键索引效率很高。但是辅助索引需要两次查询，先查询到主键，然后再通过主键查询到数据。因此，主键不应该过大，因为主键太大，其他索引也都会很大。</li>
+</ol>
+<blockquote>
+<p>MyISAM是非聚集索引，也是使用B+Tree作为索引结构，索引和数据文件是分离的，索引保存的是数据文件的指针。主键索引和辅助索引是独立的。</p>
+<p>  也就是说：InnoDB的B+树主键索引的叶子节点就是数据文件，辅助索引的叶子节点是主键的值；而MyISAM的B+树主键索引和辅助索引的叶子节点都是数据文件的地址指针。</p>
+<img src="/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/6.png" class="" title="图片">
+
+<img src="/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/7.png" class="" title="图片">
+</blockquote>
+<ol start="4">
+<li>InnoDB不保存表的具体行数，执行select count(*) from table时需要全表扫描。而MyISAM用一个变量保存了整个表的行数，执行上述语句时只需要读出该变量即可，速度很快（注意不能加有任何WHERE条件）。</li>
+</ol>
+<blockquote>
+<p>那么为什么InnoDB没有了这个变量呢？</p>
+<p>因为InnoDB的事务特性，在同一时刻表中的行数对于不同的事务而言是不一样的，因此count统计会计算对于当前事务而言可以统计到的行数，而不是将总行数储存起来方便快速查询。InnoDB会尝试遍历一个尽可能小的索引除非优化器提示使用别的索引。如果二级索引不存在，InnoDB还会尝试去遍历其他聚簇索引。<br>如果索引并没有完全处于InnoDB维护的缓冲区（Buffer Pool）中，count操作会比较费时。可以建立一个记录总行数的表并让你的程序在INSERT/DELETE时更新对应的数据。和上面提到的问题一样，如果此时存在多个事务的话这种方案也不太好用。如果得到大致的行数值已经足够满足需求可以尝试SHOW TABLE STATUS</p>
+</blockquote>
+<ol start="5">
+<li>Innodb不支持全文索引，而MyISAM支持全文索引，在涉及全文索引领域的查询效率上MyISAM速度更快高；PS：5.7以后的InnoDB支持全文索引了</li>
+<li>MyISAM表格可以被压缩后进行查询操作</li>
+<li>InnoDB支持表、行(默认)级锁，而MyISAM支持表级锁</li>
+</ol>
+<blockquote>
+<p>InnoDB的行锁是实现在索引上的，而不是锁在物理行记录上。潜台词是，如果访问没有命中索引，也无法使用行锁，将要退化为表锁。</p>
+</blockquote>
+<ol start="8">
+<li><p>InnoDB表必须有唯一索引（如主键）（用户没有指定的话会自己找/生产一个隐藏列Row_id来充当默认主键），而Myisam可以没有</p>
+</li>
+<li><p>Innodb存储文件有frm、ibd，而Myisam是frm、MYD、MYI</p>
+<blockquote>
+<p>Innodb：frm是表定义文件，ibd是数据文件</p>
+<p>Myisam：frm是表定义文件，myd是数据文件，myi是索引文件</p>
+</blockquote>
+</li>
+</ol>
+<h2 id="数据库锁"><a href="#数据库锁" class="headerlink" title="数据库锁"></a>数据库锁</h2><p><a target="_blank" rel="noopener" href="https://learnku.com/articles/39212?order_by=vote_count&amp;">参考链接</a></p>
+<h3 id="锁的认识"><a href="#锁的认识" class="headerlink" title="锁的认识"></a>锁的认识</h3><p>锁是计算机协调多个进程或线程并发访问某一资源的机制。</p>
+<p>在数据库中，除传统计算资源（CPU、RAM、I\O等）的争抢，数据也是一种供多用户共享的资源。<br>如何保证数据并发访问的一致性，有效性，是所有数据库必须要解决的问题。<br>锁冲突也是影响数据库并发访问性能的一个重要因素，因此锁对数据库尤其重要。</p>
+<p>但加锁是消耗资源的，锁的各种操作，包括获得锁、检测锁是否已解除、释放锁等 ，都会增加系统的开销。</p>
+<p>现如今网购已经特别普遍了，比如淘宝双十一活动，当天的人流量是千万及亿级别的，但商家的库存是有限的。<br>系统为了保证商家的商品库存不发生超卖现象，会对商品的库存进行锁控制。当有用户正在下单某款商品最后一件时，<br>系统会立马对该件商品进行锁定，防止其他用户也重复下单，直到支付动作完成才会释放（支付成功则立即减库存售罄，支付失败则立即释放）。</p>
+<h3 id="锁的类型"><a href="#锁的类型" class="headerlink" title="锁的类型"></a>锁的类型</h3><h4 id="表锁"><a href="#表锁" class="headerlink" title="表锁"></a>表锁</h4><p><strong>读锁（read lock）</strong>：也叫共享锁（shared lock）。针对同一份数据，多个读操作（select）可以同时进行而不会互相影响。</p>
+<p><strong>写锁（write lock）</strong>，也叫排他锁（exclusive lock）。当前操作没完成之前，会阻塞其它读和写操作（update、insert、delete）。</p>
+<p>MYSQL MySIAM存储引擎采用表锁。</p>
+<p><strong>特点：</strong></p>
+<ol>
+<li>对整张表加锁</li>
+<li>开销小</li>
+<li>加锁快</li>
+<li>无死锁</li>
+<li>锁粒度大，发生锁冲突概率大，并发性低</li>
+</ol>
+<h4 id="行锁"><a href="#行锁" class="headerlink" title="行锁"></a>行锁</h4><p><strong>读锁（read lock）</strong>，也叫共享锁（shared lock）允许一个事务去读一行，阻止其他事务获得相同数据集的排他锁</p>
+<p><strong>写锁（write lock）</strong>，也叫排他锁（exclusive lock）允许获得排他锁的事务更新数据，阻止其他事务取得相同数据集的共享锁和排他锁</p>
+<p><strong>意向共享锁（IS）</strong>一个事务给一个数据行加共享锁时，必须先获得表的IS锁</p>
+<p><strong>意向排它锁（IX）</strong>一个事务给一个数据行加排他锁时，必须先获得该表的IX锁</p>
+<p>MYSQL InnoDB存储引擎采用行锁。</p>
+<p><strong>特点：</strong></p>
+<ol>
+<li>对一行数据加锁</li>
+<li>开销大</li>
+<li>加锁慢</li>
+<li>会出现死锁</li>
+<li>锁粒度小，发生锁冲突概率最低，并发性高</li>
+</ol>
+<h4 id="页锁"><a href="#页锁" class="headerlink" title="页锁"></a>页锁</h4><p>开销、加锁时间和锁粒度介于表锁和行锁之间，会出现死锁，并发处理能力一般（此锁不做多介绍）。</p>
+<h3 id="如何上锁？"><a href="#如何上锁？" class="headerlink" title="如何上锁？"></a>如何上锁？</h3><h4 id="表锁-1"><a href="#表锁-1" class="headerlink" title="表锁"></a>表锁</h4><p>隐式上锁（默认，自动加锁自动释放）：select //上读锁； insert、update、delete //上写锁</p>
+<p>显式上锁（手动）：</p>
+<p>lock table tableName read;//读锁<br>lock table tableName write;//写锁</p>
+<p>解锁（手动）</p>
+<p>unlock tables;//所有锁表</p>
+<p><strong>示例：</strong></p>
+<img src="/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/E1.JPG" class="" title="图片">
+
+<h4 id="行锁-1"><a href="#行锁-1" class="headerlink" title="行锁"></a>行锁</h4><p>隐式上锁（默认，自动加锁自动释放）：select //不会上锁；insert、update、delete //上写锁</p>
+<p>显式上锁（手动）：<br>select * from tableName lock in share mode;//读锁<br>select * from tableName for update;//写锁</p>
+<p>解锁（手动）</p>
+<ol>
+<li>提交事务（commit）</li>
+<li>回滚事务（rollback）</li>
+<li>kill 阻塞进程</li>
+</ol>
+<p><strong>示例：</strong></p>
+<img src="/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/E2.JPG" class="" title="图片">
+
+<blockquote>
+<p>为什么上了写锁，别的事务还可以读操作？<br>因为InnoDB有MVCC机制（多版本并发控制），可以使用快照读，而不会被阻塞。</p>
+</blockquote>
+<h3 id="行锁的实现算法"><a href="#行锁的实现算法" class="headerlink" title="行锁的实现算法"></a>行锁的实现算法</h3><h4 id="Record-Lock-锁"><a href="#Record-Lock-锁" class="headerlink" title="Record Lock 锁"></a>Record Lock 锁</h4><p>单个行记录上的锁<br>Record Lock总是会去锁住索引记录，如果InnoDB存储引擎表建立的时候没有设置任何一个索引，这时InnoDB存储引擎会使用隐式的主键来进行锁定</p>
+<h4 id="Gap-Lock-锁"><a href="#Gap-Lock-锁" class="headerlink" title="Gap Lock 锁"></a>Gap Lock 锁</h4><p>当我们用范围条件而不是相等条件检索数据，并请求共享或排他锁时，InnoDB会给符合条件的已有数据记录的索引加锁。</p>
+<blockquote>
+<p>优点：解决了事务并发的幻读问题<br>不足：因为query执行过程中通过范围查找的话，他会锁定整个范围内所有的索引键值，即使这个键值并不存在。<br>间隙锁有一个致命的弱点，就是当锁定一个范围键值之后，即使某些不存在的键值也会被无辜的锁定，而造成锁定的时候无法插入锁定键值范围内任何数据。在某些场景下这可能会对性能造成很大的危害。</p>
+</blockquote>
+<h4 id="Next-key-Lock-锁"><a href="#Next-key-Lock-锁" class="headerlink" title="Next-key Lock 锁"></a>Next-key Lock 锁</h4><p>同时锁住数据+间隙锁<br>在Repeatable Read隔离级别下，Next-key Lock 算法是默认的行记录锁定算法。</p>
+<h3 id="行锁的注意点"><a href="#行锁的注意点" class="headerlink" title="行锁的注意点"></a>行锁的注意点</h3><ol>
+<li>只有通过索引条件检索数据时，InnoDB才会使用行级锁，否则会使用表级锁(索引失效，行锁变表锁)</li>
+<li>即使是访问不同行的记录，如果使用的是相同的索引键，会发生锁冲突</li>
+<li>如果数据表建有多个索引时，可以通过不同的索引锁定不同的行</li>
+</ol>
+<h3 id="针对行锁的性能优化建议"><a href="#针对行锁的性能优化建议" class="headerlink" title="针对行锁的性能优化建议"></a>针对行锁的性能优化建议</h3><ol>
+<li>尽可能让所有数据检索都通过索引来完成，避免无索引行锁升级为表锁</li>
+<li>合理设计索引，尽量缩小锁的范围</li>
+<li>尽可能较少检索条件，避免间隙锁</li>
+<li>尽量控制事务大小，减少锁定资源量和时间长度</li>
+<li>尽可能低级别事务隔离</li>
+</ol>
+<h3 id="乐观锁与悲观锁"><a href="#乐观锁与悲观锁" class="headerlink" title="乐观锁与悲观锁"></a>乐观锁与悲观锁</h3><table>
+<thead>
+<tr>
+<th></th>
+<th>悲观锁</th>
+<th>乐观锁</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>概念</td>
+<td>假定会发生并发冲突，屏蔽一切可能违反数据完整性的操作</td>
+<td>假设不会发生并发冲突，只在提交操作时检查是否违反数据完整性</td>
+</tr>
+<tr>
+<td>实现机制</td>
+<td>查询时查询锁住记录使得其他事务不能查询，更不能更新</td>
+<td>提交更新时检查版本号或者时间戳是否符合</td>
+</tr>
+<tr>
+<td>实现方式</td>
+<td>表锁、行锁等</td>
+<td>使用查版本号或者时间戳进行比较</td>
+</tr>
+<tr>
+<td>实现者</td>
+<td>数据库本身</td>
+<td>开发者</td>
+</tr>
+<tr>
+<td>适用场景</td>
+<td>并发量大（因为容易产生冲突）</td>
+<td>并发量小（因为不容易产生冲突）</td>
+</tr>
+</tbody></table>
+<h2 id="数据库事务的概念和特性"><a href="#数据库事务的概念和特性" class="headerlink" title="数据库事务的概念和特性"></a>数据库事务的概念和特性</h2><p>数据库的事务（Transaction）是一种机制、一个操作序列，包含了一组数据库操作命令。事务把所有的命令作为一个整体一起向系统提交或撤销操作请求，即这一组数据库命令要么都执行，要么都不执行，因此事务是一个不可分割的工作逻辑单元。</p>
+<p>在数据库系统上执行并发操作时，事务是作为最小的控制单元来使用的，特别适用于多用户同时操作的数据库系统。例如，航空公司的订票系统、银行、保险公司以及证券交易系统等。</p>
+<p>事务具有 4 个特性，即原子性（Atomicity）、一致性（Consistency）、隔离性（Isolation）和持久性（Durability），这 4 个特性通常简称为 ACID。</p>
+<p><strong>原子性（Atomicity）</strong>：事务作为一个整体被执行，包含在其中的对数据库的操作要么全部被执行，要么都不执行。<br><strong>一致性（Consistency）</strong>：事务应确保数据库的状态从一个一致状态转变为另一个一致状态。一致状态的含义是数据库中的数据应满足完整性约束。<br><strong>隔离性（Isolation）</strong>：多个事务并发执行时，一个事务的执行不应影响其他事务的执行。<br><strong>持久性（Durability）</strong>：一个事务一旦提交，他对数据库的修改应该永久保存在数据库中。</p>
+<h2 id="数据库事务并发问题"><a href="#数据库事务并发问题" class="headerlink" title="数据库事务并发问题"></a>数据库事务并发问题</h2><p><strong>1) 脏读</strong><br>脏读是指一个事务正在访问数据，并且对数据进行了修改，但是这种修改还没有提交到数据库中，这时，另外一个事务也访问这个数据，然后使用了这个数据。</p>
+<p><strong>2) 不可重复读</strong><br>不可重复读是指在一个事务内，多次读取同一个数据。在这个事务还没有结束时，另外一个事务也访问了该同一数据。那么，在第一个事务中的两次读数据之间，由于第二个事务的修改，那么第一个事务两次读到的的数据可能是不一样的。这样在一个事务内两次读到的数据是不一样的，因此称为是不可重复读。</p>
+<p><strong>3) 幻读</strong><br>幻读是指当事务不是独立执行时发生的一种现象，例如第一个事务对一个表中的数据进行了修改，这种修改涉及到表中的全部数据行。同时，第二个事务也修改这个表中的数据，这种修改是向表中插入一行新数据。那么，以后就会发生操作第一个事务的用户发现表中还有没有修改的数据行，就好象发生了幻觉一样。</p>
+<h2 id="数据库事务隔离级别"><a href="#数据库事务隔离级别" class="headerlink" title="数据库事务隔离级别"></a>数据库事务隔离级别</h2><p>MySQL 包括的事务隔离级别如下：</p>
+<ul>
+<li>读未提交（READ UNCOMITTED）</li>
+<li>读提交（READ COMMITTED）</li>
+<li>可重复读（REPEATABLE READ）</li>
+<li>串行化（SERIALIZABLE）</li>
+</ul>
+<p>MySQL 事务隔离级别解决的问题如下表所示：</p>
+<table>
+<thead>
+<tr>
+<th>隔离级别</th>
+<th>脏读</th>
+<th>不可重复读</th>
+<th>幻读</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>READ UNCOMITTED</td>
+<td>×</td>
+<td>×</td>
+<td>×</td>
+</tr>
+<tr>
+<td>READ COMMITTED</td>
+<td>√</td>
+<td>×</td>
+<td>×</td>
+</tr>
+<tr>
+<td>REPEATABLE READ</td>
+<td>√</td>
+<td>√</td>
+<td>×</td>
+</tr>
+<tr>
+<td>SERIALIZABLE</td>
+<td>√</td>
+<td>√</td>
+<td>√</td>
+</tr>
+</tbody></table>
+<p>MySQL 的事务的隔离级别由低到高分别为 READ UNCOMITTED、READ COMMITTED、REPEATABLE READ、SERIALIZABLE。低级别的隔离级别可以支持更高的并发处理，同时占用的系统资源更少。</p>
+<p><strong>读未提交（READ UNCOMITTED，RU）</strong><br>顾名思义，读未提交就是可以读到未提交的内容。</p>
+<p>如果一个事务读取到了另一个未提交事务修改过的数据，那么这种隔离级别就称之为读未提交。</p>
+<p>在该隔离级别下，所有事务都可以看到其它未提交事务的执行结果。因为它的性能与其他隔离级别相比没有高多少，所以一般情况下，该隔离级别在实际应用中很少使用。</p>
+<p><strong>读提交（READ COMMITTED，RC）</strong><br>顾名思义，读提交就是只能读到已经提交了的内容。</p>
+<p>如果一个事务只能读取到另一个已提交事务修改过的数据，并且其它事务每对该数据进行一次修改并提交后，该事务都能查询得到最新值，那么这种隔离级别就称之为读提交。</p>
+<p>该隔离级别满足了隔离的简单定义：一个事务从开始到提交前所做的任何改变都是不可见的，事务只能读取到已经提交的事务所做的改变。</p>
+<p><strong>这是大多数数据库系统的默认事务隔离级别（例如 Oracle、SQL Server）</strong>，但不是 MySQL 默认的。</p>
+<p><strong>可重复读（REPEATABLE READ，RR）</strong><br>顾名思义，可重复读是专门针对不可重复读这种情况而制定的隔离级别，可以有效的避免不可重复读。</p>
+<p>在一些场景中，一个事务只能读取到另一个已提交事务修改过的数据，但是第一次读过某条记录后，即使其它事务修改了该记录的值并且提交，之后该事务再读该条记录时，读到的仍是第一次读到的值，而不是每次都读到不同的数据。那么这种隔离级别就称之为可重复读。</p>
+<p><strong>可重复读是 MySQL 的默认事务隔离级别</strong>，它能确保同一事务的多个实例在并发读取数据时，会看到同样的数据行。在该隔离级别下，如果有事务正在读取数据，就不允许有其它事务进行修改操作，这样就解决了可重复读问题。</p>
+<p><strong>串行化（SERIALIZABLE）</strong><br>如果一个事务先根据某些条件查询出一些记录，之后另一个事务又向表中插入了符合这些条件的记录，原先的事务再次按照该条件查询时，能把另一个事务插入的记录也读出来。那么这种隔离级别就称之为串行化。</p>
+<p>SERIALIZABLE 是最高的事务隔离级别，主要通过强制事务排序来解决幻读问题。简单来说，就是在每个读取的数据行上加上共享锁实现，这样就避免了脏读、不可重复读和幻读等问题。但是该事务隔离级别执行效率低下，且性能开销也最大，所以一般情况下不推荐使用。</p>
+<h2 id="数据库如何保证ACID（ACID实现原理）"><a href="#数据库如何保证ACID（ACID实现原理）" class="headerlink" title="数据库如何保证ACID（ACID实现原理）"></a>数据库如何保证ACID（ACID实现原理）</h2><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/kismetv/p/10331633.html">参考链接</a></p>
+<h3 id="原子性实现原理"><a href="#原子性实现原理" class="headerlink" title="原子性实现原理"></a>原子性实现原理</h3><p>实现原子性的关键，是当事务回滚时能够撤销所有已经成功执行的sql语句。InnoDB实现回滚，靠的是<strong>undo log</strong>(回滚日志)：当事务对数据库进行修改时，InnoDB会生成对应的undo log；如果事务执行失败或调用了rollback，导致事务需要回滚，便可以利用undo log中的信息将数据回滚到修改之前的样子。</p>
+<blockquote>
+<p>undo log属于逻辑日志，它记录的是sql执行相关的信息。当发生回滚时，InnoDB会根据undo log的内容做与之前相反的工作：对于每个insert，回滚时会执行delete；对于每个delete，回滚时会执行insert；对于每个update，回滚时会执行一个相反的update，把数据改回去。</p>
+<p>以update操作为例：当事务执行update时，其生成的undo log中会包含被修改行的主键(以便知道修改了哪些行)、修改了哪些列、这些列在修改前后的值等信息，回滚时便可以使用这些信息将数据还原到update之前的状态。</p>
+</blockquote>
+<h3 id="持久性实现原理"><a href="#持久性实现原理" class="headerlink" title="持久性实现原理"></a>持久性实现原理</h3><p>InnoDB作为MySQL的存储引擎，数据是存放在磁盘中的，但如果每次读写数据都需要磁盘IO，效率会很低。为此，InnoDB提供了缓存(Buffer Pool)，Buffer Pool中包含了磁盘中部分数据页的映射，作为访问数据库的缓冲：当从数据库读取数据时，会首先从Buffer Pool中读取，如果Buffer Pool中没有，则从磁盘读取后放入Buffer Pool；当向数据库写入数据时，会首先写入Buffer Pool，Buffer Pool中修改的数据会定期刷新到磁盘中（这一过程称为刷脏）。</p>
+<p>Buffer Pool的使用大大提高了读写数据的效率，但是也带了新的问题：如果MySQL宕机，而此时Buffer Pool中修改的数据还没有刷新到磁盘，就会导致数据的丢失，事务的持久性无法保证。</p>
+<p>于是，<strong>redo log</strong>(重做日志)被引入来解决这个问题：当数据修改时，除了修改Buffer Pool中的数据，还会在redo log记录这次操作；当事务提交时，会调用fsync接口对redo log进行刷盘。如果MySQL宕机，重启时可以读取redo log中的数据，对数据库进行恢复。redo log采用的是WAL（Write-ahead logging，预写式日志），所有修改先写入日志，再更新到Buffer Pool，保证了数据不会因MySQL宕机而丢失，从而满足了持久性要求。</p>
+<blockquote>
+<p>既然redo log也需要在事务提交时将日志写入磁盘，为什么它比直接将Buffer Pool中修改的数据写入磁盘(即刷脏)要快呢？主要有以下两方面的原因：</p>
+<p>（1）刷脏是随机IO，因为每次修改的数据位置随机，但写redo log是追加操作，属于顺序IO。</p>
+<p>（2）刷脏是以数据页（Page）为单位的，MySQL默认页大小是16KB，一个Page上一个小修改都要整页写入；而redo log中只包含真正需要写入的部分，无效IO大大减少。</p>
+</blockquote>
+<h3 id="隔离性实现原理"><a href="#隔离性实现原理" class="headerlink" title="隔离性实现原理"></a>隔离性实现原理</h3><p>隔离性的探讨，主要可以分为两个方面：</p>
+<ul>
+<li>(一个事务)写操作对(另一个事务)写操作的影响：锁机制保证隔离性</li>
+<li>(一个事务)写操作对(另一个事务)读操作的影响：MVCC保证隔离性</li>
+</ul>
+<p>数据锁机制</p>
+<p>MVCC全称Multi-Version Concurrency Control，即多版本的并发控制协议。下面的例子很好的体现了MVCC的特点：在同一时刻，不同的事务读取到的数据可能是不同的(即多版本)——在T5时刻，事务A和事务C可以读取到不同版本的数据。</p>
+<img src="/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/2.png" class="" title="图片">
+
+<p>MVCC最大的优点是读不加锁，因此读写不冲突，并发性能好。InnoDB实现MVCC，多个版本的数据可以共存，主要基于以下技术及数据结构：</p>
+<ol>
+<li><p>隐藏列：InnoDB中每行数据都有隐藏列，隐藏列中包含了本行数据的事务id、指向undo log的指针等。</p>
+</li>
+<li><p>基于undo log的版本链：前面说到每行数据的隐藏列中包含了指向undo log的指针，而每条undo log也会指向更早版本的undo log，从而形成一条版本链。</p>
+</li>
+<li><p>ReadView：通过隐藏列和版本链，MySQL可以将数据恢复到指定版本；但是具体要恢复到哪个版本，则需要根据ReadView来确定。所谓ReadView，是指事务（记做事务A）在某一时刻给整个事务系统（trx_sys）打快照，之后再进行读操作时，会将读取到的数据中的事务id与trx_sys快照比较，从而判断数据对该ReadView是否可见，即对事务A是否可见。</p>
+<p>trx_sys中的主要内容，以及判断可见性的方法如下：</p>
+</li>
+</ol>
+<ul>
+<li>low_limit_id：表示生成ReadView时系统中应该分配给下一个事务的id。如果数据的事务id大于等于low_limit_id，则对该ReadView不可见。</li>
+<li>up_limit_id：表示生成ReadView时当前系统中活跃的读写事务中最小的事务id。如果数据的事务id小于up_limit_id，则对该ReadView可见。</li>
+<li>rw_trx_ids：表示生成ReadView时当前系统中活跃的读写事务的事务id列表。如果数据的事务id在low_limit_id和up_limit_id之间，则需要判断事务id是否在rw_trx_ids中：如果在，说明生成ReadView时事务仍在活跃中，因此数据对ReadView不可见；如果不在，说明生成ReadView时事务已经提交了，因此数据对ReadView可见。</li>
+</ul>
+<p>下面<strong>以RR隔离级别为例</strong>，结合前文提到的几个问题分别说明。</p>
+<p>（1）脏读</p>
+<img src="/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/3.png" class="" title="图片">
+
+<p>当事务A在T3时刻读取zhangsan的余额前，会生成ReadView，由于此时事务B没有提交仍然活跃，因此其事务id一定在ReadView的rw_trx_ids中，因此根据前面介绍的规则，事务B的修改对ReadView不可见。接下来，事务A根据指针指向的undo log查询上一版本的数据，得到zhangsan的余额为100。这样事务A就避免了脏读。</p>
+<p>（2）不可重复读</p>
+<img src="/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/4.png" class="" title="图片">
+
+<p>当事务A在T2时刻读取zhangsan的余额前，会生成ReadView。此时事务B分两种情况讨论，一种是如图中所示，事务已经开始但没有提交，此时其事务id在ReadView的rw_trx_ids中；一种是事务B还没有开始，此时其事务id大于等于ReadView的low_limit_id。无论是哪种情况，根据前面介绍的规则，事务B的修改对ReadView都不可见。</p>
+<p>当事务A在T5时刻再次读取zhangsan的余额时，会根据T2时刻生成的ReadView对数据的可见性进行判断，从而判断出事务B的修改不可见；因此事务A根据指针指向的undo log查询上一版本的数据，得到zhangsan的余额为100，从而避免了不可重复读。</p>
+<p>（3）幻读</p>
+<img src="/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/5.png" class="" title="图片">
+
+<p>MVCC避免幻读的机制与避免不可重复读非常类似。</p>
+<p>当事务A在T2时刻读取0&lt;id&lt;5的用户余额前，会生成ReadView。此时事务B分两种情况讨论，一种是如图中所示，事务已经开始但没有提交，此时其事务id在ReadView的rw_trx_ids中；一种是事务B还没有开始，此时其事务id大于等于ReadView的low_limit_id。无论是哪种情况，根据前面介绍的规则，事务B的修改对ReadView都不可见。</p>
+<p>当事务A在T5时刻再次读取0&lt;id&lt;5的用户余额时，会根据T2时刻生成的ReadView对数据的可见性进行判断，从而判断出事务B的修改不可见。因此对于新插入的数据lisi(id=2)，事务A根据其指针指向的undo log查询上一版本的数据，发现该数据并不存在，从而避免了幻读。</p>
+<p>加锁读在查询时会对查询的数据加锁（共享锁或排它锁）。由于锁的特性，当某事务对数据进行加锁读后，其他事务无法对数据进行写操作，因此可以避免脏读和不可重复读。而避免幻读，则需要通过next-key lock。next-key lock是行锁的一种，实现相当于record lock(记录锁) + gap lock(间隙锁)；其特点是不仅会锁住记录本身(record lock的功能)，还会锁定一个范围(gap lock的功能)。因此，加锁读同样可以避免脏读、不可重复读和幻读，保证隔离性。</p>
+<h3 id="一致性实现原理"><a href="#一致性实现原理" class="headerlink" title="一致性实现原理"></a>一致性实现原理</h3><p>可以说，一致性是事务追求的最终目标：前面提到的原子性、持久性和隔离性，都是为了保证数据库状态的一致性。此外，除了数据库层面的保障，一致性的实现也需要应用层面进行保障。</p>
+<p>实现一致性的措施包括：</p>
+<ul>
+<li>保证原子性、持久性和隔离性，如果这些特性无法保证，事务的一致性也无法保证</li>
+<li>数据库本身提供保障，例如不允许向整形列插入字符串值、字符串长度不能超过列的限制等</li>
+<li>应用层面进行保障，例如如果转账操作只扣除转账者的余额，而没有增加接收者的余额，无论数据库实现的多么完美，也无法保证状态的一致</li>
+</ul>
+<h2 id="数据库三大范式"><a href="#数据库三大范式" class="headerlink" title="数据库三大范式"></a>数据库三大范式</h2><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/linjiqin/archive/2012/04/01/2428695.html">参考链接</a></p>
+<p>1．第一范式(确保每列保持原子性)</p>
+<p>第一范式是最基本的范式。如果数据库表中的所有字段值都是不可分解的原子值，就说明该数据库表满足了第一范式。</p>
+<p>第一范式的合理遵循需要根据系统的实际需求来定。比如某些数据库系统中需要用到“地址”这个属性，本来直接将“地址”属性设计成一个数据库表的字段就行。但是如果系统经常会访问“地址”属性中的“城市”部分，那么就非要将“地址”这个属性重新拆分为省份、城市、详细地址等多个部分进行存储，这样在对地址中某一部分操作的时候将非常方便。</p>
+<p>2．第二范式(确保表中的每列都和主键相关)</p>
+<p>第二范式在第一范式的基础之上更进一层。第二范式需要确保数据库表中的每一列都和主键相关，而不能只与主键的某一部分相关（主要针对联合主键而言）。也就是说在一个数据库表中，一个表中只能保存一种数据，不可以把多种数据保存在同一张数据库表中。</p>
+<p>3．第三范式(确保每列都和主键列直接相关,而不是间接相关)</p>
+<p>第三范式需要确保数据表中的每一列数据都和主键直接相关，而不能间接相关。</p>
+<p>比如在设计一个订单数据表的时候，可以将客户编号作为一个外键和订单表建立相应的关系。而不可以在订单表中添加关于客户其它信息（比如姓名、所属公司等）的字段。</p>
+<h2 id="数据库索引优化"><a href="#数据库索引优化" class="headerlink" title="数据库索引优化"></a>数据库索引优化</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/yangxingpa/article/details/81477607">参考链接</a></p>
+<ul>
+<li>最左前缀匹配原则</li>
+<li>主键外检一定要建索引</li>
+<li>对 where,on,group by,order by 中出现的列使用索引</li>
+<li>尽量选择区分度高的列作为索引,区分度的公式是count(distinct col)/count(*)，表示字段不重复的比例，比例越大我们扫描的记录数越少，唯一键的区分度是1，而一些状态、性别字段可能在大数据面前区分度就是0</li>
+<li>对较小的数据列使用索引,这样会使索引文件更小,同时内存中也可以装载更多的索引键</li>
+<li>索引列不能参与计算，保持列“干净”，比如<code>from_unixtime(create_time) = ’2014-05-29’</code>就不能使用到索引，原因很简单，b+树中存的都是数据表中的字段值，但进行检索时，需要把所有元素都应用函数才能比较，显然成本太大。所以语句应该写成<code>create_time = unix_timestamp(’2014-05-29’)</code>;</li>
+<li>为较长的字符串使用前缀索引</li>
+<li>尽量的扩展索引，不要新建索引。比如表中已经有a的索引，现在要加(a,b)的索引，那么只需要修改原来的索引即可</li>
+<li>不要过多创建索引, 权衡索引个数与DML之间关系，DML也就是插入、删除数据操作。这里需要权衡一个问题，建立索引的目的是为了提高查询效率的，但建立的索引过多，会影响插入、删除数据的速度，因为我们修改的表数据，索引也需要进行调整重建</li>
+<li>对于like查询，”%”不要放在前面。<br><code>SELECT * FROM</code>houdunwang<code>WHERE</code>uname<code>LIKE'后盾%' -- 走索引</code><br><code>SELECT * FROM</code>houdunwang<code>WHERE</code>uname<code>LIKE "%后盾%" -- 不走索引</code></li>
+<li>查询where条件数据类型不匹配也无法使用索引<br>字符串与数字比较不使用索引;<br><code>CREATE TABLE</code>a<code>(</code>a<code>char(10));</code><br><code>EXPLAIN SELECT * FROM</code>a<code>WHERE</code>a<code>="1"</code> – 走索引<br>EXPLAIN SELECT * FROM <code>a</code> WHERE <code>a</code>=1 – 不走索引<br>正则表达式不使用索引,这应该很好理解,所以为什么在SQL中很难看到regexp关键字的原因</li>
+</ul>
+<h2 id="为什么要用Redis而不直接用Map做缓存"><a href="#为什么要用Redis而不直接用Map做缓存" class="headerlink" title="为什么要用Redis而不直接用Map做缓存?"></a>为什么要用Redis而不直接用Map做缓存?</h2><p>缓存分为本地缓存和分布式缓存。以java为例，使用自带的map或者guava实现的是本地缓存，最主要的特点是轻量以及快速，生命周期随着jvm的销毁而结束，并且在多实例的情况下，每个实例都需要各自保存一份缓存，缓存不具有一致性。</p>
+<p>使用redis或memcached之类的称为分布式缓存，在多实例的情况下，各实例共用一份缓存数据，缓存具有一致性。缺点是需要保持redis或memcached服务的高可用，整个程序架构上较为复杂。</p>
+<p>当然如果只是将少量数据保存作为缓存并且没有持久化的需求，那么完全可以用Map做缓存。</p>
+<p>详细的区别：</p>
+<ol>
+<li><p>Redis 可以用几十 G 内存来做缓存，Map 不行，一般 JVM 也就分几个 G 数据就够大了</p>
+</li>
+<li><p>Redis 的缓存可以持久化，Map 是内存对象，程序一重启数据就没了</p>
+</li>
+<li><p>Redis 可以实现分布式的缓存，Map 只能存在创建它的程序里</p>
+</li>
+<li><p>Redis 单点吞吐量能达到10万级，是专业的缓存服务，Map 只是一个普通的对象</p>
+</li>
+<li><p>Redis 缓存有过期机制，Map 本身无此功能</p>
+</li>
+<li><p>Redis 有丰富的 API，Map 就简单太多了</p>
+</li>
+</ol>
+<h2 id="使用redis有哪些好处？"><a href="#使用redis有哪些好处？" class="headerlink" title="使用redis有哪些好处？"></a>使用redis有哪些好处？</h2><ol>
+<li><p>速度快，因为数据存在内存中，类似于HashMap，HashMap的优势就是查找和操作的时间复杂度都是O(1)</p>
+</li>
+<li><p>支持丰富数据类型，支持string，list，set，sorted set，hash</p>
+</li>
+<li><p>支持事务，操作都是原子性，所谓的原子性就是对数据的更改要么全部执行，要么全部不执行</p>
+</li>
+<li><p> 丰富的特性：可用于缓存，消息，按key设置过期时间，过期后将会自动删除</p>
+</li>
+</ol>
+<h2 id="Memcache与Redis的区别都有哪些？"><a href="#Memcache与Redis的区别都有哪些？" class="headerlink" title="Memcache与Redis的区别都有哪些？"></a>Memcache与Redis的区别都有哪些？</h2><ol>
+<li>存储方式</li>
+</ol>
+<p>Memecache把数据全部存在内存之中，断电后会挂掉，数据不能超过内存大小。</p>
+<p>Redis有部份存在硬盘上，这样能保证数据的持久性。</p>
+<ol start="2">
+<li>数据支持类型</li>
+</ol>
+<p>Memcache对数据类型支持相对简单。</p>
+<p>Redis有复杂的数据类型。</p>
+<ol start="3">
+<li>使用底层模型不同</li>
+</ol>
+<p>它们之间底层实现方式 以及与客户端之间通信的应用协议不一样。</p>
+<p>Redis直接自己构建了VM 机制 ，因为一般的系统调用系统函数的话，会浪费一定的时间去移动和请求。</p>
+<ol start="4">
+<li>value大小</li>
+</ol>
+<p>redis最大可以达到1GB，而memcache只有1MB</p>
+<h2 id="redis相比memcached有哪些优势？"><a href="#redis相比memcached有哪些优势？" class="headerlink" title="redis相比memcached有哪些优势？"></a>redis相比memcached有哪些优势？</h2><ol>
+<li><p>memcached所有的值均是简单的字符串，redis作为其替代者，支持更为丰富的数据类型</p>
+</li>
+<li><p> redis的速度比memcached快很多</p>
+</li>
+<li><p>redis可以持久化其数据</p>
+</li>
+</ol>
+<h2 id="Redis五种数据结构"><a href="#Redis五种数据结构" class="headerlink" title="Redis五种数据结构"></a>Redis五种数据结构</h2><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/haoprogrammer/p/11065461.html">参考链接</a></p>
+<h3 id="String-字符串"><a href="#String-字符串" class="headerlink" title="String (字符串)"></a>String (字符串)</h3><p>是redis中最基本的数据类型，一个key对应一个value。</p>
+<p>String类型是二进制安全的，意思是 redis 的 string 可以包含任何数据。如数字，字符串，jpg图片或者序列化的对象。</p>
+<p>实战场景：</p>
+<p>1.缓存： 经典使用场景，把常用信息，字符串，图片或者视频等信息放到redis中，redis作为缓存层，mysql做持久化层，降低mysql的读写压力。</p>
+<p>2.计数器：redis是单线程模型，一个命令执行完才会执行下一个，同时数据可以一步落地到其他的数据源。</p>
+<p>3.session：常见方案spring session + redis实现session共享。</p>
+<h3 id="Hash-哈希"><a href="#Hash-哈希" class="headerlink" title="Hash (哈希)"></a>Hash (哈希)</h3><p>是一个Mapmap，指值本身又是一种键值对结构，如 value={{field1,value1},......fieldN,valueN}}</p>
+<p>实战场景：</p>
+<p>1.缓存： 能直观，相比string更节省空间，的维护缓存信息，如用户信息，视频信息等。</p>
+<h3 id="List-链表"><a href="#List-链表" class="headerlink" title="List (链表)"></a>List (链表)</h3><p>List 说白了就是链表（redis 使用双端链表实现的 List），是有序的，value可以重复，可以通过下标取出对应的value值，左右两边都能进行插入和删除数据。</p>
+<p>实战场景：</p>
+<p>1.timeline：例如微博的时间轴，有人发布微博，用lpush加入时间轴，展示新的列表信息。</p>
+<h3 id="Set-集合"><a href="#Set-集合" class="headerlink" title="Set (集合)"></a>Set (集合)</h3><p>集合类型也是用来保存多个字符串的元素，但和列表不同的是集合中  1. 不允许有重复的元素，2.集合中的元素是无序的，不能通过索引下标获取元素，3.支持集合间的操作，可以取多个集合取交集、并集、差集。</p>
+<p>实战场景;</p>
+<p>1.标签（tag）,给用户添加标签，或者用户给消息添加标签，这样有同一标签或者类似标签的可以给推荐关注的事或者关注的人。</p>
+<p>2.点赞，或点踩，收藏等，可以放到set中实现</p>
+<h3 id="zset-有序集合"><a href="#zset-有序集合" class="headerlink" title="zset (有序集合)"></a>zset (有序集合)</h3><p>有序集合和集合有着必然的联系，保留了集合不能有重复成员的特性，区别是，有序集合中的元素是可以排序的，它给每个元素设置一个分数，作为排序的依据。</p>
+<blockquote>
+<p>有序集合中的元素不可以重复，但是score 分数 可以重复，就和一个班里的同学学号不能重复，但考试成绩可以相同</p>
+</blockquote>
+<p>实战场景：</p>
+<p>1.排行榜：有序集合经典使用场景。例如小说视频等网站需要对用户上传的小说视频做排行榜，榜单可以按照用户关注数，更新时间，字数等打分，做排行。</p>
+<h2 id="RDB与AOF"><a href="#RDB与AOF" class="headerlink" title="RDB与AOF"></a>RDB与AOF</h2><p><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000016021217">参考链接1</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/itdragon/p/7906481.html">参考链接2</a></p>
+<p>RDB（Redis DataBase）与AOF（Append Only File）都是Redis持久化的实现方式。</p>
+<h3 id="RDB"><a href="#RDB" class="headerlink" title="RDB"></a>RDB</h3><h4 id="RDB简介"><a href="#RDB简介" class="headerlink" title="RDB简介"></a>RDB简介</h4><p>RDB持久化方式能够在指定的时间间隔能对你的数据进行快照存储。<br>在默认情况下， Redis 将数据库快照保存在名字为 dump.rdb的二进制文件中。<br>在 Redis 运行时， RDB 程序将当前内存中的数据库快照保存到磁盘文件中， 在 Redis 重启动时， RDB 程序可以通过载入 RDB 文件来还原数据库的状态。</p>
+<h4 id="RDB的三种主要触发机制"><a href="#RDB的三种主要触发机制" class="headerlink" title="RDB的三种主要触发机制"></a>RDB的三种主要触发机制</h4><ol>
+<li>save命令（同步数据到磁盘上）</li>
+</ol>
+<p>save 命令执行一个同步操作，以RDB文件的方式保存所有数据的快照。</p>
+<p>由于 save 命令是同步命令，会占用Redis的主进程。若Redis数据非常多时，save命令执行速度会非常慢，阻塞所有客户端的请求。<br>因此很少在生产环境直接使用SAVE 命令，可以使用BGSAVE 命令代替。如果在BGSAVE命令的保存数据的子进程发生错误的时，用 SAVE命令保存最新的数据是最后的手段。</p>
+<ol start="2">
+<li>bgsave命令（异步保存数据到磁盘上）</li>
+</ol>
+<p>bgsave 命令执行一个异步操作，以RDB文件的方式保存所有数据的快照。</p>
+<p>Redis使用Linux系统的fock()生成一个子进程来将DB数据保存到磁盘，主进程继续提供服务以供客户端调用。<br>如果操作成功，可以通过客户端命令LASTSAVE来检查操作结果。</p>
+<img src="/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/1.jfif" class="" title="图片">
+
+<h4 id="save-与-bgsave-对比"><a href="#save-与-bgsave-对比" class="headerlink" title="save 与 bgsave 对比"></a><strong><code>save</code> 与 <code>bgsave</code> 对比</strong></h4><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>save</th>
+<th>bgsave</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>IO类型</td>
+<td>同步</td>
+<td>异步</td>
+</tr>
+<tr>
+<td>阻塞？</td>
+<td>是</td>
+<td>是（阻塞发生在fock()，通常非常快）</td>
+</tr>
+<tr>
+<td>复杂度</td>
+<td>O(n)</td>
+<td>O(n)</td>
+</tr>
+<tr>
+<td>优点</td>
+<td>不会消耗额外的内存</td>
+<td>不阻塞客户端命令</td>
+</tr>
+<tr>
+<td>缺点</td>
+<td>阻塞客户端命令</td>
+<td>需要fock子进程，消耗内存</td>
+</tr>
+</tbody></table>
+<ol start="3">
+<li>自动生成RDB</li>
+</ol>
+<p>除了手动执行 save 和 bgsave 命令实现RDB持久化以外，Redis还提供了自动自动生成RDB的方式。</p>
+<p>你可以通过配置文件对 Redis 进行设置， 让它在“ N 秒内数据集至少有 M 个改动”这一条件被满足时， 自动进行数据集保存操作。<br>比如说， 以下设置会让 Redis 在满足“ 60 秒内有至少有 1000 个键被改动”这一条件时， 自动进行数据集保存操作:</p>
+<p><code>save 60 1000</code></p>
+<img src="/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/2.jfif" class="" title="图片">
+
+<h4 id="RDB相关配置"><a href="#RDB相关配置" class="headerlink" title="RDB相关配置"></a>RDB相关配置</h4><figure class="highlight python"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># RDB自动持久化规则</span></span><br><span class="line"><span class="comment"># 当 900 秒内有至少有 1 个键被改动时，自动进行数据集保存操作</span></span><br><span class="line">save <span class="number">900</span> <span class="number">1</span></span><br><span class="line"><span class="comment"># 当 300 秒内有至少有 10 个键被改动时，自动进行数据集保存操作</span></span><br><span class="line">save <span class="number">300</span> <span class="number">10</span></span><br><span class="line"><span class="comment"># 当 60 秒内有至少有 10000 个键被改动时，自动进行数据集保存操作</span></span><br><span class="line">save <span class="number">60</span> <span class="number">10000</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># RDB持久化文件名</span></span><br><span class="line">dbfilename dump-&lt;port&gt;.rdb</span><br><span class="line"></span><br><span class="line"><span class="comment"># 数据持久化文件存储目录</span></span><br><span class="line"><span class="built_in">dir</span> /var/lib/redis</span><br><span class="line"></span><br><span class="line"><span class="comment"># bgsave发生错误时是否停止写入，通常为yes</span></span><br><span class="line">stop-writes-on-bgsave-error yes</span><br><span class="line"></span><br><span class="line"><span class="comment"># rdb文件是否使用压缩格式</span></span><br><span class="line">rdbcompression yes</span><br><span class="line"></span><br><span class="line"><span class="comment"># 是否对rdb文件进行校验和检验，通常为yes</span></span><br><span class="line">rdbchecksum yes</span><br></pre></td></tr></tbody></table></figure>
+
+<h4 id="RDB的优点"><a href="#RDB的优点" class="headerlink" title="RDB的优点"></a>RDB的优点</h4><ol>
+<li>RDB是一个非常紧凑的文件，它保存了某个时间点得数据集，非常适用于数据集的备份，比如你可以在每个小时报保存一下过去24小时内的数据，同时每天保存过去30天的数据，这样即使出了问题你也可以根据需求恢复到不同版本的数据集。</li>
+<li>RDB是一个紧凑的单一文件，很方便传送到另一个远端数据中心或者亚马逊的S3（可能加密），非常适用于灾难恢复。</li>
+<li>RDB在保存RDB文件时父进程唯一需要做的就是fork出一个子进程，接下来的工作全部由子进程来做，父进程不需要再做其他IO操作，所以RDB持久化方式可以最大化redis的性能。</li>
+<li>与AOF相比，在恢复大的数据集的时候，RDB方式会更快一些。</li>
+</ol>
+<h4 id="RDB的缺点"><a href="#RDB的缺点" class="headerlink" title="RDB的缺点"></a>RDB的缺点</h4><ol>
+<li>耗时、耗性能。RDB 需要经常fork子进程来保存数据集到硬盘上，当数据集比较大的时候，fork的过程是非常耗时的，可能会导致Redis在一些毫秒级内不能响应客户端的请求。如果数据集巨大并且CPU性能不是很好的情况下，这种情况会持续1秒，AOF也需要fork，但是你可以调节重写日志文件的频率来提高数据集的耐久度。</li>
+<li>不可控、丢失数据。如果你希望在redis意外停止工作（例如电源中断）的情况下丢失的数据最少的话，那么RDB不适合你。虽然你可以配置不同的save时间点(例如每隔5分钟并且对数据集有100个写的操作)，但是Redis要完整的保存整个数据集是一个比较繁重的工作，你通常会每隔5分钟或者更久做一次完整的保存，万一在Redis意外宕机，你可能会丢失几分钟的数据。</li>
+</ol>
+<h3 id="AOF"><a href="#AOF" class="headerlink" title="AOF"></a>AOF</h3><h4 id="AOF简介"><a href="#AOF简介" class="headerlink" title="AOF简介"></a>AOF简介</h4><p>快照功能（RDB）并不是非常耐久（durable）： 如果 Redis 因为某些原因而造成故障停机， 那么服务器将丢失最近写入、且仍未保存到快照中的那些数据。 从 1.1 版本开始， Redis 增加了一种完全耐久的持久化方式： AOF 持久化。<br>你可以在配置文件中打开AOF方式:</p>
+<figure class="highlight python"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">appendonly yes</span><br></pre></td></tr></tbody></table></figure>
+
+<p>打开AOF后， 每当 Redis 执行一个改变数据集的命令时（比如 SET）， 这个命令就会被追加到 AOF 文件的末尾。这样的话， 当 Redis 重新启时， 程序就可以通过重新执行 AOF 文件中的命令来达到重建数据集的目的。</p>
+<h4 id="AOF持久化的三种策略"><a href="#AOF持久化的三种策略" class="headerlink" title="AOF持久化的三种策略"></a>AOF持久化的三种策略</h4><p>你可以通过配置文件配置 Redis 多久才将数据 fsync 到磁盘一次。</p>
+<p><strong>always</strong>: 每次有新命令追加到 AOF 文件时就执行一次 fsync ：非常慢，也非常安全。</p>
+<p><strong>everysec</strong>: 每秒 fsync 一次：足够快（和使用 RDB 持久化差不多），并且在故障时只会丢失 1 秒钟的数据。<br>推荐（并且也是默认）的措施为每秒 fsync 一次， 这种 fsync 策略可以兼顾速度和安全性。</p>
+<p><strong>no</strong>: 从不 fsync ：将数据交给操作系统来处理，由操作系统来决定什么时候同步数据。更快，也更不安全的选择。</p>
+<h4 id="always、everysec、no对比"><a href="#always、everysec、no对比" class="headerlink" title="always、everysec、no对比"></a><strong>always、everysec、no对比</strong></h4><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>always</td>
+<td>不丢失数据</td>
+<td>IO开销大，一般SATA磁盘只有几百TPS</td>
+</tr>
+<tr>
+<td>everysec</td>
+<td>每秒进行与fsync，最多丢失1秒数据</td>
+<td>可能丢失1秒数据</td>
+</tr>
+<tr>
+<td>no</td>
+<td>不用管</td>
+<td>不可控</td>
+</tr>
+</tbody></table>
+<p>推荐（并且也是默认）的措施为每秒 fsync 一次， 这种 fsync 策略可以兼顾速度和安全性。</p>
+<h4 id="AOF重写"><a href="#AOF重写" class="headerlink" title="AOF重写"></a>AOF重写</h4><p>因为 AOF 的运作方式是不断地将命令追加到文件的末尾， 所以随着写入命令的不断增加， AOF 文件的体积也会变得越来越大。举个例子， 如果你对一个计数器调用了 100 次 INCR ， 那么仅仅是为了保存这个计数器的当前值， AOF 文件就需要使用 100 条记录（entry）。然而在实际上， 只使用一条 SET 命令已经足以保存计数器的当前值了， 其余 99 条记录实际上都是多余的。<br>为了处理这种情况， Redis 支持一种有趣的特性： 可以在不打断服务客户端的情况下， 对 AOF 文件进行重建（rebuild）。执行 bgrewriteaof 命令， Redis 将生成一个新的 AOF 文件， 这个文件包含重建当前数据集所需的最少命令。<br>Redis 2.2 需要自己手动执行 bgrewriteaof 命令； Redis 2.4 则可以通过配置自动触发 AOF 重写。</p>
+<p><strong>AOF重写的作用:</strong></p>
+<ul>
+<li>减少磁盘占用量</li>
+<li>加速数据恢复</li>
+</ul>
+<p><strong>AOF重写的实现方式:</strong></p>
+<ol>
+<li>bgrewriteaof 命令</li>
+</ol>
+<p>Redis bgrewriteaof 命令用于异步执行一个 AOF（AppendOnly File）文件重写操作。重写会创建一个当前AOF文件的体积优化版本。<br>即使 bgrewriteaof 执行失败，也不会有任何数据丢失，因为旧的AOF文件在 bgrewriteaof 成功之前不会被修改。<br>AOF 重写由 Redis 自行触发，bgrewriteaof 仅仅用于手动触发重写操作。<br><strong>具体内容:</strong></p>
+<ul>
+<li>如果一个子Redis是通过磁盘快照创建的，AOF重写将会在RDB终止后才开始保存。这种情况下BGREWRITEAOF仍然会返回OK状态码。从Redis 2.6起你可以通过INFO命令查看AOF重写执行情况。</li>
+<li>如果只在执行的AOF重写返回一个错误，AOF重写将会在稍后一点的时间重新调用</li>
+</ul>
+<img src="/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/3.jfif" class="" title="图片">
+
+<ol start="2">
+<li>AOF重写配置</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>配置名</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>auto-aof-rewrite-min-size</td>
+<td>触发AOF文件执行重写的最小尺寸</td>
+</tr>
+<tr>
+<td>auto-aof-rewrite-percentage</td>
+<td>触发AOF文件执行重写的增长率</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>统计名</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>aof_current_size</td>
+<td>AOF文件当前尺寸（字节）</td>
+</tr>
+<tr>
+<td>aof_base_size</td>
+<td>AOF文件上次启动和重写时的尺寸（字节）</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>AOF重写自动触发机制，需要同时满足下面两个条件：</p>
+<ul>
+<li>aof_current_size &gt; auto-aof-rewrite-min-size</li>
+<li>(aof_current_size - aof_base_size) * 100 / aof_base_size &gt; auto-aof-rewrite-percentage</li>
+</ul>
+</blockquote>
+<p>假设 Redis 的配置项为：</p>
+<figure class="highlight python"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">auto-aof-rewrite-<span class="built_in">min</span>-size <span class="number">64</span>mb</span><br><span class="line">auto-aof-rewrite-percentage <span class="number">100</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>当AOF文件的体积大于64Mb，并且AOF文件的体积比上一次重写之久的体积大了至少一倍（100%）时，Redis将执行 bgrewriteaof 命令进行重写。</p>
+<h4 id="AOF相关配置"><a href="#AOF相关配置" class="headerlink" title="AOF相关配置"></a>AOF相关配置</h4><figure class="highlight python"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 开启AOF持久化方式</span></span><br><span class="line">appendonly yes</span><br><span class="line"></span><br><span class="line"><span class="comment"># AOF持久化文件名</span></span><br><span class="line">appendfilename appendonly-&lt;port&gt;.aof</span><br><span class="line"></span><br><span class="line"><span class="comment"># 每秒把缓冲区的数据同步到磁盘</span></span><br><span class="line">appendfsync everysec</span><br><span class="line"></span><br><span class="line"><span class="comment"># 数据持久化文件存储目录</span></span><br><span class="line"><span class="built_in">dir</span> /var/lib/redis</span><br><span class="line"></span><br><span class="line"><span class="comment"># 是否在执行重写时不同步数据到AOF文件</span></span><br><span class="line"><span class="comment"># 这里的 yes，就是执行重写时不同步数据到AOF文件</span></span><br><span class="line">no-appendfsync-on-rewrite yes</span><br><span class="line"></span><br><span class="line"><span class="comment"># 触发AOF文件执行重写的最小尺寸</span></span><br><span class="line">auto-aof-rewrite-<span class="built_in">min</span>-size <span class="number">64</span>mb</span><br><span class="line"></span><br><span class="line"><span class="comment"># 触发AOF文件执行重写的增长率</span></span><br><span class="line">auto-aof-rewrite-percentage <span class="number">100</span></span><br></pre></td></tr></tbody></table></figure>
+
+<h4 id="AOF的优点"><a href="#AOF的优点" class="headerlink" title="AOF的优点"></a>AOF的优点</h4><ol>
+<li>使用AOF 会让你的Redis更加耐久: 你可以使用不同的fsync策略：无fsync，每秒fsync，每次写的时候fsync。使用默认的每秒fsync策略，Redis的性能依然很好(fsync是由后台线程进行处理的，主线程会尽力处理客户端请求)，一旦出现故障，你最多丢失1秒的数据。</li>
+<li>AOF文件是一个只进行追加的日志文件，所以不需要写入seek，即使由于某些原因(磁盘空间已满，写的过程中宕机等等)未执行完整的写入命令，你也也可使用redis-check-aof工具修复这些问题。</li>
+<li>Redis 可以在 AOF 文件体积变得过大时，自动地在后台对 AOF 进行重写： 重写后的新 AOF 文件包含了恢复当前数据集所需的最小命令集合。 整个重写操作是绝对安全的，因为 Redis 在创建新 AOF 文件的过程中，会继续将命令追加到现有的 AOF 文件里面，即使重写过程中发生停机，现有的 AOF 文件也不会丢失。 而一旦新 AOF 文件创建完毕，Redis 就会从旧 AOF 文件切换到新 AOF 文件，并开始对新 AOF 文件进行追加操作。</li>
+<li>AOF 文件有序地保存了对数据库执行的所有写入操作， 这些写入操作以 Redis 协议的格式保存， 因此 AOF 文件的内容非常容易被人读懂， 对文件进行分析（parse）也很轻松。 导出（export） AOF 文件也非常简单： 举个例子， 如果你不小心执行了 FLUSHALL 命令， 但只要 AOF 文件未被重写， 那么只要停止服务器， 移除 AOF 文件末尾的 FLUSHALL 命令， 并重启 Redis ， 就可以将数据集恢复到 FLUSHALL 执行之前的状态。</li>
+</ol>
+<h4 id="AOF的缺点"><a href="#AOF的缺点" class="headerlink" title="AOF的缺点"></a>AOF的缺点</h4><ol>
+<li>对于相同的数据集来说，AOF 文件的体积通常要大于 RDB 文件的体积。</li>
+<li>根据所使用的 fsync 策略，AOF 的速度可能会慢于 RDB 。 在一般情况下， 每秒 fsync 的性能依然非常高， 而关闭 fsync 可以让 AOF 的速度和 RDB 一样快， 即使在高负荷之下也是如此。 不过在处理巨大的写入载入时，RDB 可以提供更有保证的最大延迟时间（latency）。</li>
+</ol>
+<h3 id="RDB-和-AOF-对比"><a href="#RDB-和-AOF-对比" class="headerlink" title="RDB 和 AOF 对比"></a>RDB 和 AOF 对比</h3><table>
+<thead>
+<tr>
+<th>-</th>
+<th>RDB</th>
+<th>AOF</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>启动优先级</td>
+<td>低</td>
+<td>高</td>
+</tr>
+<tr>
+<td>体积</td>
+<td>小</td>
+<td>大</td>
+</tr>
+<tr>
+<td>恢复速度</td>
+<td>快</td>
+<td>慢</td>
+</tr>
+<tr>
+<td>数据安全性</td>
+<td>丢数据</td>
+<td>根据策略决定</td>
+</tr>
+</tbody></table>
+<h3 id="如何选择？"><a href="#如何选择？" class="headerlink" title="如何选择？"></a>如何选择？</h3><p>一般来说， 如果想达到足以媲美 PostgreSQL 的数据安全性， 你应该同时使用两种持久化功能。</p>
+<p>如果你非常关心你的数据， 但仍然可以承受数分钟以内的数据丢失， 那么你可以只使用 RDB 持久化。</p>
+<p>有很多用户都只使用 AOF 持久化， 但并不推荐这种方式： 因为定时生成 RDB 快照（snapshot）非常便于进行数据库备份， 并且 RDB 恢复数据集的速度也要比 AOF 恢复的速度要快。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><ol>
+<li>Redis 默认开启RDB持久化方式，在指定的时间间隔内，执行指定次数的写操作，则将内存中的数据写入到磁盘中。</li>
+<li>RDB 持久化适合大规模的数据恢复但它的数据一致性和完整性较差。</li>
+<li>Redis 需要手动开启AOF持久化方式，默认是每秒将写操作日志追加到AOF文件中。</li>
+<li>AOF 的数据完整性比RDB高，但记录内容多了，会影响数据恢复的效率。</li>
+<li>Redis 针对 AOF文件大的问题，提供重写的瘦身机制。</li>
+<li>若只打算用Redis 做缓存，可以关闭持久化。</li>
+<li>若打算使用Redis 的持久化。建议RDB和AOF都开启。其实RDB更适合做数据的备份，留一后手。AOF出问题了，还有RDB。</li>
+</ol>
+<h2 id="缓存穿透、缓存击穿、缓存雪崩区别和解决方案"><a href="#缓存穿透、缓存击穿、缓存雪崩区别和解决方案" class="headerlink" title="缓存穿透、缓存击穿、缓存雪崩区别和解决方案"></a>缓存穿透、缓存击穿、缓存雪崩区别和解决方案</h2><h3 id="缓存处理流程"><a href="#缓存处理流程" class="headerlink" title="缓存处理流程"></a>缓存处理流程</h3><p> 前台请求，后台先从缓存中取数据，取到直接返回结果，取不到时从数据库中取，数据库取到更新缓存，并返回结果，数据库也没取到，那直接返回空结果。</p>
+<img src="/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/8.png" class="" title="图片">
+
+<h3 id="缓存穿透"><a href="#缓存穿透" class="headerlink" title="缓存穿透"></a>缓存穿透</h3><p><strong>描述：</strong></p>
+<p> 缓存穿透是指用户不断发起请求缓存和数据库中都没有的数据，如发起为id为“-1”的数据或id为特别大不存在的数据。这时的用户很可能是攻击者，攻击会导致数据库压力过大。</p>
+<p><strong>解决方案：</strong></p>
+<ul>
+<li>接口层增加校验，如用户鉴权校验，id做基础校验，id&lt;=0的直接拦截；</li>
+<li>从缓存取不到的数据，在数据库中也没有取到，这时也可以将key-value对写为key-null，缓存有效时间可以设置短点，如30秒（设置太长会导致正常情况也没法使用）。这样可以防止攻击用户反复用同一个id暴力攻击</li>
+</ul>
+<h3 id="缓存击穿"><a href="#缓存击穿" class="headerlink" title="缓存击穿"></a>缓存击穿</h3><p><strong>描述：</strong></p>
+<p> 缓存击穿是指缓存中没有但数据库中有的数据（一般是缓存时间到期），这时由于并发用户特别多，同时读缓存没读到数据，又同时去数据库去取数据，引起数据库压力瞬间增大，造成过大压力</p>
+<p> <strong>解决方案：</strong></p>
+<ul>
+<li>设置热点数据永远不过期</li>
+<li>加互斥锁</li>
+</ul>
+<blockquote>
+<p>缓存中没有数据，第1个进入的线程，获取锁并从数据库去取数据，没释放锁之前，其他并行进入的线程会等待100ms，再重新去缓存取数据。这样就防止都去数据库重复取数据，重复往缓存中更新数据情况出现。</p>
+</blockquote>
+<h3 id="缓存雪崩"><a href="#缓存雪崩" class="headerlink" title="缓存雪崩"></a>缓存雪崩</h3><p><strong>描述：</strong></p>
+<p>缓存雪崩是指缓存中数据大批量到过期时间，而查询数据量巨大，引起数据库压力过大甚至down机。和缓存击穿不同的是，缓存击穿指并发查同一条数据，缓存雪崩是不同数据都过期了，很多数据都查不到从而查数据库。</p>
+<p> <strong>解决方案：</strong></p>
+<ul>
+<li>缓存数据的过期时间设置随机，防止同一时间大量数据过期现象发生。</li>
+<li>如果缓存数据库是分布式部署，将热点数据均匀分布在不同搞得缓存数据库中。</li>
+<li>设置热点数据永远不过期。</li>
+</ul>
+<h2 id="什么是主从复制、读写分离"><a href="#什么是主从复制、读写分离" class="headerlink" title="什么是主从复制、读写分离"></a>什么是主从复制、读写分离</h2><p><strong>主从复制：</strong>是一种数据备份的方案。<br>简单来说，是使用两个或两个以上相同的数据库，将一个数据库当做主数据库，而另一个数据库当做从数据库。在主数据库中进行相应操作时，从数据库记录下所有主数据库的操作，使其二者一模一样。</p>
+<p><strong>读写分离：</strong>是一种让数据库更稳定的的使用数据库的方法。<br>是在有从数据库的情况下使用，当主数据库进行对数据的增删改也就是写操作时，将查询的任务交给从数据库。</p>
+<p><strong>为什么要使用主从分离和读写操作呢？</strong><br>主从复制：</p>
+<ol>
+<li><p>当主数据库出现问题时，可以当从数据库代替主数据库，可以避免数据的丢失。</p>
+</li>
+<li><p>可以进行读写分离</p>
+</li>
+</ol>
+<p><strong>读写分离：</strong></p>
+<ol>
+<li><p>避免从数据库进行写操作而导致的主从数据库数据不一致的情况，因为当主从数据库数据不一致时，那么从数据库最主要的备份任务就没有意义了。　</p>
+</li>
+<li><p>减轻主数据库的压力。因为进行写操作更耗时，所以如果不进行读写分离的话，写操作将会影响到读操作的效率。</p>
+</li>
+</ol>
+<h2 id="什么是集群"><a href="#什么是集群" class="headerlink" title="什么是集群"></a>什么是集群</h2><p>如果说主从复制是各司其职的话，那么集群就是一群同样的个体做着同样的事情。在Redis中，数据的写入操作次数很大的情况下，只使用单独一个服务器来进行写入操作的话，效率不高，那么如果使用集群方案，利用多个Redis服务器来进行写操作，大量的数据，你写一点，我写一点，大家都分担一点，那么效率会高很多。就像一小块土地需要挖土，那么一台挖掘机就足够，但是遇上了一大片土地，虽然一台挖掘机也能够完成任务，但是需要很久很久，那么我现在再找个十台挖掘机一起挖土，那么效率就会高很多了。</p>
+<p>集群模式的思想可以在多处使用。总之就是，一个个体完成不了或者说效率很低的场景下，都可以使用这种思想。<br>就如下面将要说到的哨兵，一个哨兵监视一个服务器集群肯定是不够的，那么就需要一个哨兵集群来监视。</p>
+<h2 id="什么是哨兵模式"><a href="#什么是哨兵模式" class="headerlink" title="什么是哨兵模式"></a>什么是哨兵模式</h2><p>是一种容灾方案。</p>
+<p>哨兵：实则是一个在特殊模式下的Redis服务器，里面存储的是自己本身的信息，主服务器的信息，从服务器的信息。</p>
+<p>用一个或者多个哨兵来监视主服务器（也就是进行写操作的服务器）是否在正常执行任务，一旦哨兵发现主服务器不可用时，就找到一个合适的从服务器成为主服务器。</p>
+<h2 id="Redis同步机制"><a href="#Redis同步机制" class="headerlink" title="Redis同步机制"></a>Redis同步机制</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/ioteye/article/details/90736630">参考链接</a></p>
+<h3 id="全量拷贝"><a href="#全量拷贝" class="headerlink" title="全量拷贝"></a>全量拷贝</h3><img src="/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/9.png" class="" title="图片">
+
+<ol>
+<li><p>slave第一次启动时，连接Master，发送PSYNC命令，格式为</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">psync {runId} {offset}</span><br></pre></td></tr></tbody></table></figure>
+
+<blockquote>
+<p><code>{runId}</code> 为master的运行id；<code>{offset}</code>为slave自己的复制偏移量。<br>slave第一次连接master时，slave并不知道master的runId，也不知道自己偏移量，这时候slave会传一个问号和-1，告诉master节点是第一次同步。格式为<code>psync ? -1</code></p>
+</blockquote>
+</li>
+<li><p>当master接收到</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">psync ? -1</span><br></pre></td></tr></tbody></table></figure>
+
+<p>时，知道slave是要全量复制，就会将自己的<code>runId</code>和<code>offset</code>告知slave，回复命令</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fullresync {runId} {offset}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>同时，master会执行bgsave命令来生成rdb文件，期间的所有写命令将被写入缓冲区。</p>
+<blockquote>
+<p>slave接受到master的回复命令后，会保存master的<code>runId</code>和<code>offset</code>，slave此时处于同步状态。<br>slave处于同步状态，如果此时收到请求，当配置参数<code>slave-server-stale-data yes</code>时，会响应当前请求；<code>slave-server-stale-data no</code>，返回错误。</p>
+</blockquote>
+</li>
+<li><p>master <code>bgsave</code>执行完毕，向slave发送rdb文件。rdb文件发送完毕后，开始向slave发送缓冲区中的写命令。</p>
+</li>
+<li><p>slave收到rdb文件，丢弃所有旧数据，开始载入rdb文件。</p>
+</li>
+<li><p>rdb文件同步结束之后，slave执行从master缓冲区发送过来的所以写命令。</p>
+</li>
+<li><p>此后 master 每执行一个写命令，就向slave发送相同的写命令。</p>
+</li>
+</ol>
+<h3 id="增量拷贝"><a href="#增量拷贝" class="headerlink" title="增量拷贝"></a>增量拷贝</h3><p>如果出现网络闪断或者命令丢失等异常情况时，当主从连接恢复后，由于从节点之前保存了自身已复制的偏移量和主节点的运行ID。因此会把它们当作psync参数发送给主节点，要求进行部分复制操作，格式为psync {runId} {offset}。<br>主节点接到psync命令后首先核对参数runId是否与自身一致，如果一致，说明之前复制的是当前主节点；之后根据参数offset在自身复制积压缓冲区查找，如果偏移量之后的数据存在缓冲区中，则对从节点发送+continue响应，表示可以进行部分复制；否则进行全量复制。<br>主节点根据偏移量把复制积压缓冲区里的数据发送给从节点，保证主从复制进入正常状态。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%9D%A2%E8%AF%95%E9%A2%98/" rel="tag"># 面试题</a>
+              <a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/" rel="tag"># 数据库</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/02/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AF%87/" rel="prev" title="面试必备知识-计算机网络篇">
+      <i class="fa fa-chevron-left"></i> 面试必备知识-计算机网络篇
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/09/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-Linux%E7%AF%87/" rel="next" title="面试必备知识-Linux篇">
+      面试必备知识-Linux篇 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#SQL-%E5%90%84%E7%A7%8DJOIN%E6%96%B9%E5%BC%8F"><span class="nav-number">1.</span> <span class="nav-text">SQL 各种JOIN方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#limit%E7%94%A8%E6%B3%95"><span class="nav-number">2.</span> <span class="nav-text">limit用法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%B8%E8%A7%81SQL%E5%87%BD%E6%95%B0"><span class="nav-number">3.</span> <span class="nav-text">常见SQL函数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#AVG%E5%87%BD%E6%95%B0"><span class="nav-number">3.1.</span> <span class="nav-text">AVG函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#COUNT-%E5%87%BD%E6%95%B0"><span class="nav-number">3.2.</span> <span class="nav-text">COUNT 函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MAX%E5%87%BD%E6%95%B0"><span class="nav-number">3.3.</span> <span class="nav-text">MAX函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SUM%E5%87%BD%E6%95%B0"><span class="nav-number">3.4.</span> <span class="nav-text">SUM函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GROUP-BY-%E8%AF%AD%E5%8F%A5"><span class="nav-number">3.5.</span> <span class="nav-text">GROUP BY 语句</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#drop%E3%80%81truncate%E5%92%8Cdelete%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">4.</span> <span class="nav-text">drop、truncate和delete的区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88B-%E6%A0%91%E6%AF%94B%E6%A0%91%E6%9B%B4%E9%80%82%E5%90%88%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B4%A2%E5%BC%95"><span class="nav-number">5.</span> <span class="nav-text">为什么B+树比B树更适合数据库索引</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%81%9A%E9%9B%86%E7%B4%A2%E5%BC%95%E4%B8%8E%E9%9D%9E%E8%81%9A%E9%9B%86%E7%B4%A2%E5%BC%95"><span class="nav-number">6.</span> <span class="nav-text">聚集索引与非聚集索引</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%81%94%E5%90%88%E7%B4%A2%E5%BC%95"><span class="nav-number">7.</span> <span class="nav-text">联合索引</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A6%86%E7%9B%96%E7%B4%A2%E5%BC%95"><span class="nav-number">8.</span> <span class="nav-text">覆盖索引</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E8%A1%A8%E7%B4%A2%E5%BC%95%E8%BF%87%E5%A4%9A%E4%BC%9A%E4%BA%A7%E7%94%9F%E5%93%AA%E4%BA%9B%E9%97%AE%E9%A2%98"><span class="nav-number">9.</span> <span class="nav-text">数据库表索引过多会产生哪些问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%8E%E6%A0%B7%E5%88%A4%E6%96%AD%E6%9F%90%E4%B8%AA%E5%AD%97%E6%AE%B5%E6%98%AF%E5%90%A6%E9%80%82%E5%90%88%E5%BB%BA%E7%AB%8B%E7%B4%A2%E5%BC%95"><span class="nav-number">10.</span> <span class="nav-text">怎样判断某个字段是否适合建立索引</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E7%9A%84%E5%88%9B%E5%BB%BA%E6%97%B6%E6%9C%BA"><span class="nav-number">11.</span> <span class="nav-text">索引的创建时机</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%82%E5%90%88%E5%88%9B%E5%BB%BA%E7%B4%A2%E5%BC%95%E7%9A%84%E6%83%85%E5%86%B5"><span class="nav-number">11.1.</span> <span class="nav-text">适合创建索引的情况</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8D%E9%80%82%E5%90%88%E5%88%9B%E5%BB%BA%E7%B4%A2%E5%BC%95%E7%9A%84%E6%83%85%E5%86%B5"><span class="nav-number">11.2.</span> <span class="nav-text">不适合创建索引的情况</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MYSQL-MyISAM%E4%B8%8EInnoDB-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">12.</span> <span class="nav-text">MYSQL MyISAM与InnoDB 存储引擎的区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E9%94%81"><span class="nav-number">13.</span> <span class="nav-text">数据库锁</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%94%81%E7%9A%84%E8%AE%A4%E8%AF%86"><span class="nav-number">13.1.</span> <span class="nav-text">锁的认识</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%94%81%E7%9A%84%E7%B1%BB%E5%9E%8B"><span class="nav-number">13.2.</span> <span class="nav-text">锁的类型</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%A1%A8%E9%94%81"><span class="nav-number">13.2.1.</span> <span class="nav-text">表锁</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%A1%8C%E9%94%81"><span class="nav-number">13.2.2.</span> <span class="nav-text">行锁</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%A1%B5%E9%94%81"><span class="nav-number">13.2.3.</span> <span class="nav-text">页锁</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E4%B8%8A%E9%94%81%EF%BC%9F"><span class="nav-number">13.3.</span> <span class="nav-text">如何上锁？</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%A1%A8%E9%94%81-1"><span class="nav-number">13.3.1.</span> <span class="nav-text">表锁</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%A1%8C%E9%94%81-1"><span class="nav-number">13.3.2.</span> <span class="nav-text">行锁</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A1%8C%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0%E7%AE%97%E6%B3%95"><span class="nav-number">13.4.</span> <span class="nav-text">行锁的实现算法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Record-Lock-%E9%94%81"><span class="nav-number">13.4.1.</span> <span class="nav-text">Record Lock 锁</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Gap-Lock-%E9%94%81"><span class="nav-number">13.4.2.</span> <span class="nav-text">Gap Lock 锁</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Next-key-Lock-%E9%94%81"><span class="nav-number">13.4.3.</span> <span class="nav-text">Next-key Lock 锁</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A1%8C%E9%94%81%E7%9A%84%E6%B3%A8%E6%84%8F%E7%82%B9"><span class="nav-number">13.5.</span> <span class="nav-text">行锁的注意点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%92%88%E5%AF%B9%E8%A1%8C%E9%94%81%E7%9A%84%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E5%BB%BA%E8%AE%AE"><span class="nav-number">13.6.</span> <span class="nav-text">针对行锁的性能优化建议</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B9%90%E8%A7%82%E9%94%81%E4%B8%8E%E6%82%B2%E8%A7%82%E9%94%81"><span class="nav-number">13.7.</span> <span class="nav-text">乐观锁与悲观锁</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1%E7%9A%84%E6%A6%82%E5%BF%B5%E5%92%8C%E7%89%B9%E6%80%A7"><span class="nav-number">14.</span> <span class="nav-text">数据库事务的概念和特性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1%E5%B9%B6%E5%8F%91%E9%97%AE%E9%A2%98"><span class="nav-number">15.</span> <span class="nav-text">数据库事务并发问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB"><span class="nav-number">16.</span> <span class="nav-text">数据库事务隔离级别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81ACID%EF%BC%88ACID%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%EF%BC%89"><span class="nav-number">17.</span> <span class="nav-text">数据库如何保证ACID（ACID实现原理）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8E%9F%E5%AD%90%E6%80%A7%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86"><span class="nav-number">17.1.</span> <span class="nav-text">原子性实现原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8C%81%E4%B9%85%E6%80%A7%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86"><span class="nav-number">17.2.</span> <span class="nav-text">持久性实现原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9A%94%E7%A6%BB%E6%80%A7%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86"><span class="nav-number">17.3.</span> <span class="nav-text">隔离性实现原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E8%87%B4%E6%80%A7%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86"><span class="nav-number">17.4.</span> <span class="nav-text">一致性实现原理</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%89%E5%A4%A7%E8%8C%83%E5%BC%8F"><span class="nav-number">18.</span> <span class="nav-text">数据库三大范式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B4%A2%E5%BC%95%E4%BC%98%E5%8C%96"><span class="nav-number">19.</span> <span class="nav-text">数据库索引优化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E7%94%A8Redis%E8%80%8C%E4%B8%8D%E7%9B%B4%E6%8E%A5%E7%94%A8Map%E5%81%9A%E7%BC%93%E5%AD%98"><span class="nav-number">20.</span> <span class="nav-text">为什么要用Redis而不直接用Map做缓存?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8redis%E6%9C%89%E5%93%AA%E4%BA%9B%E5%A5%BD%E5%A4%84%EF%BC%9F"><span class="nav-number">21.</span> <span class="nav-text">使用redis有哪些好处？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Memcache%E4%B8%8ERedis%E7%9A%84%E5%8C%BA%E5%88%AB%E9%83%BD%E6%9C%89%E5%93%AA%E4%BA%9B%EF%BC%9F"><span class="nav-number">22.</span> <span class="nav-text">Memcache与Redis的区别都有哪些？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#redis%E7%9B%B8%E6%AF%94memcached%E6%9C%89%E5%93%AA%E4%BA%9B%E4%BC%98%E5%8A%BF%EF%BC%9F"><span class="nav-number">23.</span> <span class="nav-text">redis相比memcached有哪些优势？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Redis%E4%BA%94%E7%A7%8D%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="nav-number">24.</span> <span class="nav-text">Redis五种数据结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#String-%E5%AD%97%E7%AC%A6%E4%B8%B2"><span class="nav-number">24.1.</span> <span class="nav-text">String (字符串)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Hash-%E5%93%88%E5%B8%8C"><span class="nav-number">24.2.</span> <span class="nav-text">Hash (哈希)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#List-%E9%93%BE%E8%A1%A8"><span class="nav-number">24.3.</span> <span class="nav-text">List (链表)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Set-%E9%9B%86%E5%90%88"><span class="nav-number">24.4.</span> <span class="nav-text">Set (集合)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#zset-%E6%9C%89%E5%BA%8F%E9%9B%86%E5%90%88"><span class="nav-number">24.5.</span> <span class="nav-text">zset (有序集合)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RDB%E4%B8%8EAOF"><span class="nav-number">25.</span> <span class="nav-text">RDB与AOF</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#RDB"><span class="nav-number">25.1.</span> <span class="nav-text">RDB</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#RDB%E7%AE%80%E4%BB%8B"><span class="nav-number">25.1.1.</span> <span class="nav-text">RDB简介</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RDB%E7%9A%84%E4%B8%89%E7%A7%8D%E4%B8%BB%E8%A6%81%E8%A7%A6%E5%8F%91%E6%9C%BA%E5%88%B6"><span class="nav-number">25.1.2.</span> <span class="nav-text">RDB的三种主要触发机制</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#save-%E4%B8%8E-bgsave-%E5%AF%B9%E6%AF%94"><span class="nav-number">25.1.3.</span> <span class="nav-text">save 与 bgsave 对比</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RDB%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE"><span class="nav-number">25.1.4.</span> <span class="nav-text">RDB相关配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RDB%E7%9A%84%E4%BC%98%E7%82%B9"><span class="nav-number">25.1.5.</span> <span class="nav-text">RDB的优点</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RDB%E7%9A%84%E7%BC%BA%E7%82%B9"><span class="nav-number">25.1.6.</span> <span class="nav-text">RDB的缺点</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#AOF"><span class="nav-number">25.2.</span> <span class="nav-text">AOF</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#AOF%E7%AE%80%E4%BB%8B"><span class="nav-number">25.2.1.</span> <span class="nav-text">AOF简介</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#AOF%E6%8C%81%E4%B9%85%E5%8C%96%E7%9A%84%E4%B8%89%E7%A7%8D%E7%AD%96%E7%95%A5"><span class="nav-number">25.2.2.</span> <span class="nav-text">AOF持久化的三种策略</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#always%E3%80%81everysec%E3%80%81no%E5%AF%B9%E6%AF%94"><span class="nav-number">25.2.3.</span> <span class="nav-text">always、everysec、no对比</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#AOF%E9%87%8D%E5%86%99"><span class="nav-number">25.2.4.</span> <span class="nav-text">AOF重写</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#AOF%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE"><span class="nav-number">25.2.5.</span> <span class="nav-text">AOF相关配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#AOF%E7%9A%84%E4%BC%98%E7%82%B9"><span class="nav-number">25.2.6.</span> <span class="nav-text">AOF的优点</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#AOF%E7%9A%84%E7%BC%BA%E7%82%B9"><span class="nav-number">25.2.7.</span> <span class="nav-text">AOF的缺点</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RDB-%E5%92%8C-AOF-%E5%AF%B9%E6%AF%94"><span class="nav-number">25.3.</span> <span class="nav-text">RDB 和 AOF 对比</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E9%80%89%E6%8B%A9%EF%BC%9F"><span class="nav-number">25.4.</span> <span class="nav-text">如何选择？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">25.5.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F%E3%80%81%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF%E3%80%81%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9%E5%8C%BA%E5%88%AB%E5%92%8C%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="nav-number">26.</span> <span class="nav-text">缓存穿透、缓存击穿、缓存雪崩区别和解决方案</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%93%E5%AD%98%E5%A4%84%E7%90%86%E6%B5%81%E7%A8%8B"><span class="nav-number">26.1.</span> <span class="nav-text">缓存处理流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F"><span class="nav-number">26.2.</span> <span class="nav-text">缓存穿透</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF"><span class="nav-number">26.3.</span> <span class="nav-text">缓存击穿</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9"><span class="nav-number">26.4.</span> <span class="nav-text">缓存雪崩</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E3%80%81%E8%AF%BB%E5%86%99%E5%88%86%E7%A6%BB"><span class="nav-number">27.</span> <span class="nav-text">什么是主从复制、读写分离</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E9%9B%86%E7%BE%A4"><span class="nav-number">28.</span> <span class="nav-text">什么是集群</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%93%A8%E5%85%B5%E6%A8%A1%E5%BC%8F"><span class="nav-number">29.</span> <span class="nav-text">什么是哨兵模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Redis%E5%90%8C%E6%AD%A5%E6%9C%BA%E5%88%B6"><span class="nav-number">30.</span> <span class="nav-text">Redis同步机制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%A8%E9%87%8F%E6%8B%B7%E8%B4%9D"><span class="nav-number">30.1.</span> <span class="nav-text">全量拷贝</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A2%9E%E9%87%8F%E6%8B%B7%E8%B4%9D"><span class="nav-number">30.2.</span> <span class="nav-text">增量拷贝</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Yu Hong</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">25</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+	
+	
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yu Hong</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">211k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">3:12</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

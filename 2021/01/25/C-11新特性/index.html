@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="lambda表达式参考1 参考2 语法： 1[函数对象参数] (操作符重载函数参数) mutable 或 exception 声明 -&gt; 返回值类型 {函数体}  [函数对象参数] 又称为捕获列表。标识一个 Lambda 表达式的开始，这部分必须存在，不能省略。函数对象参数是传递给编译器自动生成的函数对象类的构造函数的。函数对象参数只能使用那些到定义 Lambda 为止时 Lambda 所在">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++11新特性">
+<meta property="og:url" content="http://example.com/2021/01/25/C-11%E6%96%B0%E7%89%B9%E6%80%A7/index.html">
+<meta property="og:site_name" content="Hi! Yh">
+<meta property="og:description" content="lambda表达式参考1 参考2 语法： 1[函数对象参数] (操作符重载函数参数) mutable 或 exception 声明 -&gt; 返回值类型 {函数体}  [函数对象参数] 又称为捕获列表。标识一个 Lambda 表达式的开始，这部分必须存在，不能省略。函数对象参数是传递给编译器自动生成的函数对象类的构造函数的。函数对象参数只能使用那些到定义 Lambda 为止时 Lambda 所在">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-01-25T11:23:43.000Z">
+<meta property="article:modified_time" content="2021-01-25T14:44:50.563Z">
+<meta property="article:author" content="Yu Hong">
+<meta property="article:tag" content="面试题">
+<meta property="article:tag" content="C++">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2021/01/25/C-11%E6%96%B0%E7%89%B9%E6%80%A7/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>C++11新特性 | Hi! Yh</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hi! Yh</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/25/C-11%E6%96%B0%E7%89%B9%E6%80%A7/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Yu Hong">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hi! Yh">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          C++11新特性
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-01-25 19:23:43 / 修改时间：22:44:50" itemprop="dateCreated datePublished" datetime="2021-01-25T19:23:43+08:00">2021-01-25</time>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>8.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>8 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="lambda表达式"><a href="#lambda表达式" class="headerlink" title="lambda表达式"></a>lambda表达式</h2><p><a target="_blank" rel="noopener" href="http://c.biancheng.net/view/7818.html">参考1</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/jimodetiantang/p/9016826.html">参考2</a></p>
+<p><strong>语法：</strong></p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[函数对象参数] (操作符重载函数参数) mutable 或 exception 声明 -&gt; 返回值类型 {函数体}</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>[函数对象参数]</strong></p>
+<p>又称为捕获列表。标识一个 Lambda 表达式的开始，这部分必须存在，不能省略。函数对象参数是传递给编译器自动生成的函数对象类的构造函数的。函数对象参数只能使用那些到定义 Lambda 为止时 Lambda 所在作用范围内可见的局部变量(包括 Lambda 所在类的 this)。函数对象参数有以下形式：<a id="more"></a></p>
+<ul>
+<li>空。没有任何函数对象参数。</li>
+<li>=。函数体内可以使用 Lambda 所在范围内所有可见的局部变量（包括 Lambda 所在类的 this），并且是值传递方式（相当于编译器自动为我们按值传递了所有局部变量）。</li>
+<li>&amp;。函数体内可以使用 Lambda 所在范围内所有可见的局部变量（包括 Lambda 所在类的 this），并且是引用传递方式（相当于是编译器自动为我们按引用传递了所有局部变量）。</li>
+<li>this。函数体内可以使用 Lambda 所在类中的成员变量。</li>
+<li>a。将 a 按值进行传递。按值进行传递时，函数体内不能修改传递进来的 a 的拷贝，因为默认情况下函数是 const 的，要修改传递进来的拷贝，可以添加 mutable 修饰符。</li>
+<li>&amp;a。将 a 按引用进行传递。</li>
+<li>a，&amp;b。将 a 按值传递，b 按引用进行传递。</li>
+<li>=，&amp;a，&amp;b。除 a 和 b 按引用进行传递外，其他参数都按值进行传递。</li>
+<li>&amp;，a，b。除 a 和 b 按值进行传递外，其他参数都按引用进行传递。</li>
+</ul>
+<p><strong>(操作符重载函数参数)</strong></p>
+<p>又称为参数列表。标识重载的 () 操作符的参数，没有参数时，这部分可以省略。参数可以通过按值（如: (a, b)）和按引用 (如: (&amp;a, &amp;b)) 两种<br>方式进行传递。</p>
+<p><strong>mutable 或 exception 声明</strong></p>
+<p>这部分可以省略。按值传递函数对象参数时，加上 mutable 修饰符后，可以修改传递进来的拷贝（注意是能修改拷贝，而不是<br>值本身）。exception 声明用于指定函数抛出的异常，如抛出整数类型的异常，可以使用 throw(int)。</p>
+<p><strong>-&gt; 返回值类型</strong></p>
+<p>标识函数返回值的类型，当返回值为 void，或者函数体中只有一处 return 的地方（此时编译器可以自动推断出返回值类型）<br>时，这部分可以省略。</p>
+<p><strong>{函数体}</strong></p>
+<p>标识函数的实现，这部分不能省略，但函数体可以为空。</p>
+<p><strong>示例：</strong></p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[] (<span class="keyword">int</span> x, <span class="keyword">int</span> y) { <span class="keyword">return</span> x + y; } <span class="comment">// 隐式返回类型</span></span><br><span class="line">[] (<span class="keyword">int</span>&amp; x) { ++x;  } <span class="comment">// 没有 return 语句 -&gt; Lambda 函数的返回类型是 'void'</span></span><br><span class="line">[] () { ++global_x;  } <span class="comment">// 没有参数，仅访问某个全局变量</span></span><br><span class="line">[] { ++global_x; } <span class="comment">// 与上一个相同，省略了 (操作符重载函数参数)</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>可以像下面这样显示指定返回类型：</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[] (<span class="keyword">int</span> x, <span class="keyword">int</span> y) -&gt; <span class="keyword">int</span> { <span class="keyword">int</span> z = x + y; <span class="keyword">return</span> z; }</span><br></pre></td></tr></tbody></table></figure>
+
+<p>Lambda 函数可以引用在它之外声明的变量. 这些变量的集合叫做一个闭包. 闭包被定义在 Lambda 表达式声明中的方括号 [] 内。这个机制允许这些变量被按值或按引用捕获。如下面的例子：</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[] <span class="comment">//未定义变量，试图在lambda内使用任何外部变量都是错误的</span></span><br><span class="line">[x,&amp;y] <span class="comment">//x按值捕获，y按引用捕获</span></span><br><span class="line">[&amp;] <span class="comment">//用到的任何外部变量都隐式按引用捕获</span></span><br><span class="line">[=] <span class="comment">//用到的任何外部变量都隐式按值捕获</span></span><br><span class="line">[&amp;,x] <span class="comment">//x显式按值捕获，其他变量按引用捕获</span></span><br><span class="line">[=,&amp;z] <span class="comment">//z按引用捕获，其他变量按值捕获</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>示例1</strong></p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; some_list;</span><br><span class="line"><span class="keyword">int</span> total = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; ++i) some_list.push_back(i);</span><br><span class="line"><span class="built_in">std</span>::for_each(begin(some_list), end(some_list), [&amp;total](<span class="keyword">int</span> x)</span><br><span class="line">{</span><br><span class="line">    total += x;</span><br><span class="line">});</span><br></pre></td></tr></tbody></table></figure>
+
+<p>此例计算 list 中所有元素的总和。变量 total 被存为 Lambda 函数闭包的一部分。因为它是栈变量（局部变量）total 引<br>用，所以可以改变它的值。</p>
+<p><strong>示例2</strong></p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; some_list;</span><br><span class="line"><span class="keyword">int</span> total = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">int</span> value = <span class="number">5</span>;</span><br><span class="line"><span class="built_in">std</span>::for_each(begin(some_list), end(some_list), [&amp;, value, <span class="keyword">this</span>](<span class="keyword">int</span> x)</span><br><span class="line">{</span><br><span class="line">    total += x * value * <span class="keyword">this</span>-&gt;some_func();</span><br><span class="line">});</span><br></pre></td></tr></tbody></table></figure>
+
+<p>此例中 total 会存为引用, value 则会存一份值拷贝。对 this 的捕获比较特殊，它只能按值捕获。this 只有当包含它的最靠近它的函数不是静态成员函数时才能被捕获。对 protect 和 private 成员来说，这个 Lambda 函数与创建它的成员函数有相<br>的访问控制。如果 this 被捕获了，不管是显式还是隐式的，那么它的类的作用域对 Lambda 函数就是可见的。访问 this 的<br>成员不必使用 this-&gt; 语法，可以直接访问。</p>
+<h2 id="nullptr与NULL"><a href="#nullptr与NULL" class="headerlink" title="nullptr与NULL"></a>nullptr与NULL</h2><p>NULL 并不是 C++ 的关键字，它是 C++ 为我们事先定义好的一个宏，并且它的值往往就是字面量 0（#define NULL 0）。</p>
+<p>将指针初始化为NULL表示将指针明确指向 0（0x0000 0000）这个内存空间。一方面，明确指针的指向可以避免其成为野指针；另一方面，大多数操作系统都不允许用户对地址为 0 的内存空间执行写操作，若用户在程序中尝试修改其内容，则程序运行会直接报错。</p>
+<p>但是实际传参时NULL会被当做整数看待，而不是被当作指针，如果需要传入指针类型，还需要显式转换 (void*)NULL。</p>
+<p>nullptr 是 nullptr_t 类型的右值常量，专用于初始化空类型指针。nullptr_t 是 C++11 新增加的数据类型，可称为“指针空值类型”。也就是说，nullptr 仅是该类型的一个实例对象（已经定义好，可以直接使用），如果需要我们完全定义出多个同 nullptr 完全一样的实例对象。</p>
+<p>不同类型的指针变量都可以使用 nullptr 来初始化，nullptr 都可以被隐式转换成任意的指针类型。</p>
+<h2 id="左值和右值"><a href="#左值和右值" class="headerlink" title="左值和右值"></a>左值和右值</h2><p>在 C++ 或者 C 语言中，一个表达式（可以是字面量、变量、对象、函数的返回值等）根据其使用场景不同，分为左值表达式和右值表达式。确切的说 C++ 中左值和右值的概念是从 C 语言继承过来的。</p>
+<p>值得一提的是，左值的英文简写为“lvalue”，右值的英文简写为“rvalue”。很多人认为它们分别是”left value”、”right value” 的缩写，其实不然。lvalue 是“loactor value”的缩写，可意为存储在内存中、有明确存储地址（可寻址）的数据，而 rvalue 译为 “read value”，指的是那些可以提供数据值的数据（不一定可以寻址，例如存储于寄存器中的数据）。</p>
+<p>判断某个表达式是左值还是右值的 2 种方法：</p>
+<ol>
+<li> 可位于赋值号（=）左侧的表达式就是左值；反之，只能位于赋值号右侧的表达式就是右值。</li>
+<li>有名称的、可以获取到存储地址的表达式即为左值；反之则是右值。</li>
+</ol>
+<p>两者区别：</p>
+<ul>
+<li>左值是可寻址的变量，有持久性；</li>
+<li>右值一般是不可寻址的常量，或在表达式求值过程中创建的无名临时对象，短暂性的。</li>
+</ul>
+<p>左值和右值主要的区别之一是左值可以被修改，而右值不能。</p>
+<h2 id="右值引用"><a href="#右值引用" class="headerlink" title="右值引用"></a>右值引用</h2><p>右值引用，用 “&amp;&amp;” 表示。和声明左值引用一样，右值引用也必须立即进行初始化操作，且只能使用右值进行初始化。和常量左值引用不同的是，右值引用还可以对右值进行修改。</p>
+<p><a target="_blank" rel="noopener" href="http://c.biancheng.net/view/7829.html">参考</a></p>
+<h2 id="移动构造函数"><a href="#移动构造函数" class="headerlink" title="移动构造函数"></a>移动构造函数</h2><p><strong>C++函数返回对象的内部过程</strong></p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">demo</span>{</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">   demo():num(<span class="keyword">new</span> <span class="keyword">int</span>(<span class="number">0</span>)){</span><br><span class="line">      <span class="built_in">cout</span>&lt;&lt;<span class="string">"construct!"</span>&lt;&lt;<span class="built_in">endl</span>;</span><br><span class="line">   }</span><br><span class="line">   <span class="comment">//拷贝构造函数</span></span><br><span class="line">   demo(<span class="keyword">const</span> demo &amp;d):num(<span class="keyword">new</span> <span class="keyword">int</span>(*d.num)){</span><br><span class="line">      <span class="built_in">cout</span>&lt;&lt;<span class="string">"copy construct!"</span>&lt;&lt;<span class="built_in">endl</span>;</span><br><span class="line">   }</span><br><span class="line">   ~demo(){</span><br><span class="line">      <span class="built_in">cout</span>&lt;&lt;<span class="string">"class destruct!"</span>&lt;&lt;<span class="built_in">endl</span>;</span><br><span class="line">   }</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">   <span class="keyword">int</span> *num;</span><br><span class="line">};</span><br><span class="line"></span><br><span class="line"><span class="function">demo <span class="title">get_demo</span><span class="params">()</span></span>{</span><br><span class="line">    <span class="keyword">return</span> demo();</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>{</span><br><span class="line">    demo a = get_demo();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>结果：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">construct!                &lt;-- 执行 demo()</span><br><span class="line">copy construct!       &lt;-- 执行 return demo()</span><br><span class="line">class destruct!         &lt;-- 销毁 demo() 产生的匿名对象</span><br><span class="line">copy construct!       &lt;-- 执行 a = get_demo()</span><br><span class="line">class destruct!         &lt;-- 销毁 get_demo() 返回的临时对象</span><br><span class="line">class destruct!         &lt;-- 销毁 a</span><br></pre></td></tr></tbody></table></figure>
+
+<p>其整个初始化的流程包含以下几个阶段：</p>
+<ol>
+<li>执行 get_demo() 函数内部的 demo() 语句，即调用 demo 类的默认构造函数生成一个匿名对象；</li>
+<li>执行 return demo() 语句，会调用拷贝构造函数复制一份之前生成的匿名对象，并将其作为 get_demo() 函数的返回值（函数体执行完毕之前，匿名对象会被析构销毁）；</li>
+<li>执行 a = get_demo() 语句，再调用一次拷贝构造函数，将之前拷贝得到的临时对象复制给 a（此行代码执行完毕，get_demo() 函数返回的对象会被析构）；</li>
+<li>程序执行结束前，会自行调用 demo 类的析构函数销毁 a。</li>
+</ol>
+<p>利用拷贝构造函数实现对 a 对象的初始化，底层实际上进行了 2 次拷贝（而且是深拷贝）操作。</p>
+<p><strong>移动语义</strong></p>
+<p>所谓移动语义，指的就是以移动而非深拷贝的方式初始化含有指针成员的类对象。简单的理解，移动语义指的就是将其他对象（通常是临时对象）拥有的内存资源“移为已用”。</p>
+<p>事实上，对于程序执行过程中产生的临时对象，往往只用于传递数据（没有其它的用处），并且会很快会被销毁。因此在使用临时对象初始化新对象时，我们可以将其包含的指针成员指向的内存资源直接移给新对象所有，无需再新拷贝一份，这大大提高了初始化的执行效率。</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//添加移动构造函数</span></span><br><span class="line">    demo(demo &amp;&amp;d):num(d.num){</span><br><span class="line">        d.num = <span class="literal">NULL</span>;</span><br><span class="line">        <span class="built_in">cout</span>&lt;&lt;<span class="string">"move construct!"</span>&lt;&lt;<span class="built_in">endl</span>;</span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+
+<p>结果：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">construct!</span><br><span class="line">move construct!</span><br><span class="line">class destruct!</span><br><span class="line">move construct!</span><br><span class="line">class destruct!</span><br><span class="line">class destruct!</span><br></pre></td></tr></tbody></table></figure>
+
+<p>通过执行结果我们不难得知，当为 demo 类添加移动构造函数之后，使用临时对象初始化 a 对象过程中产生的 2 次拷贝操作，都转由移动构造函数完成。</p>
+<p>当类中同时包含拷贝构造函数和移动构造函数时，如果使用临时对象初始化当前类的对象，编译器会优先调用移动构造函数来完成此操作。只有当类中没有合适的移动构造函数时，编译器才会退而求其次，调用拷贝构造函数。</p>
+<p>默认情况下，左值初始化同类对象只能通过拷贝构造函数完成，如果想调用移动构造函数，则必须使用右值进行初始化。C++11 标准中为了满足用户使用左值初始化同类对象时也通过移动构造函数完成的需求，新引入了 <strong>std::move()</strong> 函数，它可以将左值强制转换成对应的右值，由此便可以使用移动构造函数。</p>
+<h2 id="完美转发"><a href="#完美转发" class="headerlink" title="完美转发"></a>完美转发</h2><p>完美转发指的是函数模板可以将自己的参数“完美”地转发给内部调用的其它函数。所谓完美，即不仅能准确地转发参数的值，还能保证被转发参数的左、右值属性不变。很多场景中是否实现完美转发，直接决定了该参数的传递过程使用的是拷贝语义（调用拷贝构造函数）还是移动语义（调用移动构造函数）。</p>
+<p>C++11为实现完美转发，做了以下3点</p>
+<ol>
+<li><p>C++11 标准中规定，通常情况下右值引用形式的参数只能接收右值，不能接收左值。但对于函数模板中使用右值引用语法定义的参数来说，它不再遵守这一规定，既可以接收右值，也可以接收左值（此时的右值引用又被称为“万能引用”）。</p>
+</li>
+<li><p>同时， C++ 11标准为了更好地实现完美转发，引入引用折叠规则：</p>
+</li>
+</ol>
+<ul>
+<li>当实参为左值或者左值引用（A&amp;）时，函数模板中 T&amp;&amp; 将转变为 A&amp;（A&amp; &amp;&amp; = A&amp;）；</li>
+<li>当实参为右值或者右值引用（A&amp;&amp;）时，函数模板中 T&amp;&amp; 将转变为 A&amp;&amp;（A&amp;&amp; &amp;&amp; = A&amp;&amp;）。</li>
+</ul>
+<ol start="3">
+<li>为了将函数模板接收到的形参连同其左、右值属性，一起传递给被调用的函数，C++11 标准引入了一个模板函数 forword&lt; T &gt;()。</li>
+</ol>
+<p><a target="_blank" rel="noopener" href="http://c.biancheng.net/view/7868.html">参考</a></p>
+<h2 id="智能指针"><a href="#智能指针" class="headerlink" title="智能指针"></a>智能指针</h2><h3 id="auto-ptr"><a href="#auto-ptr" class="headerlink" title="auto_ptr"></a>auto_ptr</h3><p>auto_ptr是C++98提供的解决方案，具有unique_ptr的部分特性，但不是全部，C+11已将将其摒弃。</p>
+<h3 id="shared-ptr"><a href="#shared-ptr" class="headerlink" title="shared_ptr"></a>shared_ptr</h3><p><a target="_blank" rel="noopener" href="http://c.biancheng.net/view/7898.html">参考</a></p>
+<p>多个 shared_ptr 智能指针可以共同使用同一块堆内存。并且，由于该类型智能指针在实现上采用的是引用计数机制，即便有一个 shared_ptr 指针放弃了堆内存的“使用权”（引用计数减 1），也不会影响其他指向同一堆内存的 shared_ptr 指针（只有引用计数为 0 时，堆内存才会被自动释放）。</p>
+<p>shared_ptr&lt; T &gt;的定义位于<code>&lt;memory&gt;</code>头文件，并位于 std 命名空间中</p>
+<p>可以采用以下方式创建智能指针</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//构造空智能指针</span></span><br><span class="line"><span class="comment">//空的 shared_ptr 指针，其初始引用计数为 0，而不是 1。</span></span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;<span class="keyword">int</span>&gt; p1;             <span class="comment">//不传入任何实参</span></span><br><span class="line"><span class="function"><span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;<span class="keyword">int</span>&gt; <span class="title">p2</span><span class="params">(<span class="literal">nullptr</span>)</span></span>;    <span class="comment">//传入空指针 nullptr</span></span><br><span class="line"><span class="function"><span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;<span class="keyword">int</span>&gt; <span class="title">p3</span><span class="params">(<span class="keyword">new</span> <span class="keyword">int</span>(<span class="number">10</span>))</span></span>; <span class="comment">//构建了一个 shared_ptr 智能指针，其指向一块存有 10 这个 int 类型数据的堆内存空间。</span></span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;<span class="keyword">int</span>&gt; p3 = <span class="built_in">std</span>::make_shared&lt;<span class="keyword">int</span>&gt;(<span class="number">10</span>);<span class="comment">//使用std::make_shared&lt;T&gt; 模板函数初始化shared_ptr 智能指针</span></span><br><span class="line"><span class="comment">//调用拷贝构造函数</span></span><br><span class="line"><span class="function"><span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;<span class="keyword">int</span>&gt; <span class="title">p4</span><span class="params">(p3)</span></span>;<span class="comment">//或者 std::shared_ptr&lt;int&gt; p4 = p3;</span></span><br><span class="line"><span class="comment">//调用移动构造函数</span></span><br><span class="line"><span class="function"><span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;<span class="keyword">int</span>&gt; <span class="title">p5</span><span class="params">(<span class="built_in">std</span>::move(p4))</span></span>; <span class="comment">//或者 std::shared_ptr&lt;int&gt; p5 = std::move(p4);</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>如上所示，p3 和 p4 都是 shared_ptr 类型的智能指针，因此可以用 p3 来初始化 p4，由于 p3 是左值，因此会调用拷贝构造函数。需要注意的是，如果 p3 为空智能指针，则 p4 也为空智能指针，其引用计数初始值为 0；反之，则表明 p4 和 p3 指向同一块堆内存，同时该堆空间的引用计数会加 1。</p>
+<p>而对于 std::move(p4) 来说，该函数会强制将 p4 转换成对应的右值，因此初始化 p5 调用的是移动构造函数。另外和调用拷贝构造函数不同，用 std::move(p4) 初始化 p5，会使得 p5 拥有了 p4 的堆内存，而 p4 则变成了空智能指针。</p>
+<p>注意，同一普通指针不能同时为多个 shared_ptr 对象赋值，否则会导致程序发生异常</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span>* ptr = <span class="keyword">new</span> <span class="keyword">int</span>;</span><br><span class="line"><span class="function"><span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;<span class="keyword">int</span>&gt; <span class="title">p1</span><span class="params">(ptr)</span></span>;</span><br><span class="line"><span class="function"><span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;<span class="keyword">int</span>&gt; <span class="title">p2</span><span class="params">(ptr)</span></span>;<span class="comment">//错误</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>对于申请的动态数组，释放规则可以使用 C++11 标准中提供的 default_delete<t> 模板类，我们也可以自定义释放规则：</t></p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//指定 default_delete 作为释放规则</span></span><br><span class="line"><span class="function"><span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;<span class="keyword">int</span>&gt; <span class="title">p6</span><span class="params">(<span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">10</span>], <span class="built_in">std</span>::default_delete&lt;<span class="keyword">int</span>[]&gt;())</span></span>;</span><br><span class="line"><span class="comment">//自定义释放规则</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">deleteInt</span><span class="params">(<span class="keyword">int</span>*p)</span> </span>{</span><br><span class="line">    <span class="keyword">delete</span> []p;</span><br><span class="line">}</span><br><span class="line"><span class="comment">//初始化智能指针，并自定义释放规则</span></span><br><span class="line"><span class="function"><span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;<span class="keyword">int</span>&gt; <span class="title">p7</span><span class="params">(<span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">10</span>], deleteInt)</span></span>;</span><br><span class="line"><span class="comment">//或借助于lambda表达式自定义释放规则</span></span><br><span class="line"><span class="function"><span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;<span class="keyword">int</span>&gt; <span class="title">p7</span><span class="params">(<span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">10</span>], [](<span class="keyword">int</span>* p) {<span class="keyword">delete</span>[]p; })</span></span>;</span><br></pre></td></tr></tbody></table></figure>
+
+<h3 id="unique-ptr"><a href="#unique-ptr" class="headerlink" title="unique_ptr"></a>unique_ptr</h3><p><a target="_blank" rel="noopener" href="http://c.biancheng.net/view/7909.html">参考</a></p>
+<p>unique_ptr 指针指向的堆内存无法同其它 unique_ptr 共享，也就是说，每个 unique_ptr 指针都独自拥有对其所指堆内存空间的所有权。</p>
+<p>基于 unique_ptr 类型指针不共享各自拥有的堆内存，因此 C++11 标准中的 unique_ptr 模板类没有提供拷贝构造函数，只提供了移动构造函数。例如：</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;<span class="keyword">int</span>&gt; <span class="title">p4</span><span class="params">(<span class="keyword">new</span> <span class="keyword">int</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;<span class="keyword">int</span>&gt; <span class="title">p5</span><span class="params">(p4)</span></span>;<span class="comment">//错误，堆内存不共享</span></span><br><span class="line"><span class="function"><span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;<span class="keyword">int</span>&gt; <span class="title">p5</span><span class="params">(<span class="built_in">std</span>::move(p4))</span></span>;<span class="comment">//正确，调用移动构造函数</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>默认情况下，unique_ptr 指针采用 std::default_delete<t> 方法释放堆内存。当然，我们也可以自定义符合实际场景的释放规则。值得一提的是，和 shared_ptr 指针不同，为 unique_ptr 自定义释放规则，只能采用函数对象的方式。例如：</t></p>
+<figure class="highlight"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//自定义的释放规则</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">myDel</span></span></span><br><span class="line"><span class="class">{</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">operator</span><span class="params">()</span><span class="params">(<span class="keyword">int</span> *p)</span> </span>{</span><br><span class="line">        <span class="keyword">delete</span> p;</span><br><span class="line">    }</span><br><span class="line">};</span><br><span class="line">std::unique_ptr&lt;int, myDel&gt; p6(new int);</span><br></pre></td></tr></tbody></table></figure>
+
+<p>比较重要的成员函数</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>release()</td>
+<td>释放当前 unique_ptr 指针对所指堆内存的所有权，但该存储空间并不会被销毁。</td>
+</tr>
+<tr>
+<td>reset(p)</td>
+<td>其中 p 表示一个普通指针，如果 p 为 nullptr，则当前 unique_ptr 也变成空指针；反之，则该函数会释放当前 unique_ptr 指针指向的堆内存（如果有），然后获取 p 所指堆内存的所有权（p 为 nullptr）。</td>
+</tr>
+<tr>
+<td>swap(x)</td>
+<td>交换当前 unique_ptr 指针和同类型的 x 指针。</td>
+</tr>
+</tbody></table>
+<h3 id="weak-ptr"><a href="#weak-ptr" class="headerlink" title="weak_ptr"></a>weak_ptr</h3><p><a target="_blank" rel="noopener" href="http://c.biancheng.net/view/7918.html">参考</a></p>
+<p>C++11标准虽然将 weak_ptr 定位为智能指针的一种，但该类型指针通常不单独使用（没有实际用处），只能和 shared_ptr 类型指针搭配使用。甚至于，我们可以将 weak_ptr 类型指针视为 shared_ptr 指针的一种辅助工具，借助 weak_ptr 类型指针， 我们可以获取 shared_ptr 指针的一些状态信息，比如有多少指向相同的 shared_ptr 指针、shared_ptr 指针指向的堆内存是否已经被释放等等。</p>
+<p>需要注意的是，当 weak_ptr 类型指针的指向和某一 shared_ptr 指针相同时，weak_ptr 指针并不会使所指堆内存的引用计数加 1；同样，当 weak_ptr 指针被释放时，之前所指堆内存的引用计数也不会因此而减 1。也就是说，weak_ptr 类型指针并不会影响所指堆内存空间的引用计数。</p>
+<p>除此之外，weak_ptr<t> 模板类中没有重载 * 和 -&gt; 运算符，这也就意味着，weak_ptr 类型指针只能访问所指的堆内存，而无法修改它。</t></p>
+<table>
+<thead>
+<tr>
+<th>成员方法</th>
+<th>功 能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>operator=()</td>
+<td>重载 = 赋值运算符，是的 weak_ptr 指针可以直接被 weak_ptr 或者 shared_ptr 类型指针赋值。</td>
+</tr>
+<tr>
+<td>swap(x)</td>
+<td>其中 x 表示一个同类型的 weak_ptr 类型指针，该函数可以互换 2 个同类型 weak_ptr 指针的内容。</td>
+</tr>
+<tr>
+<td>reset()</td>
+<td>将当前 weak_ptr 指针置为空指针。</td>
+</tr>
+<tr>
+<td>use_count()</td>
+<td>查看指向和当前 weak_ptr 指针相同的 shared_ptr 指针的数量。</td>
+</tr>
+<tr>
+<td>expired()</td>
+<td>判断当前 weak_ptr 指针为否过期（指针为空，或者指向的堆内存已经被释放）。</td>
+</tr>
+<tr>
+<td>lock()</td>
+<td>如果当前 weak_ptr 已经过期，则该函数会返回一个空的 shared_ptr 指针；反之，该函数返回一个和当前 weak_ptr 指向相同的 shared_ptr 指针。</td>
+</tr>
+</tbody></table>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%9D%A2%E8%AF%95%E9%A2%98/" rel="tag"># 面试题</a>
+              <a href="/tags/C/" rel="tag"># C++</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/01/24/C-STL%E7%9F%A5%E8%AF%86%E7%82%B9%E6%95%B4%E7%90%86/" rel="prev" title="C++STL知识点整理">
+      <i class="fa fa-chevron-left"></i> C++STL知识点整理
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/01/26/C-%E8%99%9A%E5%87%BD%E6%95%B0%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/" rel="next" title="C++虚函数常见问题">
+      C++虚函数常见问题 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#lambda%E8%A1%A8%E8%BE%BE%E5%BC%8F"><span class="nav-number">1.</span> <span class="nav-text">lambda表达式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#nullptr%E4%B8%8ENULL"><span class="nav-number">2.</span> <span class="nav-text">nullptr与NULL</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B7%A6%E5%80%BC%E5%92%8C%E5%8F%B3%E5%80%BC"><span class="nav-number">3.</span> <span class="nav-text">左值和右值</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%B3%E5%80%BC%E5%BC%95%E7%94%A8"><span class="nav-number">4.</span> <span class="nav-text">右值引用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A7%BB%E5%8A%A8%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0"><span class="nav-number">5.</span> <span class="nav-text">移动构造函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%8C%E7%BE%8E%E8%BD%AC%E5%8F%91"><span class="nav-number">6.</span> <span class="nav-text">完美转发</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%99%BA%E8%83%BD%E6%8C%87%E9%92%88"><span class="nav-number">7.</span> <span class="nav-text">智能指针</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#auto-ptr"><span class="nav-number">7.1.</span> <span class="nav-text">auto_ptr</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#shared-ptr"><span class="nav-number">7.2.</span> <span class="nav-text">shared_ptr</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#unique-ptr"><span class="nav-number">7.3.</span> <span class="nav-text">unique_ptr</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#weak-ptr"><span class="nav-number">7.4.</span> <span class="nav-text">weak_ptr</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Yu Hong</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">25</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+	
+	
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yu Hong</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">211k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">3:12</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

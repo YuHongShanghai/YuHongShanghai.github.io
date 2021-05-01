@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="new和malloc的区别1）new、delete是C++中独有的操作符，而malloc和free是C&#x2F;C++中的标准库函数。 2）使用new创建对象在分配内存的时候会自动调用构造函数，同时也可以完成对对象的初始化，同理要记得delete也能自动调用析构函数。因为malloc和 free是库函数而不是运算符，不在编译器控制范围之内，所以不能够自动调用构造函数和析构函数。也就是mallloc只是单纯">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++基础知识">
+<meta property="og:url" content="http://example.com/2021/01/21/C-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/index.html">
+<meta property="og:site_name" content="Hi! Yh">
+<meta property="og:description" content="new和malloc的区别1）new、delete是C++中独有的操作符，而malloc和free是C&#x2F;C++中的标准库函数。 2）使用new创建对象在分配内存的时候会自动调用构造函数，同时也可以完成对对象的初始化，同理要记得delete也能自动调用析构函数。因为malloc和 free是库函数而不是运算符，不在编译器控制范围之内，所以不能够自动调用构造函数和析构函数。也就是mallloc只是单纯">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-01-21T11:38:49.000Z">
+<meta property="article:modified_time" content="2021-02-18T04:46:37.322Z">
+<meta property="article:author" content="Yu Hong">
+<meta property="article:tag" content="面试题">
+<meta property="article:tag" content="C++">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2021/01/21/C-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>C++基础知识 | Hi! Yh</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hi! Yh</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/21/C-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Yu Hong">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hi! Yh">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          C++基础知识
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-01-21 19:38:49" itemprop="dateCreated datePublished" datetime="2021-01-21T19:38:49+08:00">2021-01-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-02-18 12:46:37" itemprop="dateModified" datetime="2021-02-18T12:46:37+08:00">2021-02-18</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>16k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>15 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="new和malloc的区别"><a href="#new和malloc的区别" class="headerlink" title="new和malloc的区别"></a>new和malloc的区别</h2><p>1）new、delete是C++中独有的操作符，而malloc和free是C/C++中的标准库函数。</p>
+<p>2）使用new创建对象在分配内存的时候会自动调用构造函数，同时也可以完成对对象的初始化，同理要记得delete也能自动调用析构函数。因为malloc和 free是库函数而不是运算符，不在编译器控制范围之内，所以不能够自动调用构造函数和析构函数。也就是mallloc只是单纯地为变量分配内存，free也只是释放变量的内存。</p>
+<p>3）new返回的是指定类型的指针，并且可以自动计算所申请内存的大小。而malloc返回的是void*类型，我们需要强行将其转换为实际类型的指针，并且需要指定好要申请内存的大小，malloc不会自动计算的。<a id="more"></a></p>
+<p>4）C++允许重载new/delete操作符，而malloc和free是一个函数，并不能重载。</p>
+<p>5）new内存分配失败时，会抛出bad_alloc异常。malloc分配内存失败时返回NULL。</p>
+<p>6）内存区域：先了解自由存储区和堆，两者不相等于的。自由存储区是C++基于new操作符的一个抽象概念，凡是通过new操作符进行内存申请，该内存即为自由存储区。堆是操作系统中的术语，是操作系统所维护的一块特殊内存，用于程序的内存动态分配。new操作符从自由存储区上为对象动态分配内存空间，而malloc函数从堆上动态分配内存。</p>
+<h2 id="指针与引用的相同和区别"><a href="#指针与引用的相同和区别" class="headerlink" title="指针与引用的相同和区别"></a>指针与引用的相同和区别</h2><ol>
+<li><p>指针是一个实体，而引用仅是个别名</p>
+</li>
+<li><p>指针和引用的自增(++)运算意义不一样，指针是对内存地址的自增，引用是对值的自增；</p>
+</li>
+<li><p>引用使用时无需解引用(*)，指针需要解引用；</p>
+</li>
+<li><p>引用只能在定义时被初始化一次，之后不可变；指针可变；</p>
+</li>
+<li><p>引用不能为空，指针可以为空；</p>
+<p>6.引用没有const，指针有const；（本人当初看到这句话表示疑问，这里解释一下：指针有“指针常量”即int * const a,但是引用没有int&amp; const a，不过引用有“常引用”即const int &amp;a = 1）</p>
+</li>
+<li><p>“sizeof 引用”得到的是所指向的变量(对象)的大小，而“sizeof 指针”得到的是指针本身的大小，在32位系统指针变量一般占用4字节内存。</p>
+</li>
+</ol>
+<h2 id="C语言内存分配的方式"><a href="#C语言内存分配的方式" class="headerlink" title="C语言内存分配的方式"></a>C语言内存分配的方式</h2><p>1、从静态存储区域分配。内存在程序编译的时候就已经分配好，这块内存在程序的整个运行期间都存在。例如全局变量，static变量。</p>
+<p>2、在栈上创建。在执行函数时，函数内局部变量的存储单元都可以在栈上创建，函数执行结束时这些存储单元自动被释放。栈内存分配运算内置于处理器的指令集中，效率很高，但是分配的内存容量有限。</p>
+<p>3、从堆上分配，亦称动态内存分配。程序在运行的时候用malloc或new申请任意多少的内存，程序员自己负责在何时用free或delete释放内存。动态内存的生存期由程序员决定，使用非常灵活，但如果在堆上分配了空间，就有责任回收它，否则运行的程序会出现内存泄漏，频繁地分配和释放不同大小的堆空间将会产生堆内碎块。</p>
+<p><a target="_blank" rel="noopener" href="http://c.biancheng.net/view/vip_2097.html">Linux下C语言程序的内存布局（内存模型）</a></p>
+<h2 id="extern”C”-的作用"><a href="#extern”C”-的作用" class="headerlink" title="extern”C” 的作用"></a>extern”C” 的作用</h2><p>我们可以在C++中使用C的已编译好的函数模块，这时候就需要用到extern”C”。这是为了避免C++ name mangling，主要用于动态链接库，使得在C++里导出函数名称与C语言规则一致（不改变），方便不同的编译器甚至是不同的开发语言调用。</p>
+<p>那么我们来看看C++语言规则和C语言规则有何不同。如果我们定义一个函数：</p>
+<p>int fun(int a)；</p>
+<p>如果是C++编译器，则可能将此函数改名为int_fun_int,（C++重载机制就这么来的）。如果有加上extern”C修饰，则c++编译器会按照C语言编译器一样编译为_fun。</p>
+<h2 id="extern-关键字的作用"><a href="#extern-关键字的作用" class="headerlink" title="extern 关键字的作用"></a>extern 关键字的作用</h2><ol>
+<li><p>extern修饰变量的声明。举例来说，如果文件a.c需要引用b.c中变量int v，就可以在a.c中声明extern int v，然后就可以引用变量v。这里需要注意的是，被引用的变量v的链接属性必须是外链接（external）的，也就是说a.c要引用到v，不只是取决于在a.c中声明extern int v，还取决于变量v本身是能够被引用到的。这涉及到c语言的另外一个话题－－变量的作用域。能够被其他模块以extern修饰符引用到的变量通常是全局变量。还有很重要的一点是，extern int v可以放在a.c中的任何地方，比如你可以在a.c中的函数fun定义的开头处声明extern int v，然后就可以引用到变量v了，只不过这样只能在函数fun作用域中引用v罢了，这还是变量作用域的问题。</p>
+</li>
+<li><p>extern修饰函数声明。从本质上来讲，变量和函数没有区别。函数名是指向函数二进制块开头处的指针。如果文件a.c需要引用b.c中的函数，比如在b.c中原型是int fun(int mu)，那么就可以在a.c中声明extern int fun（int mu），然后就能使用fun来做任何事情。就像变量的声明一样，extern int fun（int mu）可以放在a.c中任何地方，而不一定非要放在a.c的文件作用域的范围中。对其他模块中函数的引用，最常用的方法是包含这些函数声明的头文件。使用extern和包含头文件来引用函数有什么区别呢？extern的引用方式比包含头文件要简洁得多！extern的使用方法是直接了当的，想引用哪个函数就用extern声明哪个函数。这大概是KISS原则的一种体现吧！这样做的一个明显的好处是，会加速程序的编译（确切的说是预处理）的过程，节省时间。在大型C程序编译过程中，这种差异是非常明显的。</p>
+</li>
+<li><p>此外，extern修饰符可用于指示C或者C＋＋函数的调用规范。比如在C＋＋中调用C库函数，就需要在C＋＋程序中用extern “C”声明要引用的函数。这是给链接器用的，告诉链接器在链接的时候用C函数规范来链接。主要原因是C＋＋和C程序编译完成后在目标代码中命名规则不同。</p>
+</li>
+</ol>
+<p><strong>注意</strong>:</p>
+<p>1）头文件声明时加extern定义时不要加，因为extern可以多次声明，但只有一个定义。</p>
+<p>2）extern在链接阶段起作用（四大阶段：预处理–编译–汇编–链接）。</p>
+<h2 id="函数参数压栈顺序，即关于-stdcall和-cdecl调用方式的理解"><a href="#函数参数压栈顺序，即关于-stdcall和-cdecl调用方式的理解" class="headerlink" title="函数参数压栈顺序，即关于__stdcall和__cdecl调用方式的理解"></a>函数参数压栈顺序，即关于__stdcall和__cdecl调用方式的理解</h2><p><strong>1）__stdcall</strong>：是StandardCall的缩写，是C++的标准调用方式，参数由右向左压入堆栈，由调用者负责把参数压入栈，最后由被调用者负责清除栈的内容。</p>
+<p><strong>2）__cdecl：</strong>是C Declaration的缩写（declaration，声明），表示C语言默认的函数调用方法：参数也是由右向左压入堆栈；由调用者负责把参数压入栈，最后也由调用者负责清除栈的内容。</p>
+<p>总结：因为以上2点，_cdecl这种调用约定的特点是支持可变数量的参数，比如printf方法，__stdcall不支持可变数量的参数。</p>
+<p>假设函数fun（）作为调用者调用printf打印东西时，可以输入不同数量的参数，printf作为被调用者，并不知道调用者fun（）到底将多少参数压入堆栈，因此printf就没有办法自己清理堆栈，所以只有函数退出之后，由fun清理堆栈，因为fun总是知道自己传入了多少参数。</p>
+<h2 id="数组到底存放在哪里"><a href="#数组到底存放在哪里" class="headerlink" title="数组到底存放在哪里"></a>数组到底存放在哪里</h2><ol>
+<li><p>固定数组在函数体内分配（不带static）是在栈中的</p>
+</li>
+<li><p>固定数组是全局变量和带static前缀的局部数组是在全局数据的</p>
+</li>
+<li><p>固定数组在类中分配是在堆中的</p>
+</li>
+<li><p>动态数组（通过malloc或者new出来的空间）不管在函数体中、类中、全局变量都是在堆中</p>
+</li>
+</ol>
+<h2 id="struct和class的区别"><a href="#struct和class的区别" class="headerlink" title="struct和class的区别"></a>struct和class的区别</h2><p>两者最大区别是struct里面默认的访问控制是public，而class中的默认访问控制是private。</p>
+<h2 id="static的用法（定义和用途）"><a href="#static的用法（定义和用途）" class="headerlink" title="static的用法（定义和用途）"></a>static的用法（定义和用途）</h2><p>1）static局部变量：局部变量为动态存储，即指令执行到定义处才分配内存，将一个变量声明为函数的局部变量，使其变为静态存储方式(静态数据区)，那么这个局部变量在函数执行完成之后不会被释放，而是继续保留在内存中。</p>
+<p>2）static全局变量：全局变量即定义{}外面，其本身就是静态变量，编译时就分配内存，这只会改变其连接方式，使其只在本文件内部有效，而其他文件不可连接或引用该变量。</p>
+<p>3）static函数：对函数的连接方式产生影响，使得函数只在本文件内部有效，对其他文件是不可见的。这样的函数又叫作静态函数。使用静态函数的好处是，不用担心与其他文件的同名函数产生干扰，另外也是对函数本身的一种保护机制。如果想要其他文件可以引用本地函数，则要在函数定义时使用关键字extern，表示该函数是外部函数，可供其他文件调用。另外在要引用别的文件中定义的外部函数的文件中，使用extern声明要用的外部函数即可。</p>
+<p>到了C++的时候，static多了几个其他的作用：</p>
+<p>4）static类成员变量：表示这个成员为全类所共有，对类的所有对象只有一份拷贝，可以借助类名直接访问。</p>
+<p>5）static类成员函数：表示这个函数为全类所共有，而且只能访问静态成员变量，因为这个函数不接收this指针。</p>
+<h2 id="const常量和-define的区别"><a href="#const常量和-define的区别" class="headerlink" title="const常量和#define的区别"></a>const常量和#define的区别</h2><p>1）用#define MAX 255定义的常量是<strong>没有类型</strong>的（不进行类型安全检查，可能会产生意想不到的错误），所给出的是一个立即数，编译器只是把所定义的常量值与所定义的常量的名字联系起来，define所定义的宏变量在<strong>预处理**</strong>阶段**的时候进行替换，在程序中使用到该常量的地方都要进行拷贝替换；</p>
+<p>用const float MAX = 255;定义的常量<strong>有类型**</strong>（<strong>编译时会进行类型检查）名字，存放在内存的静态区域中，在</strong>编译时<strong>确定其值。在程序运行过程中const变量只有</strong>一个拷贝<strong>，而#define所定义的宏变量却有多个拷贝，所以宏定义在程序运行过程中所消耗的</strong>内存**要比const变量的大得多；</p>
+<p>2）用define定义的常量是不可以用指针变量去指向的，用const定义的常量是可以用指针去指向该常量的地址的；</p>
+<p>3）用define可以定义一些简单的函数（宏替换只作替换，不做计算，不做表达式求解），const是不可以定义函数的.</p>
+<p>4）宏定义的作用范围仅限于当前文件。 而默认状态下，const对象只在文件内有效，当多个文件中出现了同名的const变量时，等同于在不同文件中分别定义了独立的变量。 如果想在多个文件之间共享const对象，必须在变量定义之前添加extern关键字（在声明和定义时都要加）。</p>
+<h2 id="volatile作用和用法"><a href="#volatile作用和用法" class="headerlink" title="volatile作用和用法"></a>volatile作用和用法</h2><p>volatile的本意是“易变的” 因为访问寄存器要比访问内存单元快的多,所以编译器一般都会作减少存取内存的优化，但有可能会读脏数据。当要求使用volatile声明变量值的时候，编译器对访问该变量的代码就不再进行优化，系统总是重新从它所在的内存读取数据，即使它前面的指令刚刚从该处读取过数据。</p>
+<p>volatile关键词的作用是影响编译器编译的结果，用volatile声明的变量表示该变量随时可能发生变化，与该变量有关的运算，不要进行编译优化，以免出错。</p>
+<h2 id="c-中类型转换机制"><a href="#c-中类型转换机制" class="headerlink" title="c++中类型转换机制"></a>c++中类型转换机制</h2><p>（1）<strong>static_cast</strong></p>
+<p>特点：静态转换，在编译处理期间。</p>
+<p>应用场合：主要用于C++中内置的基本数据类型之间的转换，但是没有运行时类型的检测来保证转换的安全性。</p>
+<p> 用于基类和子类之间的指针或引用之间的转换，这种转换把子类的指针或引用转换为基类表示是安全的；进行下行转换，把基类的指针或引用转换为子类表示时，由于没有进行动态类型检测，所以是不安全的。上行安全下行不安全</p>
+<p> 把void类型的指针转换成目标类型的指针（不安全）。</p>
+<p> 不能用于两个不相关的类型转换。</p>
+<p> 不能把const对象转换成非const对象。</p>
+<p>（2）<strong>const_cast</strong></p>
+<p>特点：去常转换，编译时执行。不是运行时执行</p>
+<p>应用场合：const_cast操作不能在不同的种类间转换。相反，它仅仅把它作用的表达式转换成常量。它可以使一个本来不是const类型的数据转换成const类型的，或者把const属性去掉。 </p>
+<p>去掉const属性：const_case&lt;int*&gt; (&amp;num)，常用，因为不能把一个const变量直接赋给一个非const变量，必须要转换。</p>
+<figure class="highlight c"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>{</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">int</span> constant = <span class="number">26</span>;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">int</span>* const_p = &amp;constant;</span><br><span class="line">    <span class="keyword">int</span>* modifier = <span class="keyword">const_cast</span>&lt;<span class="keyword">int</span>*&gt;(const_p);</span><br><span class="line">    *modifier = <span class="number">3</span>;</span><br><span class="line">    <span class="built_in">cout</span>&lt;&lt; <span class="string">"constant:  "</span>&lt;&lt;constant&lt;&lt;<span class="built_in">endl</span>;  <span class="comment">//26</span></span><br><span class="line">    <span class="built_in">cout</span>&lt;&lt;<span class="string">"*modifier:  "</span>&lt;&lt;*modifier&lt;&lt;<span class="built_in">endl</span>;   <span class="comment">//3</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>const_case只能转换<strong>指针或引用</strong> 不能转换变量</p>
+<figure class="highlight c"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> i = <span class="number">3</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> j = <span class="keyword">const_cast</span>&lt;<span class="keyword">int</span>&gt;(i);</span><br></pre></td></tr></tbody></table></figure>
+
+<p>是不行的</p>
+<p>（3）<strong>reinterpret_cast</strong></p>
+<p>特点： 重解释类型转换</p>
+<p>应用场合：它有着和c风格强制类型转换同样的功能；它可以转化任何的内置数据类型为其他的类型，同时它也可以把任何类型的指针转化为其他的类型；它的机理是对二进制进行重新的解释，不会改变原来的格式。</p>
+<p><strong>（4）dynamic_cast &lt; type-id &gt; ( expression )</strong></p>
+<p>含义：将一个指向基类的指针转换成指向派生类的指针；如果失败，返回空指针。</p>
+<p>该运算符将expression转换成type_id类型的对象。type_id必须是类的指针，类的引用或者空类型的指针。</p>
+<p>a、如果type_id是一个指针类型，那么expression也必须是一个指针类型，如果type_id是一个引用类型，那么expression也必须是一个引用类型。</p>
+<p>b、如果type_id是一个空类型的指针，在运行的时候，就会检测expression的实际类型，结果是一个由expression决定的指针类型。</p>
+<p>c、如果type_id不是空类型的指针，在运行的时候指向expression对象的指针能否可以转换成type_id类型的指针。</p>
+<p>d、在运行的时候决定真正的类型，如果向下转换是安全的，就返回一个转换后的指针，若不安全，则返回一个空指针。</p>
+<p>e、主要用于上下行之间的转换，也可以用于类之间的交叉转换。上行转换时和static_cast效果一样，下行转换时，具有检测功能，比static_cast更安全。</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CBasic</span>{</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line"> </span><br><span class="line">    CBasic(){};</span><br><span class="line">    ~CBasic(){};</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">speak</span><span class="params">()</span> </span>{     <span class="comment">//要有virtual才能实现多态，才能使用dynamic cast，如果父类没有虚函数，是编译不过的</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"dsdfsd"</span>);</span><br><span class="line">    }</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line"> </span><br><span class="line">};</span><br><span class="line"> </span><br><span class="line"><span class="comment">//哺乳动物类</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">cDerived</span>:</span><span class="keyword">public</span> CBasic{</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    cDerived(){};</span><br><span class="line">    ~cDerived(){};</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">};</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>{</span><br><span class="line">     CBasic  cBasic;</span><br><span class="line">     CDerived  cDerived;</span><br><span class="line">     </span><br><span class="line">     CBasic * pB1 = <span class="keyword">new</span> CBasic;</span><br><span class="line">     CBasic * pB2 = <span class="keyword">new</span> CDerived;</span><br><span class="line">     </span><br><span class="line">     <span class="comment">//dynamic cast failed, so pD1 is null.  pB1指向对象和括号里的Derived *不一样，转换失败</span></span><br><span class="line">     CDerived * pD1 = <span class="keyword">dynamic_cast</span>&lt;CDerived * &gt; (pB1);    </span><br><span class="line">     </span><br><span class="line">     <span class="comment">//dynamic cast succeeded, so pD2 points to  CDerived object       </span></span><br><span class="line">     <span class="comment">//dynamic cast 用于将指向子类的父类指针或引用，转换为子类指针或引用 ，pB2指向对象和括号里的Derived *一样，转换成功    </span></span><br><span class="line">     CDerived * pD2 = <span class="keyword">dynamic_cast</span>&lt;CDerived * &gt; (pB2);    </span><br><span class="line">     </span><br><span class="line">     <span class="comment">//dynamci cast failed, so throw an exception.             </span></span><br><span class="line">     CDerived &amp; rD1 = <span class="keyword">dynamic_cast</span>&lt;CDerived &amp;&gt; (*pB1);   </span><br><span class="line">     </span><br><span class="line">     <span class="comment">//dynamic cast succeeded, so rD2 references to CDerived object.</span></span><br><span class="line">     CDerived &amp; rD2 = <span class="keyword">dynamic_cast</span>&lt;CDerived &amp;&gt; (*pB2);    </span><br><span class="line">     <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>dynamic_cast转换失败时，对指针，返回NULL；对引用，抛出bad_cast异常。</p>
+<h2 id="继承和虚继承"><a href="#继承和虚继承" class="headerlink" title="继承和虚继承"></a>继承和虚继承</h2><p>因为C++支持多重继承，那么在这种情况下会出现重复的基类这种情况，也就是说可能出现将一个类两次作为基类的可能性（菱形继承）。为了节省内存空间，可以将DeriverdA、DeriverdB对Base的继承定义为虚拟继承，而Base就成了虚拟基类。实现的代码如下：</p>
+<figure class="highlight c"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Base</span></span></span><br><span class="line"><span class="class"> </span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DeriverdA</span>:</span><span class="keyword">public</span> <span class="keyword">virtual</span> Base; <span class="comment">//虚继承</span></span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DeriverdB</span>:</span><span class="keyword">public</span> <span class="keyword">virtual</span> Base; <span class="comment">//虚继承</span></span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">D</span>:</span><span class="keyword">public</span> DeriverdA,DeriverdB;  <span class="comment">//普通继承</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>虚拟继承在一般的应用中很少用到，所以也往往被忽视，这也主要是因为在C++中，多重继承是不推荐的，也并不常用，而一旦离开了多重继承，虚拟继承就完全失去了存在的必要因为这样只会降低效率和占用更多的空间。</p>
+<p><strong>注意</strong>：不要全部都使用虚继承，因为虚继承会破坏继承体系，不能按照平常的继承体系来进行类型转换（如C++提供的强制转换函数static_cast对继承体系中的类对象转换一般可行的，这里就不行了）。所以不要轻易使用虚继承，更不要在虚继承的基础上进行类型转换，切记切记！</p>
+<h2 id="多态类的内存布局"><a href="#多态类的内存布局" class="headerlink" title="多态类的内存布局"></a>多态类的内存布局</h2><p>（1）虚继承：如果是虚继承，那么就会为这个类创建一个虚表指针，占用4个字节</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;  </span></span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span> {</span>  </span><br><span class="line"><span class="keyword">public</span>:  </span><br><span class="line">    <span class="keyword">int</span> a;  </span><br><span class="line">}; <span class="comment">//sizeof(A)=4，因为a是整形，占用4字节</span></span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">B</span> :</span> <span class="keyword">virtual</span> <span class="keyword">public</span> A {  </span><br><span class="line"><span class="keyword">public</span>:  </span><br><span class="line">    <span class="keyword">int</span> b;  </span><br><span class="line">};<span class="comment">//sizeof(B)=4(A副本)+4(虚表指针占用4字节)+4(变量b占用4字节)=12  </span></span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">C</span> :</span> <span class="keyword">virtual</span> <span class="keyword">public</span> B {       </span><br><span class="line">};<span class="comment">//sizeof(c)= 12(B副本)+4(虚表指针) = 16，如果这里改为直接继承，那么sizeof(c)=12，因为此时就没有虚表指针了</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>（2）多重继承：如果是以<strong>虚继承</strong>实现多重继承，记得减掉基类的副本</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;  </span></span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span> {</span>  </span><br><span class="line"><span class="keyword">public</span>:  </span><br><span class="line">    <span class="keyword">int</span> a;  </span><br><span class="line">};<span class="comment">//sizeof(A) = 4  </span></span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">B</span> :</span> <span class="keyword">virtual</span> <span class="keyword">public</span> A {  </span><br><span class="line">};<span class="comment">// sizeof(B) =4+4=8  </span></span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">C</span> :</span> <span class="keyword">virtual</span> <span class="keyword">public</span> A {          </span><br><span class="line">};<span class="comment">//sizeof(C) =4+4=8  </span></span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">D</span> :</span> <span class="keyword">public</span> B, <span class="keyword">public</span> C{         </span><br><span class="line">};  </span><br><span class="line"><span class="comment">//sizeof(D)=8+8-4=12这里需要注意要减去4，因为B和C同时继承A，只需要保存一个A的副本就好了，sizeof(D)=4(A的副本)+4(B的虚表)+4(C的虚表)=12，也可以是8（B的副本）+8（c的副本）-4（A的副本）=12</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>（3）普通继承（含有：空类、虚函数）</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span>      //<span class="title">result</span>=</span><span class="number">1</span>  空类所占空间的大小为<span class="number">1</span>  </span><br><span class="line">{     </span><br><span class="line">};    </span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">B</span>     //<span class="title">result</span>=</span><span class="number">8</span>  <span class="number">1</span>+<span class="number">4</span>   字节对齐后为 <span class="number">8</span>  </span><br><span class="line">{  </span><br><span class="line">    <span class="keyword">char</span> ch;     </span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">func0</span><span class="params">()</span>  </span>{  }   </span><br><span class="line">};   </span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">C</span>    //<span class="title">result</span>=</span><span class="number">8</span>  <span class="number">1</span>+<span class="number">1</span>+<span class="number">4</span> 字节对齐后为 <span class="number">8</span>，没有继承的，此时类里即使出现多个虚函数，也只有一个虚指针</span><br><span class="line">{  </span><br><span class="line">    <span class="keyword">char</span> ch1;  </span><br><span class="line">    <span class="keyword">char</span> ch2;  </span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">func</span><span class="params">()</span>  </span>{  }    <span class="comment">//也只有一个虚指针</span></span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">func1</span><span class="params">()</span> </span>{  }    <span class="comment">//也只有一个虚指针</span></span><br><span class="line">};  </span><br><span class="line">   </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">D</span>:</span> <span class="keyword">public</span> A, <span class="keyword">public</span> C  <span class="comment">//result=12  8（C的副本）+4（整形变量d占用4字节）=12  </span></span><br><span class="line">{     </span><br><span class="line">    <span class="keyword">int</span> d;     </span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">func</span><span class="params">()</span>  </span>{  }   <span class="comment">//继承了C，C里已经有一个虚指针，此时D自己有虚函数，</span></span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">func1</span><span class="params">()</span>  </span>{  } <span class="comment">//也不会创建另一个虚指针，所以D本身就变量d需要4字节</span></span><br><span class="line">};     </span><br><span class="line">   </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">E</span>:</span> <span class="keyword">public</span> B, <span class="keyword">public</span> C  <span class="comment">//result=20   8（ B的副本）+8（C的副本）+4（E本身）=20</span></span><br><span class="line">{     </span><br><span class="line">    <span class="keyword">int</span> e;     </span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">func0</span><span class="params">()</span>  </span>{  }   <span class="comment">//同理，E不会创建另一个虚指针，所以E本身就变量e需</span></span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">func1</span><span class="params">()</span>  </span>{  }  <span class="comment">//要4字节</span></span><br><span class="line">};  </span><br></pre></td></tr></tbody></table></figure>
+
+<p>（4）虚继承（多重继承和虚函数）</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CommonBase</span>  </span></span><br><span class="line"><span class="class">{</span>  </span><br><span class="line">    <span class="keyword">int</span> co;  </span><br><span class="line">};<span class="comment">// size = 4  </span></span><br><span class="line">   </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Base1</span>:</span> <span class="keyword">virtual</span> <span class="keyword">public</span> CommonBase            </span><br><span class="line">{  </span><br><span class="line"><span class="keyword">public</span>:  </span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">print1</span><span class="params">()</span> </span>{  }  </span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">print2</span><span class="params">()</span> </span>{  }  </span><br><span class="line"><span class="keyword">private</span>:  </span><br><span class="line">    <span class="keyword">int</span> b1;  </span><br><span class="line">};<span class="comment">//4（父类副本）+4（自己有虚函数，加1个虚指针空间）+4（自身变量b1）+4(虚继承再加1个虚指针空间)=16  </span></span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Base2</span>:</span> <span class="keyword">virtual</span> <span class="keyword">public</span> CommonBase          </span><br><span class="line">{  </span><br><span class="line"><span class="keyword">public</span>:  </span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">dump1</span><span class="params">()</span> </span>{  }  </span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">dump2</span><span class="params">()</span> </span>{  }  </span><br><span class="line"><span class="keyword">private</span>:  </span><br><span class="line">    <span class="keyword">int</span> b2;  </span><br><span class="line">};<span class="comment">//同理16  </span></span><br><span class="line">   </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Derived</span>:</span> <span class="keyword">public</span> Base1, <span class="keyword">public</span> Base2       </span><br><span class="line">{  </span><br><span class="line"><span class="keyword">public</span>:  </span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">print2</span><span class="params">()</span> </span>{  }  </span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">dump2</span><span class="params">()</span> </span>{  }  </span><br><span class="line"><span class="keyword">private</span>:  </span><br><span class="line">    <span class="keyword">int</span> d;  </span><br><span class="line">};<span class="comment">//16+16-4+4=32  </span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>（5）虚继承与虚函数</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span>  </span></span><br><span class="line"><span class="class">{</span>  </span><br><span class="line"><span class="keyword">public</span>:  </span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">aa</span><span class="params">()</span> </span>{  }  </span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">aa2</span><span class="params">()</span> </span>{  } <span class="comment">//如果此时类里有一个或多个虚函数，那么需要加1个虚指针空间</span></span><br><span class="line"><span class="keyword">private</span>:  </span><br><span class="line">    <span class="keyword">char</span> ch[<span class="number">3</span>];  </span><br><span class="line">}; <span class="comment">// 1+4 =补齐= 8   </span></span><br><span class="line">   </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">B</span>:</span> <span class="keyword">virtual</span> <span class="keyword">public</span> A <span class="comment">//如果还是虚继承，那么需要再加1个虚指针空间，最多就2个虚指//针空间。</span></span><br><span class="line">{  </span><br><span class="line"><span class="keyword">public</span>:  </span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">bb</span><span class="params">()</span> </span>{  }  </span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">bb2</span><span class="params">()</span> </span>{  }  </span><br><span class="line">}; <span class="comment">// 8（副本）+4(虚继承)+4（虚指针）= 16  </span></span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>如果此时类里有一个或多个虚函数，那么需要加1个虚指针空间，如果还是虚继承，那么需要再加1个虚指针空间，最多就2个虚指针空间。</strong></p>
+<h2 id="被隐藏的基类函数如何调用或者子类调用父类的同名函数和父类成员变量"><a href="#被隐藏的基类函数如何调用或者子类调用父类的同名函数和父类成员变量" class="headerlink" title="被隐藏的基类函数如何调用或者子类调用父类的同名函数和父类成员变量"></a>被隐藏的基类函数如何调用或者子类调用父类的同名函数和父类成员变量</h2><p>1）用using关键字：使用using后，父类的同名函数就不再隐藏，可以直接调用，如下：</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Child</span>:</span><span class="keyword">public</span> Parent</span><br><span class="line">{</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Child(){};</span><br><span class="line">    <span class="keyword">using</span> Parent::add;</span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">add</span><span class="params">(<span class="keyword">void</span>)</span></span>{};</span><br><span class="line">};</span><br></pre></td></tr></tbody></table></figure>
+
+
+
+<p>2）用域操作符，可以调用基类中被隐藏的所有成员函数和变量。</p>
+<p>如子类child和父类father都有add（）函数，可以通过下面代码实现子类对象调用父类的add（）函数：</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Child c;c</span><br><span class="line">c.Parent::add(<span class="number">10</span>);</span><br></pre></td></tr></tbody></table></figure>
+
+<h2 id="C-如何实现多态"><a href="#C-如何实现多态" class="headerlink" title="C++如何实现多态"></a>C++如何实现多态</h2><p><strong>讲明多态实现的三个条件、实现的原理</strong></p>
+<p>多态实现的三个条件：</p>
+<p>1）要有继承</p>
+<p>2）要有虚函数重写</p>
+<p>3）要有父类指针（父类引用）指向子类对象</p>
+<p>编译器发现一个类中有虚函数，便会立即为此类生成虚函数表vtable。虚函数表的各表项为指向类里面的虚函数的指针。编译器还会在此类中隐含插入一个指针vptr（对 vc 编译器来说，它插在类的内存地址的第一个位置上）指向虚函数表。调用此类的构造函数时，在类的构造函数中，编译器会隐含执行vptr 与 vtable 的关联代码，即将vptr 指向对应的 vtable，将类与此类的vtable 联系了起来。</p>
+<p>另外在调用类的构造函数时，指向基础类的指针此时已经变成指向具体的类的this 指针，这样依靠此 this 指针即可得到正确的 vtable，如此才能真正与函数体进行连接，这就是动态联编，实现多态的基本原理。</p>
+<h2 id="拷贝构造函数-深浅拷贝"><a href="#拷贝构造函数-深浅拷贝" class="headerlink" title="拷贝构造函数 深浅拷贝"></a>拷贝构造函数 深浅拷贝</h2><p>简单的来说，浅拷贝是增加了一个指针，指向原来已经存在的内存。浅拷贝在多个对象指向一块空间的时候，释放一个空间会导致其他对象所使用的空间也被释放了，再次释放便会出现错误。</p>
+<p>而深拷贝是增加了一个指针，并新开辟了一块空间让指针指向这块新开辟的空间。深拷贝和浅拷贝的不同之处，仅仅在于修改了下拷贝构造函数，以及赋值运算符的重载。就类对象而言，相同类型的类对象是通过拷贝构造函数来完成整个复制过程的。</p>
+<p>默认拷贝构造函数执行的是浅拷贝，对于凡是包含动态分配成员或包含指针成员的类都应该提供拷贝构造函数；在提供拷贝构造函数的同时，还应该考虑重载”=”赋值操作符号。</p>
+<h2 id="析构函数可以抛出异常吗"><a href="#析构函数可以抛出异常吗" class="headerlink" title="析构函数可以抛出异常吗"></a>析构函数可以抛出异常吗</h2><p>C++标准指明析构函数<strong>不能、也不应该抛出异常</strong>。C++异常处理模型最大的特点和优势就是对C++中的面向对象提供了最强大的无缝支持。那么如果对象在运行期间出现了异常，C++异常处理模型有责任清除那些由于出现异常所导致的已经失效了的对象(也即对象超出了它原来的作用域)，并释放对象原来所分配的资源，这就是调用这些对象的析构函数来完成释放资源的任务，所以从这个意义上说，<strong>析构函数已经变成了异常处理的一部分</strong>。</p>
+<p>1）如果析构函数抛出异常，则异常点之后的程序不会执行，如果析构函数在异常点之后执行了某些必要的动作比如释放某些资源，则这些动作不会执行，会造成诸如资源泄漏的问题。</p>
+<p>2）通常异常发生时，c++的机制会调用已经构造对象的析构函数来释放资源，此时若析构函数本身也抛出异常，则前一个异常尚未处理，又有新的异常（析构函数里delete this指针也会造成程序崩溃，因为delete this指针就是要调用析构函数，这样就变成无限循环了），会造成程序崩溃的问题。</p>
+<p>析构函数不能抛出异常，除了资源泄露还可能造成程序崩溃。</p>
+<h2 id="什么情况下会调用拷贝构造函数"><a href="#什么情况下会调用拷贝构造函数" class="headerlink" title="什么情况下会调用拷贝构造函数"></a>什么情况下会调用拷贝构造函数</h2><p><strong>1.一个对象以值传递的方式传入函数体</strong></p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//全局函数，传入的是对象</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">g_Fun</span><span class="params">(CExample C)</span></span></span><br><span class="line"><span class="function"></span>{</span><br><span class="line">    <span class="built_in">cout</span>&lt;&lt;<span class="string">"test"</span>&lt;&lt;<span class="built_in">endl</span>;</span><br><span class="line">}</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>{</span><br><span class="line">    <span class="function">CExample <span class="title">test</span><span class="params">(<span class="number">1</span>)</span></span>;</span><br><span class="line">    <span class="comment">//传入对象</span></span><br><span class="line">    g_Fun(test);</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>调用g_Fun()时，会产生以下几个重要步骤：</p>
+<p>(1)test对象传入形参时，会先会产生一个临时变量，就叫C吧。</p>
+<p>(2)然后调用拷贝构造函数把test的值给C。整个这两个步骤有点像：CExample C(test);</p>
+<p>(3)等g_Fun()执行完后,析构掉C对象。</p>
+<p><strong>2.一个对象以值传递的方式从函数返回</strong></p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//全局函数</span></span><br><span class="line"><span class="function">CExample <span class="title">g_Fun</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>{</span><br><span class="line">    <span class="function">CExample <span class="title">temp</span><span class="params">(<span class="number">0</span>)</span></span>;</span><br><span class="line">    <span class="keyword">return</span> temp;</span><br><span class="line">}</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>{</span><br><span class="line">    g_Fun();</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>当g_Fun()函数执行到return时，会产生以下几个重要步骤：</p>
+<p>(1)先会产生一个临时变量，就叫XXXX吧。</p>
+<p>(2)然后调用拷贝构造函数把temp的值给XXXX。整个这两个步骤有点像：CExample XXXX(temp);</p>
+<p>(3)在函数执行到最后先析构temp局部变量。</p>
+<p>(4)等g_Fun()执行完后再析构掉XXXX对象.</p>
+<p><strong>3.一个对象需要通过另外一个对象进行初始化</strong></p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">CExample <span class="title">A</span><span class="params">(<span class="number">100</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">CExample B = A; <span class="comment">//这句和下句都会调用拷贝构造函数。</span></span><br><span class="line"></span><br><span class="line"><span class="function">CExample <span class="title">B</span><span class="params">(A)</span></span>;</span><br></pre></td></tr></tbody></table></figure>
+
+<h2 id="析构函数一般写成虚函数的原因"><a href="#析构函数一般写成虚函数的原因" class="headerlink" title="析构函数一般写成虚函数的原因"></a>析构函数一般写成虚函数的原因</h2><p>在实现多态时（基类指针可以指向子类的对象），如果析构函数是虚函数，那么当用基类操作子类的时候（基类指针可以指向子类的对象），如果删除该基类指针时，就会调用该基类指针指向的子类析构函数，而子类的析构函数又自动调用基类的析构函数，这样整个子类的对象完全被释放。这是最理想的结果。</p>
+<p>如果析构函数不被声明成虚函数，则编译器实施静态绑定，在删除基类指针时，只会调用基类的析构函数而不会像上一段那样调用子类析构函数，这样就会造成子类对象析构不完全。所以，将析构函数声明为虚函数是十分必要的。</p>
+<h2 id="构造函数为什么一般不定义为虚函数"><a href="#构造函数为什么一般不定义为虚函数" class="headerlink" title="构造函数为什么一般不定义为虚函数"></a>构造函数为什么一般不定义为虚函数</h2><p>1）<strong>从存储空间角度</strong>：大家都知道虚函数相应一个指向vtable虚函数表的指针，而这个指向vtable的指针事实上是存储在对象的内存空间的。如果此时构造函数是虚的，就须要通过vtable来调用，但是对象还没有实例化，也就是内存空间还没有vtable，怎么找vtable呢？所以构造函数不能是虚函数。</p>
+<p>2）<strong>从使用角度</strong>：虚函数主要用于在信息不全的情况下，能使重载的函数得到相应的调用。构造函数本身就是要初始化实例，那使用虚函数也没有实际意义呀。所以构造函数没有必要是虚函数。虚函数的作用在于通过父类的指针或者引用来调用它的时候可以变成调用子类的那个成员函数。而构造函数是在创建对象时自己主动调用的，不可能通过父类的指针或者引用去调用，因此也就规定构造函数不能是虚函数。</p>
+<p>3）<strong>从实现上看</strong>：vbtl在构造函数调用后才建立，因而构造函数不可能成为虚函数从实际含义上看，在调用构造函数时还不能确定对象的真实类型（由于子类会调父类的构造函数）；并且构造函数的作用是提供初始化，在对象生命期仅仅运行一次，不是对象的动态行为，也没有必要成为虚函数。</p>
+<p>4）构造函数不须要是虚函数，也不同意是虚函数，由于创建一个对象时我们总是要明白指定对象的类型，虽然我们可能通过实验室的基类的指针或引用去訪问它但析构却不一定，我们往往通过基类的指针来销毁对象。这时候假设析构函数不是虚函数，就不能正确识别对象类型从而不能正确调用析构函数。</p>
+<p>5）当一个构造函数被调用时，它做的首要的事情之中的一个是初始化它的VPTR。因此，它仅仅能知道它是“当前”类的，而全然忽视这个对象后面是否还有继承者。当编译器为这个构造函数产生代码时，它是为这个类的构造函数产生代码——既不是为基类，也不是为它的派生类（由于类不知道谁继承它）。所以它使用的VPTR必须是对于这个类的VTABLE。并且，仅仅要它是最后的构造函数调用，那么在这个对象的生命期内，VPTR将保持被初始化为指向这个VTABLE,但假设接着另一个更晚派生的构造函数被调用，这个构造函数又将设置VPTR指向它的VTABLE，等.直到最后的构造函数结束。VPTR的状态是由被最后调用的构造函数确定的。这就是为什么构造函数调用是从基类到更加派生类顺序的还有一个理由。可是，当这一系列构造函数调用正发生时，每一个构造函数都已经设置VPTR指向它自己的VTABLE。假设函数调用使用虚机制，它将仅仅产生通过它自己的VTABLE的调用，而不是最后的VTABLE（全部构造函数被调用后才会有最后的VTABLE）。</p>
+<h2 id="什么是纯虚函数"><a href="#什么是纯虚函数" class="headerlink" title="什么是纯虚函数"></a>什么是纯虚函数</h2><p>纯虚函数声明：virtual函数类型 函数名（参数表列）= 0；</p>
+<p>纯虚函数只有函数的名字而不具备函数的功能，不能被调用。纯虚函数的作用是在基类中为其派生类保留一个函数的名字，以便派生类根据需要对他进行定义。如果在基类中没有保留函数名字，则无法实现多态性。如果在一个类中声明了纯虚函数，在其派生类中没有对其函数进行定义，则该虚函数在派生类中仍然为纯虚函数。</p>
+<p>注意：</p>
+<p>（1）纯虚函数没有函数体；</p>
+<p>（2）最后面的“=0”并不表示函数返回值为0，它只起形式上的作用，告诉编译系统“这是虚函数”；</p>
+<p>（3）这是一个声明语句，最后有分号。</p>
+<p>Ps：抽象类：不用定义对象而只作为一种基本类型用作继承的类叫做抽象类（也叫接口类），凡是包含纯虚函数的类都是抽象类，抽象类的作用是作为一个类族的共同基类，为一个类族提供公共接口，抽象类不能实例化出对象。纯虚函数在派生类中重新定义以后，派生类才能实例化出对象。</p>
+<h2 id="静态绑定和动态绑定的介绍"><a href="#静态绑定和动态绑定的介绍" class="headerlink" title="静态绑定和动态绑定的介绍"></a>静态绑定和动态绑定的介绍</h2><p>静态类型：对象在声明时采用的类型，在编译期既已确定；</p>
+<p>动态类型：通常是指一个指针或引用目前所指对象的类型，是在运行期决定的；</p>
+<p>静态绑定：绑定的是静态类型，所对应的函数或属性依赖于对象的静态类型，发生在编译期；</p>
+<p>动态绑定：绑定的是动态类型，所对应的函数或属性依赖于对象的动态类型，发生在运行期；</p>
+<p>非虚函数一般都是静态绑定，而虚函数都是动态绑定（如此才可实现多态性）。</p>
+<p>问题：引用是否能实现动态绑定，为什么引用可以实现 </p>
+<p>答：只有指定为虚函数的成员函数才能进行动态绑定，且必须通过基类类型的引用或指针进行函数调用，因为每个派生类对象中都拥有基类部分，所以可以使用基类类型的指针或引用来引用派生类对象。而指针或引用是在运行期根据他们绑定的具体对象确定。</p>
+<h2 id="静态多态与动态多态"><a href="#静态多态与动态多态" class="headerlink" title="静态多态与动态多态"></a>静态多态与动态多态</h2><p><strong>静态多态</strong></p>
+<p>也称为编译期间的多态，编译器在编译期间完成的，编译器根据函数实参的类型(可能会进行隐式类型转换)，可推断出要调用那个函数，如果有对应的函数就调用该函数，否则出现编译错误。<br>静态多态有两种实现方式：</p>
+<ul>
+<li>函数重载：包括普通函数的重载和成员函数的重载</li>
+<li>函数模板的使用</li>
+</ul>
+<p><strong>动态多态</strong></p>
+<p>动态多态（动态绑定）：即运行时的多态，在程序执行期间(非编译期)判断所引用对象的实际类型，根据其实际类型调用相应的方法。通过虚函数实现 即<strong>通过基类类型的引用或者指针调用虚函数</strong></p>
+<h2 id="重写、重载、覆盖的区别"><a href="#重写、重载、覆盖的区别" class="headerlink" title="重写、重载、覆盖的区别"></a>重写、重载、覆盖的区别</h2><p><strong>重载：</strong>是指同一可访问区内被声明的几个具有不同参数列（参数的类型，个数，顺序不同）的同名函数，根据参数列表确定调用哪个函数，重载不关心函数返回类型。</p>
+<p><strong>隐藏：</strong>是指派生类的函数屏蔽了与其同名的基类函数，注意只要同名函数，不管参数列表是否相同，基类函数都会被隐藏。</p>
+<p><strong>重写(覆盖)：</strong>是指派生类中存在重新定义的函数。其函数名，参数列表，返回值类型，所有都必须同基类中被重写的函数一致。只有函数体不同（花括号内），派生类调用时会调用派生类的重写函数，不会调用被重写函数。重写的基类中被重写的函数必须有virtual修饰。</p>
+<p><strong>重载和重写的区别：</strong></p>
+<p>（1）范围区别：重写和被重写的函数在不同的类中，重载和被重载的函数在同一类中。</p>
+<p>（2）参数区别：重写与被重写的函数参数列表一定相同，重载和被重载的函数参数列表一定不同。</p>
+<p>（3）virtual的区别：重写的基类必须要有virtual修饰，重载函数和被重载函数可以被virtual修饰，也可以没有。</p>
+<p><strong>隐藏和重写，重载的区别：</strong></p>
+<p>（1）与重载范围不同：隐藏函数和被隐藏函数在不同类中。</p>
+<p>（2）参数的区别：隐藏函数和被隐藏函数参数列表可以相同，也可以不同，但函数名一定同；当参数不同时，无论基类中的函数是否被virtual修饰，基类函数都是被隐藏，而不是被重写。 </p>
+<p>说明：虽然重载和覆盖都是实现多态的基础，但是两者实现的技术完全不相同，达到的目的也是完全不同的，覆盖是动态态绑定的多态，而重载是静态绑定的多态。</p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/xiaohaigegede/p/13613310.html">引用链接</a></p>
+<h2 id="成员初始化列表"><a href="#成员初始化列表" class="headerlink" title="成员初始化列表"></a>成员初始化列表</h2><p>从概念上讲，调用构造函数时，对象在程序进入构造函数函数体之前被创建。也就是说，调用构造函数的时候，<strong>先创建对象，再进入函数体</strong>。所以如果类成员里面有<strong>引用</strong>数据成员与const数据成员，因为他们在创建时初始化，若是在构造函数中初始化则会报错。</p>
+<p>只有构造函数可以使用初始化列表语法。</p>
+<p>对于普通数据类型，复合类型（指针，引用）等，在成员初始化列表和构造函数体内进行，在性能和结果上都是一样的。对于用户定义类型（类类型），结果上相同，但是性能上存在很大的差别。因为类类型的数据成员对象在进入函数体是已经构造完成，也就是说在成员初始化列表处进行构造对象的工作，这时调用一个构造函数，在进入函数体之后，进行的是对已经构造好的类对象的赋值，又调用个拷贝赋值操作符才能完成（如果并未提供，则使用编译器提供的默认按成员赋值行为）。</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span></span><br><span class="line"><span class="class">{</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    A()</span><br><span class="line">    {</span><br><span class="line">        <span class="built_in">cout</span>&lt;&lt;<span class="string">"A()"</span>&lt;&lt;<span class="built_in">endl</span>;</span><br><span class="line">    }</span><br><span class="line">    A(<span class="keyword">int</span> a)</span><br><span class="line">    {</span><br><span class="line">        value = a;</span><br><span class="line">        <span class="built_in">cout</span>&lt;&lt;<span class="string">"A(int"</span>&lt;&lt;value&lt;&lt;<span class="string">")"</span>&lt;&lt;<span class="built_in">endl</span>;</span><br><span class="line">    }</span><br><span class="line">    A(<span class="keyword">const</span> A&amp; a)</span><br><span class="line">    {</span><br><span class="line">        value = a.value;</span><br><span class="line">        <span class="built_in">cout</span>&lt;&lt;<span class="string">"A(const A&amp; a):"</span>&lt;&lt;value&lt;&lt;<span class="built_in">endl</span>;</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="keyword">void</span> <span class="keyword">operator</span>=(<span class="keyword">const</span> A&amp; a )</span><br><span class="line">    {</span><br><span class="line">        value = a.value;</span><br><span class="line">        <span class="built_in">cout</span>&lt;&lt;<span class="string">"operator = (const A&amp; a):"</span>&lt;&lt;value&lt;&lt;<span class="built_in">endl</span>;</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> value;</span><br><span class="line">};</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">B</span></span></span><br><span class="line"><span class="class">{</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    B():a(<span class="number">1</span>)</span><br><span class="line">    {</span><br><span class="line">        b = A(<span class="number">2</span>);</span><br><span class="line">    }</span><br><span class="line">    A a;</span><br><span class="line">    A b;</span><br><span class="line">};</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>{</span><br><span class="line">    B b;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>结果为</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">A(int1)</span><br><span class="line">A()</span><br><span class="line">A(int2)</span><br><span class="line">operator = (const A&amp; a):2</span><br></pre></td></tr></tbody></table></figure>
+
+<p>对于用户定义类型，使用列表初始化可以减少一次默认构造函数调用过程.简单的来说，对于用户定义类型：</p>
+<p>1）如果使用类初始化列表，直接调用对应的构造函数即完成初始化</p>
+<p>2）如果在构造函数中初始化，<strong>那么首先调用默认的构造函数，然后调用指定的构造函数</strong>，要调用2次，最后调用赋值函数，所以不推荐在构造函数内初始化</p>
+<h2 id="explicit关键字作用"><a href="#explicit关键字作用" class="headerlink" title="explicit关键字作用"></a>explicit关键字作用</h2><p>explicit关键字的作用就是防止类构造函数的隐式自动转换. explicit关键字只对有一个参数的类构造函数有效, 如果类构造函数参数大于或等于两个时, 是不会产生隐式转换的, 所以explicit关键字也就无效了.但是, 也有一个例外, 就是当除了第一个参数以外的其他参数都有默认值的时候, explicit关键字依然有效, 此时, 当调用构造函数时只传入一个参数, 等效于只有一个参数的类构造函数</p>
+<h2 id="lambda匿名函数"><a href="#lambda匿名函数" class="headerlink" title="lambda匿名函数"></a>lambda匿名函数</h2><p><a target="_blank" rel="noopener" href="http://c.biancheng.net/view/7818.html">C++11 lambda匿名函数用法详解</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%9D%A2%E8%AF%95%E9%A2%98/" rel="tag"># 面试题</a>
+              <a href="/tags/C/" rel="tag"># C++</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/01/16/BST%E6%93%8D%E4%BD%9C%E9%9B%86%E9%94%A6/" rel="prev" title="BST操作集锦">
+      <i class="fa fa-chevron-left"></i> BST操作集锦
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/01/24/C-STL%E7%9F%A5%E8%AF%86%E7%82%B9%E6%95%B4%E7%90%86/" rel="next" title="C++STL知识点整理">
+      C++STL知识点整理 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#new%E5%92%8Cmalloc%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">1.</span> <span class="nav-text">new和malloc的区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8C%87%E9%92%88%E4%B8%8E%E5%BC%95%E7%94%A8%E7%9A%84%E7%9B%B8%E5%90%8C%E5%92%8C%E5%8C%BA%E5%88%AB"><span class="nav-number">2.</span> <span class="nav-text">指针与引用的相同和区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#C%E8%AF%AD%E8%A8%80%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E7%9A%84%E6%96%B9%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">C语言内存分配的方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#extern%E2%80%9DC%E2%80%9D-%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="nav-number">4.</span> <span class="nav-text">extern”C” 的作用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#extern-%E5%85%B3%E9%94%AE%E5%AD%97%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="nav-number">5.</span> <span class="nav-text">extern 关键字的作用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%BD%E6%95%B0%E5%8F%82%E6%95%B0%E5%8E%8B%E6%A0%88%E9%A1%BA%E5%BA%8F%EF%BC%8C%E5%8D%B3%E5%85%B3%E4%BA%8E-stdcall%E5%92%8C-cdecl%E8%B0%83%E7%94%A8%E6%96%B9%E5%BC%8F%E7%9A%84%E7%90%86%E8%A7%A3"><span class="nav-number">6.</span> <span class="nav-text">函数参数压栈顺序，即关于__stdcall和__cdecl调用方式的理解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E7%BB%84%E5%88%B0%E5%BA%95%E5%AD%98%E6%94%BE%E5%9C%A8%E5%93%AA%E9%87%8C"><span class="nav-number">7.</span> <span class="nav-text">数组到底存放在哪里</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#struct%E5%92%8Cclass%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">8.</span> <span class="nav-text">struct和class的区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#static%E7%9A%84%E7%94%A8%E6%B3%95%EF%BC%88%E5%AE%9A%E4%B9%89%E5%92%8C%E7%94%A8%E9%80%94%EF%BC%89"><span class="nav-number">9.</span> <span class="nav-text">static的用法（定义和用途）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#const%E5%B8%B8%E9%87%8F%E5%92%8C-define%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">10.</span> <span class="nav-text">const常量和#define的区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#volatile%E4%BD%9C%E7%94%A8%E5%92%8C%E7%94%A8%E6%B3%95"><span class="nav-number">11.</span> <span class="nav-text">volatile作用和用法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#c-%E4%B8%AD%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E6%9C%BA%E5%88%B6"><span class="nav-number">12.</span> <span class="nav-text">c++中类型转换机制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%A7%E6%89%BF%E5%92%8C%E8%99%9A%E7%BB%A7%E6%89%BF"><span class="nav-number">13.</span> <span class="nav-text">继承和虚继承</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%9A%E6%80%81%E7%B1%BB%E7%9A%84%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80"><span class="nav-number">14.</span> <span class="nav-text">多态类的内存布局</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A2%AB%E9%9A%90%E8%97%8F%E7%9A%84%E5%9F%BA%E7%B1%BB%E5%87%BD%E6%95%B0%E5%A6%82%E4%BD%95%E8%B0%83%E7%94%A8%E6%88%96%E8%80%85%E5%AD%90%E7%B1%BB%E8%B0%83%E7%94%A8%E7%88%B6%E7%B1%BB%E7%9A%84%E5%90%8C%E5%90%8D%E5%87%BD%E6%95%B0%E5%92%8C%E7%88%B6%E7%B1%BB%E6%88%90%E5%91%98%E5%8F%98%E9%87%8F"><span class="nav-number">15.</span> <span class="nav-text">被隐藏的基类函数如何调用或者子类调用父类的同名函数和父类成员变量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#C-%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E5%A4%9A%E6%80%81"><span class="nav-number">16.</span> <span class="nav-text">C++如何实现多态</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8B%B7%E8%B4%9D%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0-%E6%B7%B1%E6%B5%85%E6%8B%B7%E8%B4%9D"><span class="nav-number">17.</span> <span class="nav-text">拷贝构造函数 深浅拷贝</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%90%E6%9E%84%E5%87%BD%E6%95%B0%E5%8F%AF%E4%BB%A5%E6%8A%9B%E5%87%BA%E5%BC%82%E5%B8%B8%E5%90%97"><span class="nav-number">18.</span> <span class="nav-text">析构函数可以抛出异常吗</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%83%85%E5%86%B5%E4%B8%8B%E4%BC%9A%E8%B0%83%E7%94%A8%E6%8B%B7%E8%B4%9D%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0"><span class="nav-number">19.</span> <span class="nav-text">什么情况下会调用拷贝构造函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%90%E6%9E%84%E5%87%BD%E6%95%B0%E4%B8%80%E8%88%AC%E5%86%99%E6%88%90%E8%99%9A%E5%87%BD%E6%95%B0%E7%9A%84%E5%8E%9F%E5%9B%A0"><span class="nav-number">20.</span> <span class="nav-text">析构函数一般写成虚函数的原因</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%80%E8%88%AC%E4%B8%8D%E5%AE%9A%E4%B9%89%E4%B8%BA%E8%99%9A%E5%87%BD%E6%95%B0"><span class="nav-number">21.</span> <span class="nav-text">构造函数为什么一般不定义为虚函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E7%BA%AF%E8%99%9A%E5%87%BD%E6%95%B0"><span class="nav-number">22.</span> <span class="nav-text">什么是纯虚函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E7%BB%91%E5%AE%9A%E5%92%8C%E5%8A%A8%E6%80%81%E7%BB%91%E5%AE%9A%E7%9A%84%E4%BB%8B%E7%BB%8D"><span class="nav-number">23.</span> <span class="nav-text">静态绑定和动态绑定的介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E5%A4%9A%E6%80%81%E4%B8%8E%E5%8A%A8%E6%80%81%E5%A4%9A%E6%80%81"><span class="nav-number">24.</span> <span class="nav-text">静态多态与动态多态</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%87%8D%E5%86%99%E3%80%81%E9%87%8D%E8%BD%BD%E3%80%81%E8%A6%86%E7%9B%96%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">25.</span> <span class="nav-text">重写、重载、覆盖的区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%88%90%E5%91%98%E5%88%9D%E5%A7%8B%E5%8C%96%E5%88%97%E8%A1%A8"><span class="nav-number">26.</span> <span class="nav-text">成员初始化列表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#explicit%E5%85%B3%E9%94%AE%E5%AD%97%E4%BD%9C%E7%94%A8"><span class="nav-number">27.</span> <span class="nav-text">explicit关键字作用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#lambda%E5%8C%BF%E5%90%8D%E5%87%BD%E6%95%B0"><span class="nav-number">28.</span> <span class="nav-text">lambda匿名函数</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Yu Hong</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">25</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+	
+	
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yu Hong</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">211k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">3:12</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

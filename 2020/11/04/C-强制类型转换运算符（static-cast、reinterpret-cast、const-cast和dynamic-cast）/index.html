@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="原文地址 将类型名作为强制类型转换运算符的做法是C语言的老式做法，C++ 为保持兼容而予以保留。 C++ 引入了四种功能不同的强制类型转换运算符以进行强制类型转换：static_cast、reinterpret_cast、const_cast 和 dynamic_cast。 强制类型转换是有一定风险的，有的转换并不一定安全，如把整型数值转换成指针，把基类指针转换成派生类指针，把一种函数指针转换成另">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++强制类型转换运算符（static_cast、reinterpret_cast、const_cast和dynamic_cast）">
+<meta property="og:url" content="http://example.com/2020/11/04/C-%E5%BC%BA%E5%88%B6%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E8%BF%90%E7%AE%97%E7%AC%A6%EF%BC%88static-cast%E3%80%81reinterpret-cast%E3%80%81const-cast%E5%92%8Cdynamic-cast%EF%BC%89/index.html">
+<meta property="og:site_name" content="Hi! Yh">
+<meta property="og:description" content="原文地址 将类型名作为强制类型转换运算符的做法是C语言的老式做法，C++ 为保持兼容而予以保留。 C++ 引入了四种功能不同的强制类型转换运算符以进行强制类型转换：static_cast、reinterpret_cast、const_cast 和 dynamic_cast。 强制类型转换是有一定风险的，有的转换并不一定安全，如把整型数值转换成指针，把基类指针转换成派生类指针，把一种函数指针转换成另">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-11-04T11:02:16.000Z">
+<meta property="article:modified_time" content="2020-11-05T04:16:46.606Z">
+<meta property="article:author" content="Yu Hong">
+<meta property="article:tag" content="C++">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2020/11/04/C-%E5%BC%BA%E5%88%B6%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E8%BF%90%E7%AE%97%E7%AC%A6%EF%BC%88static-cast%E3%80%81reinterpret-cast%E3%80%81const-cast%E5%92%8Cdynamic-cast%EF%BC%89/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>C++强制类型转换运算符（static_cast、reinterpret_cast、const_cast和dynamic_cast） | Hi! Yh</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hi! Yh</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/11/04/C-%E5%BC%BA%E5%88%B6%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E8%BF%90%E7%AE%97%E7%AC%A6%EF%BC%88static-cast%E3%80%81reinterpret-cast%E3%80%81const-cast%E5%92%8Cdynamic-cast%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Yu Hong">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hi! Yh">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          C++强制类型转换运算符（static_cast、reinterpret_cast、const_cast和dynamic_cast）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-11-04 19:02:16" itemprop="dateCreated datePublished" datetime="2020-11-04T19:02:16+08:00">2020-11-04</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-11-05 12:16:46" itemprop="dateModified" datetime="2020-11-05T12:16:46+08:00">2020-11-05</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p><a target="_blank" rel="noopener" href="http://c.biancheng.net/view/410.html">原文地址</a></p>
+<p>将类型名作为强制类型转换运算符的做法是C语言的老式做法，<a target="_blank" rel="noopener" href="http://c.biancheng.net/cplus/">C++</a> 为保持兼容而予以保留。</p>
+<p>C++ 引入了四种功能不同的强制类型转换运算符以进行强制类型转换：static_cast、reinterpret_cast、const_cast 和 dynamic_cast。</p>
+<p>强制类型转换是有一定风险的，有的转换并不一定安全，如把整型数值转换成<a target="_blank" rel="noopener" href="http://c.biancheng.net/c/80/">指针</a>，把基类指针转换成派生类指针，把一种函数指针转换成另一种函数指针，把常量指针转换成非常量指针等。C++ 引入新的强制类型转换机制，主要是为了克服C语言强制类型转换的以下三个缺点。<a id="more"></a></p>
+<ol>
+<li>没有从形式上体现转换功能和风险的不同。</li>
+</ol>
+<p>例如，将 int 强制转换成 double 是没有风险的，而将常量指针转换成非常量指针，将基类指针转换成派生类指针都是高风险的，而且后两者带来的风险不同（即可能引发不同种类的错误），C语言的强制类型转换形式对这些不同并不加以区分。</p>
+<ol start="2">
+<li><p>将多态基类指针转换成派生类指针时不检查安全性，即无法判断转换后的指针是否确实指向一个派生类对象。</p>
+</li>
+<li><p>难以在程序中寻找到底什么地方进行了强制类型转换。</p>
+</li>
+</ol>
+<p>强制类型转换是引发程序运行时错误的一个原因，因此在程序出错时，可能就会想到是不是有哪些强制类型转换出了问题。</p>
+<p>如果采用C语言的老式做法，要在程序中找出所有进行了强制类型转换的地方，显然是很麻烦的，因为这些转换没有统一的格式。</p>
+<p>而用 C++ 的方式，则只需要查找<code>_cast</code>字符串就可以了。甚至可以根据错误的类型，有针对性地专门查找某一种强制类型转换。例如，怀疑一个错误可能是由于使用了 reinterpret_cast 导致的，就可以只查找<code>reinterpret_cast</code>字符串。</p>
+<p>C++ 强制类型转换运算符的用法如下：</p>
+<p><code>强制类型转换运算符 &lt;要转换到的类型&gt; (待转换的表达式)</code></p>
+<p>例如：</p>
+<p><code>double d = static_cast &lt;double&gt; (3*5); //将 3*5 的值转换成实数</code></p>
+<p>下面分别介绍四种强制类型转换运算符。</p>
+<h2 id="static-cast"><a href="#static-cast" class="headerlink" title="static_cast"></a>static_cast</h2><p>static_cast 用于进行比较“自然”和低风险的转换，如整型和浮点型、字符型之间的互相转换。另外，如果对象所属的类重载了强制类型转换运算符 T（如 T 是 int、int* 或其他类型名），则 static_cast 也能用来进行对象到 T 类型的转换。</p>
+<p>static_cast 不能用于在不同类型的指针之间互相转换，也不能用于整型和指针之间的互相转换，当然也不能用于不同类型的引用之间的转换。因为这些属于风险比较高的转换。</p>
+<p>static_cast 用法示例如下：</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span></span><br><span class="line"><span class="class">{</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">operator</span> <span class="title">int</span><span class="params">()</span> </span>{ <span class="keyword">return</span> <span class="number">1</span>; }</span><br><span class="line">    <span class="keyword">operator</span> <span class="keyword">char</span>*() { <span class="keyword">return</span> <span class="literal">NULL</span>; }</span><br><span class="line">};</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>{</span><br><span class="line">    A a;</span><br><span class="line">    <span class="keyword">int</span> n;</span><br><span class="line">    <span class="keyword">char</span>* p = <span class="string">"New Dragon Inn"</span>;</span><br><span class="line">    n = <span class="keyword">static_cast</span> &lt;<span class="keyword">int</span>&gt; (<span class="number">3.14</span>);  <span class="comment">// n 的值变为 3</span></span><br><span class="line">    n = <span class="keyword">static_cast</span> &lt;<span class="keyword">int</span>&gt; (a);  <span class="comment">//调用 a.operator int，n 的值变为 1</span></span><br><span class="line">    p = <span class="keyword">static_cast</span> &lt;<span class="keyword">char</span>*&gt; (a);  <span class="comment">//调用 a.operator char*，p 的值变为 NULL</span></span><br><span class="line">    n = <span class="keyword">static_cast</span> &lt;<span class="keyword">int</span>&gt; (p);  <span class="comment">//编译错误，static_cast不能将指针转换成整型</span></span><br><span class="line">    p = <span class="keyword">static_cast</span> &lt;<span class="keyword">char</span>*&gt; (n);  <span class="comment">//编译错误，static_cast 不能将整型转换成指针</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<h2 id="reinterpret-cast"><a href="#reinterpret-cast" class="headerlink" title="reinterpret_cast"></a>reinterpret_cast</h2><p>reinterpret_cast 用于进行各种不同类型的指针之间、不同类型的引用之间以及指针和能容纳指针的整数类型之间的转换。转换时，执行的是逐个比特复制的操作。</p>
+<p>这种转换提供了很强的灵活性，但转换的安全性只能由程序员的细心来保证了。例如，程序员执意要把一个 int* 指针、函数指针或其他类型的指针转换成 string* 类型的指针也是可以的，至于以后用转换后的指针调用 string 类的成员函数引发错误，程序员也只能自行承担查找错误的烦琐工作：（C++ 标准不允许将函数指针转换成对象指针，但有些编译器，如 Visual Studio 2010，则支持这种转换）。</p>
+<p>reinterpret_cast 用法示例如下：</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span></span><br><span class="line"><span class="class">{</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">int</span> i;</span><br><span class="line">    <span class="keyword">int</span> j;</span><br><span class="line">    A(<span class="keyword">int</span> n):i(n),j(n) { }</span><br><span class="line">};</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>{</span><br><span class="line">    <span class="function">A <span class="title">a</span><span class="params">(<span class="number">100</span>)</span></span>;</span><br><span class="line">    <span class="keyword">int</span> &amp;r = <span class="keyword">reinterpret_cast</span>&lt;<span class="keyword">int</span>&amp;&gt;(a); <span class="comment">//强行让 r 引用 a</span></span><br><span class="line">    r = <span class="number">200</span>;  <span class="comment">//把 a.i 变成了 200</span></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; a.i &lt;&lt; <span class="string">","</span> &lt;&lt; a.j &lt;&lt; <span class="built_in">endl</span>;  <span class="comment">// 输出 200,100</span></span><br><span class="line">    <span class="keyword">int</span> n = <span class="number">300</span>;</span><br><span class="line">    A *pa = <span class="keyword">reinterpret_cast</span>&lt;A*&gt; ( &amp; n); <span class="comment">//强行让 pa 指向 n</span></span><br><span class="line">    pa-&gt;i = <span class="number">400</span>;  <span class="comment">// n 变成 400</span></span><br><span class="line">    pa-&gt;j = <span class="number">500</span>;  <span class="comment">//此条语句不安全，很可能导致程序崩溃</span></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; n &lt;&lt; <span class="built_in">endl</span>;  <span class="comment">// 输出 400</span></span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> la = <span class="number">0x12345678abcd</span>LL;</span><br><span class="line">    pa = <span class="keyword">reinterpret_cast</span>&lt;A*&gt;(la); <span class="comment">//la太长，只取低32位0x5678abcd拷贝给pa</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> u = <span class="keyword">reinterpret_cast</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">int</span>&gt;(pa);<span class="comment">//pa逐个比特拷贝到u</span></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; hex &lt;&lt; u &lt;&lt; <span class="built_in">endl</span>;  <span class="comment">//输出 5678abcd</span></span><br><span class="line">    <span class="function"><span class="keyword">typedef</span> <span class="title">void</span> <span class="params">(* PF1)</span> <span class="params">(<span class="keyword">int</span>)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">typedef</span> <span class="title">int</span> <span class="params">(* PF2)</span> <span class="params">(<span class="keyword">int</span>,<span class="keyword">char</span> *)</span></span>;</span><br><span class="line">    PF1 pf1;  PF2 pf2;</span><br><span class="line">    pf2 = <span class="keyword">reinterpret_cast</span>&lt;PF2&gt;(pf1); <span class="comment">//两个不同类型的函数指针之间可以互相转换</span></span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>程序的输出结果是：<br>200, 100<br>400<br>5678abed</p>
+<p>第 19 行的代码不安全，因为在编译器看来，pa-&gt;j 的存放位置就是 n 后面的 4 个字节。 本条语句会向这 4 个字节中写入 500。但这 4 个字节不知道是用来存放什么的，贸然向其中写入可能会导致程序错误甚至崩溃。</p>
+<p>上面程序中的各种转换都没有实际意义，只是为了演示 reinteipret_cast 的用法而已。在编写黑客程序、病毒或反病毒程序时，也许会用到这样怪异的转换。</p>
+<p>reinterpret_cast体现了 C++ 语言的设计思想：用户可以做任何操作，但要为自己的行为负责。</p>
+<h2 id="const-cast"><a href="#const-cast" class="headerlink" title="const_cast"></a>const_cast</h2><p>const_cast 运算符仅用于进行去除 const 属性的转换，它也是四个强制类型转换运算符中唯一能够去除 const 属性的运算符。</p>
+<p>将 const 引用转换为同类型的非 const 引用，将 const 指针转换为同类型的非 const 指针时可以使用 const_cast 运算符。例如：</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="built_in">string</span> s = <span class="string">"Inception"</span>;</span><br><span class="line"><span class="built_in">string</span>&amp; p = <span class="keyword">const_cast</span> &lt;<span class="built_in">string</span>&amp;&gt; (s);</span><br><span class="line"><span class="built_in">string</span>* ps = <span class="keyword">const_cast</span> &lt;<span class="built_in">string</span>*&gt; (&amp;s);  <span class="comment">// &amp;s 的类型是 const string*</span></span><br></pre></td></tr></tbody></table></figure>
+
+<h2 id="dynamic-cast"><a href="#dynamic-cast" class="headerlink" title="dynamic_cast"></a>dynamic_cast</h2><p>用 reinterpret_cast 可以将多态基类（<strong>包含虚函数的基类</strong>）的指针强制转换为派生类的指针，但是这种转换不检查安全性，即不检查转换后的指针是否确实指向一个派生类对象。dynamic_cast专门用于将多态基类的指针或引用强制转换为派生类的指针或引用，而且能够检查转换的安全性。对于不安全的指针转换，转换结果返回 NULL 指针。</p>
+<p>dynamic_cast 是通过“运行时类型检查”来保证安全性的。dynamic_cast 不能用于将非多态基类的指针或引用强制转换为派生类的指针或引用——这种转换没法保证安全性，只好用 reinterpret_cast 来完成。</p>
+<p>dynamic_cast 示例程序如下：</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Base</span></span></span><br><span class="line"><span class="class">{</span>  <span class="comment">//有虚函数，因此是多态基类</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">virtual</span> ~Base() {}</span><br><span class="line">};</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Derived</span> :</span> <span class="keyword">public</span> Base { };</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>{</span><br><span class="line">    Base b;</span><br><span class="line">    Derived d;</span><br><span class="line">    Derived* pd;</span><br><span class="line">    pd = <span class="keyword">reinterpret_cast</span> &lt;Derived*&gt; (&amp;b);</span><br><span class="line">    <span class="keyword">if</span> (pd == <span class="literal">NULL</span>)</span><br><span class="line">        <span class="comment">//此处pd不会为 NULL。reinterpret_cast不检查安全性，总是进行转换</span></span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"unsafe reinterpret_cast"</span> &lt;&lt; <span class="built_in">endl</span>; <span class="comment">//不会执行</span></span><br><span class="line">    pd = <span class="keyword">dynamic_cast</span> &lt;Derived*&gt; (&amp;b);</span><br><span class="line">    <span class="keyword">if</span> (pd == <span class="literal">NULL</span>)  <span class="comment">//结果会是NULL，因为 &amp;b 不指向派生类对象，此转换不安全</span></span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"unsafe dynamic_cast1"</span> &lt;&lt; <span class="built_in">endl</span>;  <span class="comment">//会执行</span></span><br><span class="line">    pd = <span class="keyword">dynamic_cast</span> &lt;Derived*&gt; (&amp;d);  <span class="comment">//安全的转换</span></span><br><span class="line">    <span class="keyword">if</span> (pd == <span class="literal">NULL</span>)  <span class="comment">//此处 pd 不会为 NULL</span></span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"unsafe dynamic_cast2"</span> &lt;&lt; <span class="built_in">endl</span>;  <span class="comment">//不会执行</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>程序的输出结果是：<br>unsafe dynamic_cast1</p>
+<p>第 20 行，通过判断 pd 的值是否为 NULL，就能知道第 19 行进行的转换是否是安全的。第 23 行同理。</p>
+<p>如果上面的程序中出现了下面的语句：</p>
+<p><code>Derived &amp; r = dynamic_cast &lt;Derived &amp;&gt; (b);</code></p>
+<p>那该如何判断该转换是否安全呢？不存在空引用，因此不能通过返回值来判断转换是否安全。C++ 的解决办法是：dynamic_cast 在进行引用的强制转换时，如果发现转换不安全，就会拋出一个异常，通过处理异常，就能发现不安全的转换。VS_code运行结果显示 <code>terminate called after throwing an instance of 'std::bad_cast'  what():  std::bad_cast</code></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/C/" rel="tag"># C++</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2020/11/04/%E5%85%B3%E4%BA%8E%E4%BD%8D%E8%BF%90%E7%AE%97/" rel="next" title="关于位运算">
+      关于位运算 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#static-cast"><span class="nav-number">1.</span> <span class="nav-text">static_cast</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#reinterpret-cast"><span class="nav-number">2.</span> <span class="nav-text">reinterpret_cast</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#const-cast"><span class="nav-number">3.</span> <span class="nav-text">const_cast</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dynamic-cast"><span class="nav-number">4.</span> <span class="nav-text">dynamic_cast</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Yu Hong</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">25</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+	
+	
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yu Hong</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">211k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">3:12</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

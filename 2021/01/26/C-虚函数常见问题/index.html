@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="什么是虚函数虚函数是在类中由virtual关键字声明的成员函数，并且每一个含有虚函数的类都至少有一个与之对应的虚函数表，其中存放着该类所有虚函数对应的函数指针">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++虚函数常见问题">
+<meta property="og:url" content="http://example.com/2021/01/26/C-%E8%99%9A%E5%87%BD%E6%95%B0%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/index.html">
+<meta property="og:site_name" content="Hi! Yh">
+<meta property="og:description" content="什么是虚函数虚函数是在类中由virtual关键字声明的成员函数，并且每一个含有虚函数的类都至少有一个与之对应的虚函数表，其中存放着该类所有虚函数对应的函数指针">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/2021/01/26/C-%E8%99%9A%E5%87%BD%E6%95%B0%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/1.png">
+<meta property="og:image" content="http://example.com/2021/01/26/C-%E8%99%9A%E5%87%BD%E6%95%B0%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/1.png">
+<meta property="article:published_time" content="2021-01-26T01:19:07.000Z">
+<meta property="article:modified_time" content="2021-01-26T01:53:26.358Z">
+<meta property="article:author" content="Yu Hong">
+<meta property="article:tag" content="面试题">
+<meta property="article:tag" content="C++">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2021/01/26/C-%E8%99%9A%E5%87%BD%E6%95%B0%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/1.png">
+
+<link rel="canonical" href="http://example.com/2021/01/26/C-%E8%99%9A%E5%87%BD%E6%95%B0%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>C++虚函数常见问题 | Hi! Yh</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hi! Yh</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/26/C-%E8%99%9A%E5%87%BD%E6%95%B0%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Yu Hong">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hi! Yh">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          C++虚函数常见问题
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-01-26 09:19:07 / 修改时间：09:53:26" itemprop="dateCreated datePublished" datetime="2021-01-26T09:19:07+08:00">2021-01-26</time>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="什么是虚函数"><a href="#什么是虚函数" class="headerlink" title="什么是虚函数"></a>什么是虚函数</h2><p><strong>虚函数</strong>是在类中由virtual关键字声明的成员函数，并且每一个含有虚函数的类都至少有一个与之对应的虚函数表，其中存放着该类所有虚函数对应的函数指针<a id="more"></a></p>
+<img src="/2021/01/26/C-%E8%99%9A%E5%87%BD%E6%95%B0%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/1.png" class="" title="图片描述">
+
+<ul>
+<li>B的虚函数表中存放着B::foo和B::bar两个函数指针。</li>
+<li>D的虚函数表中存放的既有继承自B的虚函数B::foo，又有重写（override）了基类虚函数B::bar的D::bar，还有新增的虚函数D::quz。</li>
+</ul>
+<p>所有虚函数地址都会存放在所属类的虚函数表vtbl中，另外在基类中声明为虚函数的成员方法，在子类是仍然是虚函数，即使子类中重新定义基类虚函数时未使用virtual修饰，该函数地址仍会放在子类的虚函数表vtbl中。</p>
+<h2 id="虚函数表是如何构造和继承的？"><a href="#虚函数表是如何构造和继承的？" class="headerlink" title="虚函数表是如何构造和继承的？"></a><strong>虚函数表是如何构造和继承的？</strong></h2><ol>
+<li><p><strong>基类虚函数表的构造：</strong></p>
+<p>首先在基类声明中找到所有虚函数，按照其声明顺序编码，然后按照此声明顺序为基类创建一个虚函数表，其内容就是指向这些虚函数的函数指针，按照虚函数声明的顺序将这些虚函数的地址填入虚函数表中，例如若show放在虚函数声明的第二位，则在虚函数表中也放第二位</p>
+</li>
+<li><p><strong>子类虚函数表的构建和继承：</strong></p>
+<p>首先将基类的虚函数表复制到该子类的虚函数表指针中，若子类重写了基类的虚函数show，则将子类的虚函数表存放show的函数地址更新未重写后函数的函数指针（未重写前存放的是子类的show虚函数的函数地址），若子类增加了一些虚函数的声明，则将这些虚函数的地址加到该类虚函数表的后面</p>
+</li>
+</ol>
+<img src="/2021/01/26/C-%E8%99%9A%E5%87%BD%E6%95%B0%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/1.png" class="" title="图片描述">
+
+<p><strong>虚函数的调用过程，虚函数表是如何访问的？</strong></p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">Base::virtualvoid <span class="title">show</span><span class="params">()</span></span>; <span class="comment">//基类</span></span><br><span class="line"><span class="function">Extend::virtualvoid <span class="title">show</span><span class="params">()</span></span>; <span class="comment">//子类</span></span><br><span class="line"></span><br><span class="line">Extern ext;</span><br><span class="line">Base*pBase=&amp;ext;</span><br><span class="line">pBase-&gt;show();</span><br></pre></td></tr></tbody></table></figure>
+
+<p>当调用pBase-&gt;show();时，执行的步骤：</p>
+<ol>
+<li><p>判断Base类中show是否为虚函数。</p>
+</li>
+<li><p>若不是虚函数则找到pBase所指向的对象所属类Base。执行Base::show()。若是虚函数则执行步骤3.</p>
+</li>
+<li><p>访问pBase所指对象的虚函数表指针得到pBase所指对象所在类的虚函数表。</p>
+</li>
+<li><p>查找Base中show()在声明时的位序为x，到步骤3得到的虚函数表中找到位序x，从而得到要执行的show的函数地址。</p>
+</li>
+<li><p>根据函数地址和Base中声明的show的函数类型(形参和返回值)访问地址所指向的函数。</p>
+</li>
+</ol>
+<h2 id="虚函数的代价"><a href="#虚函数的代价" class="headerlink" title="虚函数的代价"></a>虚函数的代价</h2><ol>
+<li>带有虚函数的每个类会产生一个虚函数表，用来存储虚成员函数的指针</li>
+<li>带有虚函数的每个类的对象都会有一个指向虚函数表的指针</li>
+<li>不再是内联函数，因为内敛函数可以在编译阶段进行替代，而虚函数表示等待，在运行阶段才能确定到达采用哪种函数，所以虚函数不是内联函数</li>
+</ol>
+<h2 id="哪些函数不能是虚函数？"><a href="#哪些函数不能是虚函数？" class="headerlink" title="哪些函数不能是虚函数？"></a>哪些函数不能是虚函数？</h2><ol>
+<li><p>构造函数：对象的虚函数表指针需要通过构造函数初始化</p>
+</li>
+<li><p>内联函数：内联函数可以在编译阶段进行函数体的替换，而虚函数需要在运行期间进行确定</p>
+</li>
+<li><p>静态函数：静态函数不属于对象而属于类，因为静态成员函数没有this指针，所以无法访问对象的虚表指针，也就无法访问类的虚函数表，将静态函数设置成虚函数也就没有任何意义，所以c++语法不支持将静态函数设置成虚函数</p>
+</li>
+<li><p>友元函数：友元函数不属于类，也不能被继承，没有继承特性的函数没有虚函数的说法</p>
+</li>
+<li><p>类外的普通函数：类外普通函数不是类的成员函数，同样不具备继承特性，也就没有虚函数的说法</p>
+</li>
+</ol>
+<h2 id="虚函数和纯虚函数的区别"><a href="#虚函数和纯虚函数的区别" class="headerlink" title="虚函数和纯虚函数的区别"></a>虚函数和纯虚函数的区别</h2><ol>
+<li><p>纯虚函数只有定义，没有实现，虚函数既有定义，又有实现</p>
+</li>
+<li><p>含有纯虚函数的类不能定义对象，含有虚函数的类可以定义对象</p>
+</li>
+</ol>
+<h2 id="菱形继承的内存结构？如何解决菱形继承存在的问题？"><a href="#菱形继承的内存结构？如何解决菱形继承存在的问题？" class="headerlink" title="菱形继承的内存结构？如何解决菱形继承存在的问题？"></a>菱形继承的内存结构？如何解决菱形继承存在的问题？</h2><figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span></span><br><span class="line"><span class="class">{</span></span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">int</span> x;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">int</span> <span class="title">getx</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>{</span><br><span class="line">        <span class="keyword">return</span> x;</span><br><span class="line">    }</span><br><span class="line">};</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">B</span>:</span><span class="keyword">public</span> A{};</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">C</span>:</span><span class="keyword">public</span> A{};</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">D</span>:</span><span class="keyword">public</span> B,<span class="keyword">public</span> C{};</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>{</span><br><span class="line">    D d;</span><br><span class="line">    <span class="comment">//以下代码不会被任何编译器通过，因为存在菱形继承问题</span></span><br><span class="line">    <span class="built_in">cout</span>&lt;&lt;d.getx()&lt;&lt;<span class="built_in">endl</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<ol>
+<li>菱形继承的内存结构：现在有A，B，C，D四个类，B，C分别继承A类，D通过多重继承继承了BC两个类，现在D类中有两个getx()，D类不知道调用哪一个getx()</li>
+<li>菱形继承的解决办法：虚继承</li>
+</ol>
+<p>BC类都用Virtual标注，A就成为了虚基类，保证只有一个getx()被创建</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span></span><br><span class="line"><span class="class">{</span></span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">int</span> x=<span class="number">5</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">int</span> <span class="title">getx</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>{</span><br><span class="line">        <span class="keyword">return</span> x;</span><br><span class="line">    }</span><br><span class="line">};</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">B</span>:</span><span class="keyword">virtual</span> <span class="keyword">public</span> A{};</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">C</span>:</span><span class="keyword">virtual</span> <span class="keyword">public</span> A{};</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">D</span>:</span><span class="keyword">public</span> B,<span class="keyword">public</span> C{};</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>{</span><br><span class="line">    D d;</span><br><span class="line">    <span class="built_in">cout</span>&lt;&lt;d.getx()&lt;&lt;<span class="built_in">endl</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<h2 id="虚析构函数的作用？父类的析构函数为什么一定要设置成虚函数？"><a href="#虚析构函数的作用？父类的析构函数为什么一定要设置成虚函数？" class="headerlink" title="虚析构函数的作用？父类的析构函数为什么一定要设置成虚函数？"></a><strong>虚析构函数的作用？父类的析构函数为什么一定要设置成虚函数？</strong></h2><p>父类虚析构函数就是为了避免内存泄漏，防止子类内存得不到释放造成内存泄漏</p>
+<ol>
+<li><p>当父类的析构函数不声明成虚析构函数时，当子类继承父类，父类指针指向子类对象，delete掉父类指针，只会调动父类的析构函数，而不会调用子类的析构函数，从而造成子类对象内存泄漏</p>
+</li>
+<li><p>当父类的析构函数声明成虚析构函数时，当子类继承父类，父类指针指向子类对象，delete掉父类指针，先调动父类的析构函数，然后调用子类的析构函数，不存在子类对象内存泄漏的问题</p>
+</li>
+</ol>
+<p>只要存在继承关系，则父类的虚函数必须定义成虚函数！</p>
+<h2 id="构造函数和析构函数中为什么不可以调用虚函数？"><a href="#构造函数和析构函数中为什么不可以调用虚函数？" class="headerlink" title="构造函数和析构函数中为什么不可以调用虚函数？"></a><strong>构造函数和析构函数中为什么不可以调用虚函数？</strong></h2><p>背景知识：</p>
+<ol>
+<li><p>构造子类对象时，首先调用父类构造函数初始化对象的父类部分，在执行父类的构造函数时，对象的子类部分都是未初始化的，实际上此时对象还不是一个子类对象</p>
+</li>
+<li><p>析构子类对象时，先析构子类部分，然后按照构造顺序逆序析构父类部分</p>
+</li>
+</ol>
+<p>所以在运行子类的构造和析构函数时，对象都是不完整的，为了适应这种不完整，编译器视对象类型为当前构造或析构函数所在类的类型，由此造成的结果就是：在父类的构造或析构函数中，会将子类对象当作父类对象看待</p>
+<p>在这样的背景下，如果我们在父类的构造或析构函数中调用虚函数，调用的往往是当前类的虚函数，达不到多态的效果，跟普通函数调用没有区别</p>
+<h2 id="构造函数为什么不能为虚函数？什么情况下析构函数必须为虚函数？"><a href="#构造函数为什么不能为虚函数？什么情况下析构函数必须为虚函数？" class="headerlink" title="构造函数为什么不能为虚函数？什么情况下析构函数必须为虚函数？"></a>构造函数为什么不能为虚函数？什么情况下析构函数必须为虚函数？</h2><ol>
+<li><p>因为虚函数表指针必须在构造函数中初始化，所以构造函数不能为虚函数！</p>
+</li>
+<li><p>当存在继承关系时，父类的析构函数必须为虚函数，这样在父类指针指向子类对象，delete父类指针时，子类对象才不会内存泄漏</p>
+</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%9D%A2%E8%AF%95%E9%A2%98/" rel="tag"># 面试题</a>
+              <a href="/tags/C/" rel="tag"># C++</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/01/25/C-11%E6%96%B0%E7%89%B9%E6%80%A7/" rel="prev" title="C++11新特性">
+      <i class="fa fa-chevron-left"></i> C++11新特性
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/01/28/C-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" rel="next" title="C++内存管理">
+      C++内存管理 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E8%99%9A%E5%87%BD%E6%95%B0"><span class="nav-number">1.</span> <span class="nav-text">什么是虚函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%99%9A%E5%87%BD%E6%95%B0%E8%A1%A8%E6%98%AF%E5%A6%82%E4%BD%95%E6%9E%84%E9%80%A0%E5%92%8C%E7%BB%A7%E6%89%BF%E7%9A%84%EF%BC%9F"><span class="nav-number">2.</span> <span class="nav-text">虚函数表是如何构造和继承的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%99%9A%E5%87%BD%E6%95%B0%E7%9A%84%E4%BB%A3%E4%BB%B7"><span class="nav-number">3.</span> <span class="nav-text">虚函数的代价</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%93%AA%E4%BA%9B%E5%87%BD%E6%95%B0%E4%B8%8D%E8%83%BD%E6%98%AF%E8%99%9A%E5%87%BD%E6%95%B0%EF%BC%9F"><span class="nav-number">4.</span> <span class="nav-text">哪些函数不能是虚函数？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%99%9A%E5%87%BD%E6%95%B0%E5%92%8C%E7%BA%AF%E8%99%9A%E5%87%BD%E6%95%B0%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">5.</span> <span class="nav-text">虚函数和纯虚函数的区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%8F%B1%E5%BD%A2%E7%BB%A7%E6%89%BF%E7%9A%84%E5%86%85%E5%AD%98%E7%BB%93%E6%9E%84%EF%BC%9F%E5%A6%82%E4%BD%95%E8%A7%A3%E5%86%B3%E8%8F%B1%E5%BD%A2%E7%BB%A7%E6%89%BF%E5%AD%98%E5%9C%A8%E7%9A%84%E9%97%AE%E9%A2%98%EF%BC%9F"><span class="nav-number">6.</span> <span class="nav-text">菱形继承的内存结构？如何解决菱形继承存在的问题？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%99%9A%E6%9E%90%E6%9E%84%E5%87%BD%E6%95%B0%E7%9A%84%E4%BD%9C%E7%94%A8%EF%BC%9F%E7%88%B6%E7%B1%BB%E7%9A%84%E6%9E%90%E6%9E%84%E5%87%BD%E6%95%B0%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%80%E5%AE%9A%E8%A6%81%E8%AE%BE%E7%BD%AE%E6%88%90%E8%99%9A%E5%87%BD%E6%95%B0%EF%BC%9F"><span class="nav-number">7.</span> <span class="nav-text">虚析构函数的作用？父类的析构函数为什么一定要设置成虚函数？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E5%92%8C%E6%9E%90%E6%9E%84%E5%87%BD%E6%95%B0%E4%B8%AD%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E5%8F%AF%E4%BB%A5%E8%B0%83%E7%94%A8%E8%99%9A%E5%87%BD%E6%95%B0%EF%BC%9F"><span class="nav-number">8.</span> <span class="nav-text">构造函数和析构函数中为什么不可以调用虚函数？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%83%BD%E4%B8%BA%E8%99%9A%E5%87%BD%E6%95%B0%EF%BC%9F%E4%BB%80%E4%B9%88%E6%83%85%E5%86%B5%E4%B8%8B%E6%9E%90%E6%9E%84%E5%87%BD%E6%95%B0%E5%BF%85%E9%A1%BB%E4%B8%BA%E8%99%9A%E5%87%BD%E6%95%B0%EF%BC%9F"><span class="nav-number">9.</span> <span class="nav-text">构造函数为什么不能为虚函数？什么情况下析构函数必须为虚函数？</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Yu Hong</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">25</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+	
+	
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yu Hong</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">211k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">3:12</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

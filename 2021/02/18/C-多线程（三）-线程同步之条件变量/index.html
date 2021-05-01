@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="何为条件变量条件变量是线程的另外一种有效同步机制。这些同步对象为线程提供了交互的场所（一个线程给另外的一个或者多个线程发送消息），我们指定在条件变量这个地方发生，一个线程用于修改这个变量使其满足其它线程继续往下执行的条件，其它线程则等待接收条件已经发生改变的信号。当条件变量同互斥锁一起使用时，条件变量允许线程以一种无竞争的方式等待任意条件的发生。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++多线程（三）---线程同步之条件变量">
+<meta property="og:url" content="http://example.com/2021/02/18/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%88%E4%B8%89%EF%BC%89-%E7%BA%BF%E7%A8%8B%E5%90%8C%E6%AD%A5%E4%B9%8B%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F/index.html">
+<meta property="og:site_name" content="Hi! Yh">
+<meta property="og:description" content="何为条件变量条件变量是线程的另外一种有效同步机制。这些同步对象为线程提供了交互的场所（一个线程给另外的一个或者多个线程发送消息），我们指定在条件变量这个地方发生，一个线程用于修改这个变量使其满足其它线程继续往下执行的条件，其它线程则等待接收条件已经发生改变的信号。当条件变量同互斥锁一起使用时，条件变量允许线程以一种无竞争的方式等待任意条件的发生。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/2021/02/18/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%88%E4%B8%89%EF%BC%89-%E7%BA%BF%E7%A8%8B%E5%90%8C%E6%AD%A5%E4%B9%8B%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F/1.png">
+<meta property="article:published_time" content="2021-02-18T12:16:36.000Z">
+<meta property="article:modified_time" content="2021-02-18T13:08:50.953Z">
+<meta property="article:author" content="Yu Hong">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="多线程">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2021/02/18/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%88%E4%B8%89%EF%BC%89-%E7%BA%BF%E7%A8%8B%E5%90%8C%E6%AD%A5%E4%B9%8B%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F/1.png">
+
+<link rel="canonical" href="http://example.com/2021/02/18/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%88%E4%B8%89%EF%BC%89-%E7%BA%BF%E7%A8%8B%E5%90%8C%E6%AD%A5%E4%B9%8B%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>C++多线程（三）---线程同步之条件变量 | Hi! Yh</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hi! Yh</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/02/18/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%88%E4%B8%89%EF%BC%89-%E7%BA%BF%E7%A8%8B%E5%90%8C%E6%AD%A5%E4%B9%8B%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Yu Hong">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hi! Yh">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          C++多线程（三）---线程同步之条件变量
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-02-18 20:16:36 / 修改时间：21:08:50" itemprop="dateCreated datePublished" datetime="2021-02-18T20:16:36+08:00">2021-02-18</time>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="何为条件变量"><a href="#何为条件变量" class="headerlink" title="何为条件变量"></a>何为条件变量</h2><p>条件变量是线程的另外一种有效同步机制。这些同步对象为线程提供了交互的场所（一个线程给另外的一个或者多个线程发送消息），我们指定在条件变量这个地方发生，一个线程用于修改这个变量使其满足其它线程继续往下执行的条件，其它线程则等待接收条件已经发生改变的信号。当条件变量同互斥锁一起使用时，条件变量允许线程以一种无竞争的方式等待任意条件的发生。<a id="more"></a></p>
+<h2 id="为何引入条件变量"><a href="#为何引入条件变量" class="headerlink" title="为何引入条件变量"></a>为何引入条件变量</h2><p>我们通过互斥锁保护共享数据，保证多线程对共享数据的访问同步有序。但如果一个线程需要等待一个互斥锁的释放，该线程通常需要轮询该互斥锁是否已被释放，我们也很难找到适当的轮训周期，如果轮询周期太短则太浪费CPU资源，如果轮询周期太长则可能互斥锁已被释放而该线程还在睡眠导致发生延误。</p>
+<p>下面给出一个简单的程序示例：一个线程往队列中放入数据，一个线程从队列中提取数据，取数据前需要判断一下队列中确实有数据，由于这个队列是线程间共享的，所以，需要使用互斥锁进行保护，一个线程在往队列添加数据的时候，另一个线程不能取，反之亦然。程序实现代码如下：</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;deque&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;mutex&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="built_in">deque</span>&lt;<span class="keyword">int</span>&gt; q;   <span class="comment">//双端队列标准容器全局变量</span></span><br><span class="line">mutex mu;   <span class="comment">//互斥锁全局变量</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//生产者，往队列放入数据</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">producer</span><span class="params">()</span></span>{</span><br><span class="line">    <span class="keyword">int</span> count=<span class="number">10</span>;</span><br><span class="line">    <span class="keyword">while</span>(count&gt;<span class="number">0</span>){</span><br><span class="line">        <span class="function">unique_lock&lt;mutex&gt; <span class="title">locker</span><span class="params">(mu)</span></span>;</span><br><span class="line">        q.push_front(count);    <span class="comment">//数据入队锁保护</span></span><br><span class="line">        locker.unlock();</span><br><span class="line">        this_thread::sleep_for(chrono::seconds(<span class="number">1</span>));		<span class="comment">//延时1秒</span></span><br><span class="line">        count--;</span><br><span class="line">    }</span><br><span class="line">}</span><br><span class="line"><span class="comment">//消费者，从队列提取数据</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">consumer</span><span class="params">()</span></span>{</span><br><span class="line">    <span class="keyword">int</span> data=<span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span>(data!=<span class="number">1</span>){</span><br><span class="line">        <span class="function">unique_lock&lt;<span class="built_in">std</span>::mutex&gt; <span class="title">locker</span><span class="params">(mu)</span></span>;</span><br><span class="line">        <span class="keyword">if</span> (!q.empty()) {			<span class="comment">//判断队列是否为空</span></span><br><span class="line">            data = q.back();</span><br><span class="line">            q.pop_back();			<span class="comment">//数据出队锁保护</span></span><br><span class="line">            locker.unlock();</span><br><span class="line">            <span class="built_in">cout</span> &lt;&lt; <span class="string">"t2 got a value from t1: "</span> &lt;&lt; data &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        } <span class="keyword">else</span> {</span><br><span class="line">            locker.unlock();</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>{</span><br><span class="line">    <span class="function"><span class="built_in">std</span>::thread <span class="title">t1</span><span class="params">(producer)</span></span>;</span><br><span class="line">    <span class="function"><span class="built_in">std</span>::thread <span class="title">t2</span><span class="params">(consumer)</span></span>;</span><br><span class="line">    t1.join();</span><br><span class="line">    t2.join();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>程序执行结果如下：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">t2 got a value from t1: 10</span><br><span class="line">t2 got a value from t1: 9</span><br><span class="line">t2 got a value from t1: 8</span><br><span class="line">t2 got a value from t1: 7</span><br><span class="line">t2 got a value from t1: 6</span><br><span class="line">t2 got a value from t1: 5</span><br><span class="line">t2 got a value from t1: 4</span><br><span class="line">t2 got a value from t1: 3</span><br><span class="line">t2 got a value from t1: 2</span><br><span class="line">t2 got a value from t1: 1</span><br></pre></td></tr></tbody></table></figure>
+
+<p>从代码中不难看出：在生产过程中，因每放入一个数据有1秒延时，所以这个生产的过程是很慢的；在消费过程中，存在着一个while循环，只有在接收到表示结束的数据的时候，才会停止，每次循环内部，都是先加锁，判断队列不空，然后就取出一个数，最后解锁。所以说，在1s内，做了很多无用功！这样的话，CPU占用率会很高。</p>
+<p>既然是由于消费者在while循环内因等待数据做了过多的无用功导致CPU占有率过高，我们可以考虑在消费者发现队列为空时，让消费者小睡一会儿，即增加一个小延时（比如500ms），相当于增大了轮询间隔周期，应该能降低CPU的占用率。</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//消费者，从队列提取数据</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">consumer</span><span class="params">()</span></span>{</span><br><span class="line">    <span class="keyword">int</span> data=<span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span>(data!=<span class="number">1</span>){</span><br><span class="line">        <span class="function">unique_lock&lt;<span class="built_in">std</span>::mutex&gt; <span class="title">locker</span><span class="params">(mu)</span></span>;</span><br><span class="line">        <span class="keyword">if</span> (!q.empty()) {			<span class="comment">//判断队列是否为空</span></span><br><span class="line">            data = q.back();</span><br><span class="line">            q.pop_back();			<span class="comment">//数据出队锁保护</span></span><br><span class="line">            locker.unlock();</span><br><span class="line">            <span class="built_in">cout</span> &lt;&lt; <span class="string">"t2 got a value from t1: "</span> &lt;&lt; data &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        } <span class="keyword">else</span> {</span><br><span class="line">            locker.unlock();</span><br><span class="line">            <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::milliseconds(<span class="number">500</span>));		<span class="comment">//延时500毫秒</span></span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>困难之处在于如何确定这个延长时间（即轮询间隔周期），<strong>如果间隔太短会过多占用CPU资源，如果间隔太长会因无法及时响应造成延误</strong>。</p>
+<p>这就引入了条件变量来解决该问题：条件变量使用“通知—唤醒”模型，生产者生产出一个数据后通知消费者使用，消费者在未接到通知前处于休眠状态节约CPU资源；当消费者收到通知后，赶紧从休眠状态被唤醒来处理数据，使用了事件驱动模型，在保证不误事儿的情况下尽可能减少无用功降低对资源的消耗。</p>
+<h2 id="如何使用条件变量"><a href="#如何使用条件变量" class="headerlink" title="如何使用条件变量"></a>如何使用条件变量</h2><p>C++标准库在&lt; condition_variable &gt;中提供了条件变量，借由它，一个线程可以唤醒一个或多个其他等待中的线程。原则上，条件变量的运作如下：</p>
+<ul>
+<li>你必须同时包含&lt; mutex &gt;和&lt; condition_variable &gt;，并声明一个mutex和一个condition_variable变量；</li>
+<li>那个通知“条件已满足”的线程（或多个线程之一）必须调用notify_one()或notify_all()，以便条件满足时唤醒处于等待中的一个条件变量；</li>
+<li>那个等待”条件被满足”的线程必须调用wait()，可以让线程在条件未被满足时陷入休眠状态，当接收到通知时被唤醒去处理相应的任务；</li>
+</ul>
+<p>修改代码如下：</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;deque&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;mutex&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;condition_variable&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="built_in">deque</span>&lt;<span class="keyword">int</span>&gt; q;   <span class="comment">//双端队列标准容器全局变量</span></span><br><span class="line">mutex mu;   <span class="comment">//互斥锁全局变量</span></span><br><span class="line">condition_variable cond;           <span class="comment">//全局条件变量</span></span><br><span class="line"><span class="comment">//生产者，往队列放入数据</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">producer</span><span class="params">()</span></span>{</span><br><span class="line">    <span class="keyword">int</span> count=<span class="number">10</span>;</span><br><span class="line">    <span class="keyword">while</span>(count&gt;<span class="number">0</span>){</span><br><span class="line">        <span class="function">unique_lock&lt;mutex&gt; <span class="title">locker</span><span class="params">(mu)</span></span>;</span><br><span class="line">        q.push_front(count);    <span class="comment">//数据入队锁保护</span></span><br><span class="line">        locker.unlock();</span><br><span class="line"></span><br><span class="line">        cond.notify_one();              <span class="comment">// 向一个等待线程发出“条件已满足”的通知</span></span><br><span class="line"></span><br><span class="line">        this_thread::sleep_for(chrono::seconds(<span class="number">1</span>));		<span class="comment">//延时1秒</span></span><br><span class="line">        count--;</span><br><span class="line">    }</span><br><span class="line">}</span><br><span class="line"><span class="comment">//消费者，从队列提取数据</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">consumer</span><span class="params">()</span></span>{</span><br><span class="line">    <span class="keyword">int</span> data=<span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span>(data!=<span class="number">1</span>){</span><br><span class="line">        <span class="function">unique_lock&lt;<span class="built_in">std</span>::mutex&gt; <span class="title">locker</span><span class="params">(mu)</span></span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (q.empty()) 		<span class="comment">//判断队列是否为空</span></span><br><span class="line">            cond.wait(locker); <span class="comment">// 解锁互斥量并陷入休眠以等待通知被唤醒，被唤醒后加锁以保护共享数据</span></span><br><span class="line"></span><br><span class="line">        data = q.back();</span><br><span class="line">        q.pop_back();			<span class="comment">//数据出队锁保护</span></span><br><span class="line">        locker.unlock();</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"t2 got a value from t1: "</span> &lt;&lt; data &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    }</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>{</span><br><span class="line">    <span class="function"><span class="built_in">std</span>::thread <span class="title">t1</span><span class="params">(producer)</span></span>;</span><br><span class="line">    <span class="function"><span class="built_in">std</span>::thread <span class="title">t2</span><span class="params">(consumer)</span></span>;</span><br><span class="line">    t1.join();</span><br><span class="line">    t2.join();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>上面的代码有三个注意事项：</p>
+<ol>
+<li>在function_2中，在判断队列是否为空的时候，使用的是while(q.empty())，而不是if(q.empty())，这是因为wait()从阻塞到返回，不一定就是由于notify_one()函数造成的，还有可能由于系统的不确定原因唤醒（可能和条件变量的实现机制有关），这个的时机和频率都是不确定的，被称作伪唤醒。如果在错误的时候被唤醒了，执行后面的语句就会错误，所以需要再次判断队列是否为空，如果还是为空，就继续wait()阻塞；</li>
+<li>在管理互斥锁的时候，使用的是std::unique_lock而不是std::lock_guard，而且事实上也不能使用std::lock_guard。这需要先解释下wait()函数所做的事情，可以看到，在wait()函数之前，使用互斥锁保护了，如果wait的时候什么都没做，岂不是一直持有互斥锁？那生产者也会一直卡住，不能够将数据放入队列中了。所以，wait()函数会先调用互斥锁的unlock()函数，然后再将自己睡眠，在被唤醒后，又会继续持有锁，保护后面的队列操作。lock_guard没有lock和unlock接口，而unique_lock提供了，这就是必须使用unique_lock的原因；</li>
+<li>使用细粒度锁，尽量减小锁的范围，在notify_one()的时候，不需要处于互斥锁的保护范围内，所以在唤醒条件变量之前可以将锁unlock()。</li>
+</ol>
+<p>还可以将cond.wait(locker)换一种写法，wait()的第二个参数可以传入一个函数表示检查条件，这里使用lambda函数最为简单，如果这个函数返回的是true，wait()函数不会阻塞会直接返回，如果这个函数返回的是false，wait()函数就会阻塞着等待唤醒，如果被伪唤醒，会继续判断函数返回值。代码示例如下：</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//消费者，从队列提取数据</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">consumer</span><span class="params">()</span></span>{</span><br><span class="line">    <span class="keyword">int</span> data=<span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span>(data!=<span class="number">1</span>){</span><br><span class="line">        <span class="function">unique_lock&lt;<span class="built_in">std</span>::mutex&gt; <span class="title">locker</span><span class="params">(mu)</span></span>;</span><br><span class="line"></span><br><span class="line">        cond.wait(locker, [](){ <span class="keyword">return</span> !q.empty();});   <span class="comment">//如果条件变量被唤醒，检查队列非空条件是否为真，为真则直接返回，为假则继续等待</span></span><br><span class="line"></span><br><span class="line">        data = q.back();</span><br><span class="line">        q.pop_back();			<span class="comment">//数据出队锁保护</span></span><br><span class="line">        locker.unlock();</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"t2 got a value from t1: "</span> &lt;&lt; data &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>下面给出条件变量支持的操作函数表：</p>
+<img src="/2021/02/18/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%88%E4%B8%89%EF%BC%89-%E7%BA%BF%E7%A8%8B%E5%90%8C%E6%AD%A5%E4%B9%8B%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F/1.png" class="" title="图片">
+
+<p>值得注意的是：</p>
+<ul>
+<li>所有通知(notification)都会被自动同步化，所以并发调用notify_one()和notify_all()不会带来麻烦；</li>
+<li>所有等待某个条件变量(condition variable)的线程都必须使用相同的mutex，当wait()家族的某个成员被调用时该mutex必须被unique_lock锁定，否则会发生不明确的行为；</li>
+<li>wait()函数会执行“解锁互斥量–&gt;陷入休眠等待–&gt;被通知唤醒–&gt;再次锁定互斥量–&gt;检查条件判断式是否为真”几个步骤，这意味着传给wait函数的判断式总是在锁定情况下被调用的，可以安全的处理受互斥量保护的对象；但在”解锁互斥量–&gt;陷入休眠等待”过程之间产生的通知(notification)会被遗失。</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/C/" rel="tag"># C++</a>
+              <a href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" rel="tag"># 多线程</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/17/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%88%E4%BA%8C%EF%BC%89-%E7%BA%BF%E7%A8%8B%E5%90%8C%E6%AD%A5%E4%B9%8B%E4%BA%92%E6%96%A5%E9%94%81/" rel="prev" title="C++多线程（二）---线程同步之互斥锁">
+      <i class="fa fa-chevron-left"></i> C++多线程（二）---线程同步之互斥锁
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/19/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%88%E5%9B%9B%EF%BC%89-%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B/" rel="next" title="C++多线程（四）---异步编程">
+      C++多线程（四）---异步编程 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%95%E4%B8%BA%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F"><span class="nav-number">1.</span> <span class="nav-text">何为条件变量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BD%95%E5%BC%95%E5%85%A5%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F"><span class="nav-number">2.</span> <span class="nav-text">为何引入条件变量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F"><span class="nav-number">3.</span> <span class="nav-text">如何使用条件变量</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Yu Hong</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">25</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+	
+	
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yu Hong</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">211k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">3:12</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="计算机存储单位位（bit）：二进制数中的一个数位，可以是0或者1，是计算机中数据的最小单位。 字节（Byte，B）：计算机中数据的基本单位，每8位组成一个字节。各种信息在计算机中存储、处理至少需要一个字节。例如，一个ASCII码用一个字节表示，一个汉字用两个字节表示。 字（Word）：两个字节称为一个字。汉字的存储单位都是一个字。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="关于位运算">
+<meta property="og:url" content="http://example.com/2020/11/04/%E5%85%B3%E4%BA%8E%E4%BD%8D%E8%BF%90%E7%AE%97/index.html">
+<meta property="og:site_name" content="Hi! Yh">
+<meta property="og:description" content="计算机存储单位位（bit）：二进制数中的一个数位，可以是0或者1，是计算机中数据的最小单位。 字节（Byte，B）：计算机中数据的基本单位，每8位组成一个字节。各种信息在计算机中存储、处理至少需要一个字节。例如，一个ASCII码用一个字节表示，一个汉字用两个字节表示。 字（Word）：两个字节称为一个字。汉字的存储单位都是一个字。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/2020/11/04/%E5%85%B3%E4%BA%8E%E4%BD%8D%E8%BF%90%E7%AE%97/1-1.png">
+<meta property="article:published_time" content="2020-11-04T15:03:16.000Z">
+<meta property="article:modified_time" content="2021-02-07T15:00:17.360Z">
+<meta property="article:author" content="Yu Hong">
+<meta property="article:tag" content="算法">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2020/11/04/%E5%85%B3%E4%BA%8E%E4%BD%8D%E8%BF%90%E7%AE%97/1-1.png">
+
+<link rel="canonical" href="http://example.com/2020/11/04/%E5%85%B3%E4%BA%8E%E4%BD%8D%E8%BF%90%E7%AE%97/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>关于位运算 | Hi! Yh</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hi! Yh</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/11/04/%E5%85%B3%E4%BA%8E%E4%BD%8D%E8%BF%90%E7%AE%97/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Yu Hong">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hi! Yh">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          关于位运算
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-11-04 23:03:16" itemprop="dateCreated datePublished" datetime="2020-11-04T23:03:16+08:00">2020-11-04</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-02-07 23:00:17" itemprop="dateModified" datetime="2021-02-07T23:00:17+08:00">2021-02-07</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="计算机存储单位"><a href="#计算机存储单位" class="headerlink" title="计算机存储单位"></a>计算机存储单位</h2><p>位（bit）：二进制数中的一个数位，可以是0或者1，是计算机中数据的最小单位。</p>
+<p>字节（Byte，B）：计算机中数据的基本单位，每8位组成一个字节。各种信息在计算机中存储、处理至少需要一个字节。例如，一个ASCII码用一个字节表示，一个汉字用两个字节表示。</p>
+<p>字（Word）：两个字节称为一个字。汉字的存储单位都是一个字。<a id="more"></a></p>
+<p><strong>拓展单位</strong>：</p>
+<p>KB: 1KB=1024B</p>
+<p>MB: 1MB=1024KB</p>
+<p>GB: 1GB=1024MB</p>
+<p>TB: 1TB=1024GB</p>
+<h2 id="位运算概览"><a href="#位运算概览" class="headerlink" title="位运算概览"></a>位运算概览</h2><table>
+<thead>
+<tr>
+<th align="right">符号</th>
+<th>描述</th>
+<th>运算规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="right">&amp;</td>
+<td>与</td>
+<td>两个位都为1时，结果才为1</td>
+</tr>
+<tr>
+<td align="right">|</td>
+<td>或</td>
+<td>两个位都为0时，结果才为0</td>
+</tr>
+<tr>
+<td align="right">^</td>
+<td>异或</td>
+<td>两个位相同为0，相异为1</td>
+</tr>
+<tr>
+<td align="right">~</td>
+<td>取反</td>
+<td>0变1，1变0</td>
+</tr>
+<tr>
+<td align="right">&lt;&lt;</td>
+<td>左移</td>
+<td>各二进位全部左移若干位，高位丢弃，低位补0</td>
+</tr>
+<tr>
+<td align="right">&gt;&gt;</td>
+<td>右移</td>
+<td>各二进位全部右移若干位，对无符号数，高位补0，有符号数，各编译器处理方法不一样，有的补符号位（算术右移），有的补0（逻辑右移）</td>
+</tr>
+</tbody></table>
+<h2 id="各种位运算的作用"><a href="#各种位运算的作用" class="headerlink" title="各种位运算的作用"></a>各种位运算的作用</h2><h3 id="按位与运算符（-amp-）"><a href="#按位与运算符（-amp-）" class="headerlink" title="按位与运算符（&amp;）"></a>按位与运算符（&amp;）</h3><p><strong>1）清零</strong></p>
+<p>如果想将一个单元清零，即使其全部二进制位为0，只要与一个各位都为零的数值相与，结果为零。</p>
+<p><strong>2）取一个数的指定位</strong></p>
+<p>比如取数 X=1010 1110 的低4位，只需要另找一个数Y，令Y的低4位为1，其余位为0，即Y=0000 1111，然后将X与Y进行按位与运算（X&amp;Y=0000 1110）即可得到X的指定位。 </p>
+<p><strong>3）判断奇偶</strong></p>
+<p>只要根据最未位是0还是1来决定，为0就是偶数，为1就是奇数。因此可以用<code>if ((a &amp; 1) == 0)</code>代替<code>if (a % 2 == 0)</code>来判断a是不是偶数。</p>
+<h3 id="按位或运算符（-）"><a href="#按位或运算符（-）" class="headerlink" title="按位或运算符（|）"></a>按位或运算符（|）</h3><p><strong>1）常用来对一个数据的某些位设置为1</strong></p>
+<p>比如将数 X=1010 1110 的低4位设置为1，只需要另找一个数Y，令Y的低4位为1，其余位为0，即Y=0000 1111，然后将X与Y进行按位或运算（X|Y=1010 1111）即可得到。</p>
+<h3 id="异或运算符（-）"><a href="#异或运算符（-）" class="headerlink" title="异或运算符（^）"></a>异或运算符（^）</h3><p><strong>1）翻转指定位</strong></p>
+<p>比如将数 X=1010 1110 的低4位进行翻转，只需要另找一个数Y，令Y的低4位为1，其余位为0，即Y=0000 1111，然后将X与Y进行异或运算（X^Y=1010 0001）即可得到。</p>
+<p><strong>2）与0相异或值不变</strong></p>
+<p>例如：1010 1110 ^ 0000 0000 = 1010 1110</p>
+<p><strong>3)  与自身异或结果为0</strong></p>
+<p><strong>4）常见技巧</strong></p>
+<p>交换两个数</p>
+<figure class="highlight c"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">Swap</span><span class="params">(<span class="keyword">int</span> &amp;a, <span class="keyword">int</span> &amp;b)</span></span>{</span><br><span class="line">    <span class="keyword">if</span> (a != b){</span><br><span class="line">        a ^= b;</span><br><span class="line">        b ^= a;</span><br><span class="line">        a ^= b;</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p><code>x ^ 0s = x</code></p>
+<p><code>x ^ 1s = ~x</code></p>
+<p><code>x ^ x = 0</code></p>
+<p><code>0s</code>和<code>1s</code>分别代表一串0和一串1</p>
+<p>若<code>a^b^c^d^e=S</code> 则 <code>S^a=b^c^d^e</code>, <code>S^a^d^e=b^c</code></p>
+<h3 id="取反运算符"><a href="#取反运算符" class="headerlink" title="取反运算符 (~)"></a>取反运算符 (~)</h3><p><strong>1）使一个数的最低位为零</strong></p>
+<p>使a的最低位为0，可以表示为：<code>a &amp; ~1</code>。~1的值为 1111 1111 1111 1110，再按”与”运算，最低位一定为0。因为“ ~”运算符的优先级比算术运算符、关系运算符、逻辑运算符和其他运算符都高。</p>
+<h3 id="左移运算符（-lt-lt-）"><a href="#左移运算符（-lt-lt-）" class="headerlink" title="左移运算符（<<）"></a>左移运算符（&lt;&lt;）</h3><p>若左移时舍弃的高位不包含1，则每左移一位，相当于该数乘以2。</p>
+<h3 id="右移运算符（-gt-gt-）"><a href="#右移运算符（-gt-gt-）" class="headerlink" title="右移运算符（>>）"></a>右移运算符（&gt;&gt;）</h3><p>操作数每右移一位，相当于该数除以2。</p>
+<h2 id="C语言数据类型大小"><a href="#C语言数据类型大小" class="headerlink" title="C语言数据类型大小"></a>C语言数据类型大小</h2><p><strong>有符号整数类型</strong></p>
+<table>
+<thead>
+<tr>
+<th>类型名称</th>
+<th>字节数</th>
+<th>取值范围</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>signed char</td>
+<td>1</td>
+<td>-2^7(-128) ~ 2^7-1(127)</td>
+</tr>
+<tr>
+<td>short int 或 short</td>
+<td>2</td>
+<td>-2^15(-32 768) ~ 2^15-1(32 767)</td>
+</tr>
+<tr>
+<td>int</td>
+<td>4</td>
+<td>-2^31(-2 147 483 648) ~ 2^31-1(2 147 483 647)</td>
+</tr>
+<tr>
+<td>long int 或 long</td>
+<td>4</td>
+<td>-2^31(-2 147 483 648) ~ 2^31-1(2 147 483 647)</td>
+</tr>
+<tr>
+<td>long long int 或 long long</td>
+<td>8</td>
+<td>-2^63(-9.2233720368548e+18) ~ 2^63-1(9.2233720368548e+18)</td>
+</tr>
+</tbody></table>
+<p><strong>无符号整数类型</strong></p>
+<table>
+<thead>
+<tr>
+<th>类型名称</th>
+<th>字节数</th>
+<th>取值范围</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>unsigned char</td>
+<td>1</td>
+<td>0 ~ 2^8-1(255)</td>
+</tr>
+<tr>
+<td>unsigned short int 或 unsigned short</td>
+<td>2</td>
+<td>0 ~ 2^16-1(65 535)</td>
+</tr>
+<tr>
+<td>unsigned int</td>
+<td>4</td>
+<td>0 ~ 2^32-1(4 294 967 295)</td>
+</tr>
+<tr>
+<td>unsigned long int 或 unsigned long</td>
+<td>4</td>
+<td>0 ~ 2^32-1(4 294 967 295)</td>
+</tr>
+<tr>
+<td>unsigned long long int 或 unsigned long long</td>
+<td>8</td>
+<td>0 ~ 2^64-1(1.844674407371e+19)</td>
+</tr>
+</tbody></table>
+<p><strong>浮点类型</strong></p>
+<table>
+<thead>
+<tr>
+<th>类型名称</th>
+<th>字节数</th>
+<th>取值范围</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>float</td>
+<td>4</td>
+<td>-/+3.4e38（精确到6位小数）</td>
+</tr>
+<tr>
+<td>double</td>
+<td>8</td>
+<td>-/+1.7e308（精确到15位小数）</td>
+</tr>
+<tr>
+<td>long double</td>
+<td>12</td>
+<td>-/+1.19e4932（精确到18位小数）</td>
+</tr>
+</tbody></table>
+<h2 id="位向量"><a href="#位向量" class="headerlink" title="位向量"></a>位向量</h2><p>位向量可以高效解决类似于有上下限的无重复数字的排序问题。</p>
+<p>例如：已知有不超过n的m个无重复正整数（int 型），需要将它们排序后输出。可以建立一个大小为n个bit的位向量b，初始化都为0，然后遍历每个整数i, 将第b[i]置1。最后将b中值为1的index按序输出即可。</p>
+<p>现在假设 n=10000000，以下C语言代码实现了设置、清楚以及测试位值</p>
+<figure class="highlight c"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> BITSPEWORD 32</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SHIFT 5</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MASK 0X1F</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> N 10000000</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> a[<span class="number">1</span>+N/BITSPEWORD];</span><br><span class="line"></span><br><span class="line"><span class="comment">//将a的第i个bit位置1</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">set</span><span class="params">(<span class="keyword">int</span> i)</span></span>{</span><br><span class="line">    a[i&gt;&gt;SHIFT] |= (<span class="number">1</span>&lt;&lt;(i &amp; MASK));</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="comment">//将a的第i个bit位置0</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">clr</span><span class="params">(<span class="keyword">int</span> i)</span></span>{</span><br><span class="line">    a[i&gt;&gt;SHIFT] &amp;= ~(<span class="number">1</span>&lt;&lt;(i &amp; MASK));</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="comment">//取出a的第i个bit位</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">test</span><span class="params">(<span class="keyword">int</span> i)</span></span>{</span><br><span class="line">    <span class="keyword">return</span> a[i&gt;&gt;SHIFT] &amp; (<span class="number">1</span>&lt;&lt;(i &amp; MASK));</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>代码中 <code>BITSPEWORD</code>为C语言 <code>int </code>的bit大小（32 bit）, <code>MASK</code>展开为32 bit 表示为 <code>00000000 00000000 00000000 00011111</code>， <code>int </code>型数组a开辟了<code>N</code>个bit位，其在内存中的布局如下图所示：</p>
+<img src="/2020/11/04/%E5%85%B3%E4%BA%8E%E4%BD%8D%E8%BF%90%E7%AE%97/1-1.png" class="" title="图片">
+
+<p>以<code>i=37</code>为例，解析各语句的作用</p>
+<p><code>i</code> 的bit表示为 <code>00000000 00000000 00000000 00100101</code></p>
+<p><code>i&gt;&gt;SHIFT</code></p>
+<p>相当于 <code>i/32</code>，找到对应a数组下标，<code>37/32=1</code>, 对a[1]操作</p>
+<p><code>i &amp; MASK</code>  </p>
+<figure class="highlight c"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">	<span class="number">00000000</span> <span class="number">00000000</span> <span class="number">00000000</span> <span class="number">00100101</span></span><br><span class="line">&amp;	<span class="number">00000000</span> <span class="number">00000000</span> <span class="number">00000000</span> <span class="number">00011111</span></span><br><span class="line">=   <span class="number">00000000</span> <span class="number">00000000</span> <span class="number">00000000</span> <span class="number">00000101</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>取 i 的5个低位bit位，结果相当于<code> i%32</code>，<code>37%32=5</code></p>
+<p><code>1&lt;&lt;(i &amp; MASK)</code></p>
+<p>得到第<code>(i &amp; MASK)</code>为1，其他位为0的二进制数 </p>
+<p><code>a[i&gt;&gt;SHIFT] |= (1&lt;&lt;(i &amp; MASK))</code> 就是将a的第i个bit位置1</p>
+<p><code>a[i&gt;&gt;SHIFT] &amp;= ~(1&lt;&lt;(i &amp; MASK)) </code>将a的第i个bit位置0</p>
+<p> <code>a[i&gt;&gt;SHIFT] &amp; (1&lt;&lt;(i &amp; MASK))</code>得到只有a第i个bit位为1，其余位为0的结果，可测试第i位是否为1</p>
+<p>测试代码如下</p>
+<figure class="highlight c"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> arr[<span class="number">7</span>]={<span class="number">3</span>,<span class="number">55</span>,<span class="number">12</span>,<span class="number">700</span>,<span class="number">77</span>,<span class="number">0</span>,<span class="number">34</span>};</span><br><span class="line">    <span class="keyword">int</span> i;</span><br><span class="line">    <span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;N;i++)</span><br><span class="line">        clr(i);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;<span class="number">7</span>;i++){</span><br><span class="line">        <span class="built_in">set</span>(arr[i]);</span><br><span class="line">    }</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;N;i++){</span><br><span class="line">        <span class="keyword">if</span>(test(i)!=<span class="number">0</span>)</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">"%d "</span>,i);</span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+
+<p>输出结果为</p>
+<p>0 3 12 34 55 77 700</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%AE%97%E6%B3%95/" rel="tag"># 算法</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/11/04/C-%E5%BC%BA%E5%88%B6%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E8%BF%90%E7%AE%97%E7%AC%A6%EF%BC%88static-cast%E3%80%81reinterpret-cast%E3%80%81const-cast%E5%92%8Cdynamic-cast%EF%BC%89/" rel="prev" title="C++强制类型转换运算符（static_cast、reinterpret_cast、const_cast和dynamic_cast）">
+      <i class="fa fa-chevron-left"></i> C++强制类型转换运算符（static_cast、reinterpret_cast、const_cast和dynamic_cast）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/11/15/%E5%85%B3%E4%BA%8Epubluc%E3%80%81protected-%E5%92%8Cprivate/" rel="next" title="关于publuc、protected 和private">
+      关于publuc、protected 和private <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%AD%98%E5%82%A8%E5%8D%95%E4%BD%8D"><span class="nav-number">1.</span> <span class="nav-text">计算机存储单位</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%8D%E8%BF%90%E7%AE%97%E6%A6%82%E8%A7%88"><span class="nav-number">2.</span> <span class="nav-text">位运算概览</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%84%E7%A7%8D%E4%BD%8D%E8%BF%90%E7%AE%97%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="nav-number">3.</span> <span class="nav-text">各种位运算的作用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8C%89%E4%BD%8D%E4%B8%8E%E8%BF%90%E7%AE%97%E7%AC%A6%EF%BC%88-amp-%EF%BC%89"><span class="nav-number">3.1.</span> <span class="nav-text">按位与运算符（&amp;）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8C%89%E4%BD%8D%E6%88%96%E8%BF%90%E7%AE%97%E7%AC%A6%EF%BC%88-%EF%BC%89"><span class="nav-number">3.2.</span> <span class="nav-text">按位或运算符（|）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%82%E6%88%96%E8%BF%90%E7%AE%97%E7%AC%A6%EF%BC%88-%EF%BC%89"><span class="nav-number">3.3.</span> <span class="nav-text">异或运算符（^）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%96%E5%8F%8D%E8%BF%90%E7%AE%97%E7%AC%A6"><span class="nav-number">3.4.</span> <span class="nav-text">取反运算符 (~)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B7%A6%E7%A7%BB%E8%BF%90%E7%AE%97%E7%AC%A6%EF%BC%88-lt-lt-%EF%BC%89"><span class="nav-number">3.5.</span> <span class="nav-text">左移运算符（&lt;&lt;）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%B3%E7%A7%BB%E8%BF%90%E7%AE%97%E7%AC%A6%EF%BC%88-gt-gt-%EF%BC%89"><span class="nav-number">3.6.</span> <span class="nav-text">右移运算符（&gt;&gt;）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#C%E8%AF%AD%E8%A8%80%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E5%A4%A7%E5%B0%8F"><span class="nav-number">4.</span> <span class="nav-text">C语言数据类型大小</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%8D%E5%90%91%E9%87%8F"><span class="nav-number">5.</span> <span class="nav-text">位向量</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Yu Hong</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">25</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+	
+	
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yu Hong</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">211k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">3:12</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

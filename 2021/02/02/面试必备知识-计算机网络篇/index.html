@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="OSI七层模型七层模型，亦称OSI（Open System Interconnection）。参考模型是国际标准化组织（ISO）制定的一个用于计算机或通信系统间互联的标准体系，一般称为OSI参考模型或七层模型。它是一个七层的、抽象的模型体，不仅包括一系列抽象的术语或概念，也包括具体的协议。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="面试必备知识-计算机网络篇">
+<meta property="og:url" content="http://example.com/2021/02/02/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AF%87/index.html">
+<meta property="og:site_name" content="Hi! Yh">
+<meta property="og:description" content="OSI七层模型七层模型，亦称OSI（Open System Interconnection）。参考模型是国际标准化组织（ISO）制定的一个用于计算机或通信系统间互联的标准体系，一般称为OSI参考模型或七层模型。它是一个七层的、抽象的模型体，不仅包括一系列抽象的术语或概念，也包括具体的协议。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/2021/02/02/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AF%87/0.png">
+<meta property="og:image" content="http://example.com/2021/02/02/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AF%87/1.png">
+<meta property="og:image" content="http://example.com/2021/02/02/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AF%87/2.png">
+<meta property="og:image" content="http://example.com/2021/02/02/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AF%87/3.jpg">
+<meta property="og:image" content="http://example.com/2021/02/02/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AF%87/4.JPG">
+<meta property="og:image" content="http://example.com/2021/02/02/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AF%87/5.jpg">
+<meta property="og:image" content="http://example.com/2021/02/02/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AF%87/6-19110QF62V62.gif">
+<meta property="og:image" content="http://example.com/2021/02/02/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AF%87/6-19111109161J31.gif">
+<meta property="og:image" content="http://example.com/2021/02/02/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AF%87/6-19110QIKTG.gif">
+<meta property="og:image" content="http://example.com/2021/02/02/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AF%87/1200791037.png">
+<meta property="og:image" content="http://example.com/2021/02/02/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AF%87/435616e06216_720w.jpg">
+<meta property="og:image" content="http://example.com/2021/02/02/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AF%87/4189430f12cea_720w.jpg">
+<meta property="og:image" content="http://example.com/2021/02/02/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AF%87/5f9ee0259b_720w.jpg">
+<meta property="article:published_time" content="2021-02-02T11:45:09.000Z">
+<meta property="article:modified_time" content="2021-03-10T07:06:07.514Z">
+<meta property="article:author" content="Yu Hong">
+<meta property="article:tag" content="面试题">
+<meta property="article:tag" content="计算机网络">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2021/02/02/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AF%87/0.png">
+
+<link rel="canonical" href="http://example.com/2021/02/02/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AF%87/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>面试必备知识-计算机网络篇 | Hi! Yh</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hi! Yh</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/02/02/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AF%87/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Yu Hong">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hi! Yh">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          面试必备知识-计算机网络篇
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-02-02 19:45:09" itemprop="dateCreated datePublished" datetime="2021-02-02T19:45:09+08:00">2021-02-02</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-10 15:06:07" itemprop="dateModified" datetime="2021-03-10T15:06:07+08:00">2021-03-10</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>15k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>14 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="OSI七层模型"><a href="#OSI七层模型" class="headerlink" title="OSI七层模型"></a>OSI七层模型</h2><p>七层模型，亦称OSI（Open System Interconnection）。参考模型是国际标准化组织（ISO）制定的一个用于计算机或通信系统间互联的标准体系，一般称为OSI参考模型或七层模型。<br>它是一个七层的、抽象的模型体，不仅包括一系列抽象的术语或概念，也包括具体的协议。<a id="more"></a></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>主要功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>物理层</td>
+<td>利用传输介质为数据链路层提供物理连接，负责处理数据传输并监控数据出错率，以便数据流的透明传输。</td>
+</tr>
+<tr>
+<td>数据链路层</td>
+<td>在物理层提供的服务基础上，在通信的实体间建立数据链路连接，传输以“帧”为单位的数据包，并采用差错控制与流量控制方法，使有差错的物理线路变成无差错的数据链路。</td>
+</tr>
+<tr>
+<td>网络层</td>
+<td>为数据在节点之间传输创建逻辑链路，通过路由选择算法为分组通过通信子网选择最适当的路径，以及实现拥塞控制、网络互连等功能。</td>
+</tr>
+<tr>
+<td>传输层</td>
+<td>向用户提供可靠地端到端服务，处理数据包错误、数据包次序，以及其他一些关键传输问题。传输层向高层屏蔽了下层数据通信的细节。因此，它是计算机通信体系结构中关键的一层。</td>
+</tr>
+<tr>
+<td>会话层</td>
+<td>负责维扩两个结点之间的传输连接，以便确保点到点传输不中断，以及管理数据交换等功能。</td>
+</tr>
+<tr>
+<td>表示层</td>
+<td>用于处理在两个通信系统中交换信息的表示方法，主要包括数据格式变换、数据加密与解密、数据压缩与恢复等功能。</td>
+</tr>
+<tr>
+<td>应用层</td>
+<td>为应用软件提供了很多服务，比如文件服务器、数据库服务、电子邮件与其他网络软件服务。</td>
+</tr>
+</tbody></table>
+<img src="/2021/02/02/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AF%87/0.png" class="" title="图片描述">
+
+<h2 id="常用的HTTP方法有哪些？"><a href="#常用的HTTP方法有哪些？" class="headerlink" title="常用的HTTP方法有哪些？"></a>常用的HTTP方法有哪些？</h2><ul>
+<li>GET： 用于请求访问已经被URI（统一资源标识符）识别的资源，可以通过URL传参给服务器</li>
+<li>POST：用于传输信息给服务器，主要功能与GET方法类似，但一般推荐使用POST方式。</li>
+<li>PUT： 传输文件，报文主体中包含文件内容，保存到对应URI位置。</li>
+<li>HEAD： 获得报文首部，与GET方法类似，只是不返回报文主体，一般用于验证URI是否有效。</li>
+<li>DELETE：删除文件，与PUT方法相反，删除对应URI位置的文件。</li>
+<li>OPTIONS：查询相应URI支持的HTTP方法。</li>
+</ul>
+<h2 id="HTTP请求报文与响应报文格式"><a href="#HTTP请求报文与响应报文格式" class="headerlink" title="HTTP请求报文与响应报文格式"></a>HTTP请求报文与响应报文格式</h2><img src="/2021/02/02/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AF%87/1.png" class="" title="图片描述">
+
+<p>http请求报文：请求行（请求方法+url）、请求头，请求体</p>
+<img src="/2021/02/02/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AF%87/2.png" class="" title="图片描述">
+
+<p>http响应报文：状态行（http版本+状态码）、响应头、响应体</p>
+<p><strong>常见的首部：</strong></p>
+<ul>
+<li><strong>通用首部字段（请求报文与响应报文都会使用的首部字段）</strong><ul>
+<li>Date：创建报文时间</li>
+<li>Connection：连接的管理</li>
+<li>Cache-Control：缓存的控制</li>
+<li>Transfer-Encoding：报文主体的传输编码方式</li>
+</ul>
+</li>
+<li><strong>请求首部字段（请求报文会使用的首部字段）</strong><ul>
+<li>Host：请求资源所在服务器</li>
+<li>Accept：可处理的媒体类型</li>
+<li>Accept-Charset：可接收的字符集</li>
+<li>Accept-Encoding：可接受的内容编码</li>
+<li>Accept-Language：可接受的自然语言</li>
+</ul>
+</li>
+<li><strong>响应首部字段（响应报文会使用的首部字段）</strong><ul>
+<li>Accept-Ranges：可接受的字节范围</li>
+<li>Location：令客户端重新定向到的URI</li>
+<li>Server：HTTP服务器的安装信息</li>
+</ul>
+</li>
+<li><strong>实体首部字段（请求报文与响应报文的的实体部分使用的首部字段）</strong><ul>
+<li>Allow：资源可支持的HTTP方法</li>
+<li>Content-Type：实体主类的类型</li>
+<li>Content-Encoding：实体主体适用的编码方式</li>
+<li>Content-Language：实体主体的自然语言</li>
+<li>Content-Length：实体主体的的字节数</li>
+<li>Content-Range：实体主体的位置范围，一般用于发出部分请求时使用</li>
+</ul>
+</li>
+</ul>
+<h2 id="post和get的区别"><a href="#post和get的区别" class="headerlink" title="post和get的区别"></a>post和get的区别</h2><p>一、功能不同</p>
+<p>1、get是从服务器上获取数据。</p>
+<p>2、post是向服务器传送数据。 </p>
+<p>二、过程不同</p>
+<p>1、get是把参数数据队列shu加到提交表单的ACTION属性所指的URL中，值和表单内各个字段一一对应，在URL中可以看到。</p>
+<p>2、post是通过HTTP post机制，将表单内各个字段与其内容放置在HTML HEADER内一起传送到ACTION属性所指的URL地址。用户看不到这个过程。 </p>
+<p>三、获取值不同</p>
+<p>1、对于get方式，服务器端用Request.QueryString获取变量的值。</p>
+<p>2、对于post方式，服务器端用Request.Form获取提交的数据。 </p>
+<p>四、传送数据量不同</p>
+<p>1、get传送的数据量较小，不能大于2KB。</p>
+<p>2、post传送的数据量较大，一般被默认为不受限制。但理论上，IIS4中最大量为80KB，IIS5中为100KB。 </p>
+<p>五、安全性不同</p>
+<p>1、get安全性非常低。</p>
+<p>2、post安全性较高。 </p>
+<h2 id="cookie与session"><a href="#cookie与session" class="headerlink" title="cookie与session"></a>cookie与session</h2><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/l199616j/p/11195667.html">可参考</a></p>
+<p>会话（Session）跟踪是Web程序中常用的技术，用来跟踪用户的整个会话。常用的会话跟踪技术是Cookie与Session。Cookie通过在客户端记录信息确定用户身份，Session通过在服务器端记录信息确定用户身份。</p>
+<p>Cookie实际上是一小段的文本信息。客户端请求服务器，如果服务器需要记录该用户状态，就使用response向客户端浏览器颁发一个Cookie。客户端浏览器会把Cookie保存起来。当浏览器再请求该网站时，浏览器把请求的网址连同该Cookie一同提交给服务器。服务器检查该Cookie，以此来辨认用户状态。服务器还可以根据需要修改Cookie的内容。</p>
+<p>Session是另一种记录客户状态的机制，不同的是Cookie保存在客户端浏览器中，而Session保存在服务器上。客户端浏览器访问服务器的时候，服务器把客户端信息以某种形式记录在服务器上。这就是Session。客户端浏览器再次访问时只需要从该Session中查找该客户的状态就可以了。</p>
+<p><strong>两者区别：</strong></p>
+<ol>
+<li><p>cookie数据存放在客户的浏览器上，session数据放在服务器上。</p>
+</li>
+<li><p>cookie不是很安全，别人可以分析存放在本地的COOKIE并进行COOKIE欺骗。考虑到安全应当使用session。</p>
+</li>
+<li><p>设置cookie时间可以使cookie过期。但是使用session-destory()，我们将会销毁会话。</p>
+</li>
+<li><p>session会在一定时间内保存在服务器上。当访问增多，会比较占用你服务器的性能。考虑到减轻服务器性能方面，应当使用cookie。</p>
+</li>
+<li><p>单个cookie保存的数据不能超过4K，很多浏览器都限制一个站点最多保存20个cookie。Session对象没有对存储的数据量的限制，其中可以保存更为复杂的数据类型。</p>
+</li>
+</ol>
+<p>两者最大的区别在于生存周期，一个是IE启动到IE关闭(浏览器页面一关 ,session就消失了)，一个是预先设置的生存周期，或永久的保存于本地的文件(cookie)。</p>
+<h2 id="常见的HTTP状态码"><a href="#常见的HTTP状态码" class="headerlink" title="常见的HTTP状态码"></a>常见的HTTP状态码</h2><ul>
+<li>200：请求被正常处理</li>
+<li>204：请求被受理但没有资源可以返回</li>
+<li>206：客户端只是请求资源的一部分，服务器只对请求的部分资源执行GET方法，相应报文中通过Content-Range指定范围的资源。</li>
+<li>301：永久性重定向</li>
+<li>302：临时重定向</li>
+<li>303：与302状态码有相似功能，只是它希望客户端在请求一个URI的时候，能通过GET方法重定向到另一个URI上</li>
+<li>304：发送附带条件的请求时，条件不满足时返回，与重定向无关</li>
+<li>307：临时重定向，与302类似，只是强制要求使用POST方法</li>
+<li>400：请求报文语法有误，服务器无法识别</li>
+<li>401：请求需要认证</li>
+<li>403：请求的对应资源禁止被访问</li>
+<li>404：服务器无法找到对应资源</li>
+<li>500：服务器内部错误</li>
+<li>503：服务器正忙</li>
+</ul>
+<h2 id="一次HTTP请求的完整过程"><a href="#一次HTTP请求的完整过程" class="headerlink" title="一次HTTP请求的完整过程"></a>一次HTTP请求的完整过程</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/ailunlee/article/details/90600174">参考链接</a></p>
+<ol>
+<li>浏览器根据域名解析IP地址</li>
+<li>浏览器与WEB服务器建立一个TCP连接</li>
+<li>浏览器给WEB服务器发送一个HTTP请求</li>
+<li>服务器端响应HTTP请求，浏览器得到HTML代码</li>
+<li>浏览器解析HTML代码，并请求HTML代码中的资源</li>
+<li>关闭TCP连接，浏览器对页面进行渲染呈现给用户</li>
+</ol>
+<h2 id="常用应用端口号"><a href="#常用应用端口号" class="headerlink" title="常用应用端口号"></a>常用应用端口号</h2><ul>
+<li><p>域名解析DNS端口 53</p>
+</li>
+<li><p>文件传送协议FTP 端口  20(数据连接端口)  21(控制连接端口)</p>
+</li>
+<li><p>简单文件传送协议TFTP  端口  69</p>
+</li>
+<li><p>远程终端协议TELNET 端口23</p>
+</li>
+<li><p>超文本传送协议 HTTP 端口80</p>
+</li>
+<li><p>超文本传送安全协议HTTPS 端口443</p>
+</li>
+<li><p>简单邮件传送协议 SMTP 端口 25</p>
+</li>
+<li><p>邮件读取协议：邮局协议POP3 端口110  国际报文存取协议IMAP端口145</p>
+</li>
+<li><p>动态主机配置协议DHCP 端口67</p>
+</li>
+<li><p>简单网路管理协议SNMP 端口161</p>
+</li>
+</ul>
+<h2 id="对称加密与非对称加密"><a href="#对称加密与非对称加密" class="headerlink" title="对称加密与非对称加密"></a>对称加密与非对称加密</h2><h3 id="对称加密"><a href="#对称加密" class="headerlink" title="对称加密"></a>对称加密</h3><p>在对称加密算法中，加密和解密使用的是同一把钥匙，即：使用相同的密匙对同一密码进行加密和解密；</p>
+<p>加密过程如下：</p>
+<p>加密：原文 + 密匙 = 密文</p>
+<p>解密：密文 - 密匙 = 原文</p>
+<h3 id="非对称加密"><a href="#非对称加密" class="headerlink" title="非对称加密"></a>非对称加密</h3><p>非对称加密使用不同的密钥进行加密和解密。</p>
+<p>非对称加密有两个钥匙，及公钥（Public Key）和私钥（Private Key）。公钥和私钥是成对的存在，如果对原文使用公钥加密，则只能使用对应的私钥才能解密；因为加密和解密使用的不是同一把密钥，所以这种算法称之为非对称加密算法。</p>
+<p>非对称加密算法的密匙是通过一系列算法获取到的一长串随机数，通常随机数的长度越长，加密信息越安全。<strong>通过私钥经过一系列算法是可以推导出公钥的，也就是说，公钥是基于私钥而存在的。但是无法通过公钥反向推倒出私钥，这个过程的单向的。</strong></p>
+<img src="/2021/02/02/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AF%87/3.jpg" class="" title="图片描述">
+
+<p>根据上图，我们可以看到，对于原文，通过接收方的公钥进行加密，发送给接收方，接收方拿到密文后，通过自己的私钥可以解密，获取原文信息。在这个过程中，及时接收方公钥泄漏，也不会导致消息泄漏，因为密文只能通过接收方的私钥才能打开。所以，信息安全过程中，接收方只需要保管好自己的私钥不泄露即可。同样，当接收方向发送方发送消息时，接收方将密文通过原发送方的公钥进行加密，原发送方通过自己的私钥才可解密。</p>
+<h3 id="各自优缺点"><a href="#各自优缺点" class="headerlink" title="各自优缺点"></a>各自优缺点</h3><p><strong>对称加密</strong>：</p>
+<p>优点：算法简单，加密解密容易，效率高，执行快。</p>
+<p>缺点：相对来说不算特别安全，只有一把钥匙，密文如果被拦截，且密钥也被劫持，那么，信息很容易被破译。</p>
+<p><strong>非对称加密</strong>：</p>
+<p>优点：安全，即使密文被拦截、公钥被获取，但是无法获取到私钥，也就无法破译密文。作为接收方，务必要保管好自己的密钥。</p>
+<p>缺点：加密算法及其复杂，安全性依赖算法于密钥，而且加密和解密效率很低。</p>
+<h2 id="数字证书"><a href="#数字证书" class="headerlink" title="数字证书"></a>数字证书</h2><p>数字证书认证机构处于客户端与服务器双方都可信赖的第三方机构的立场上。 威瑞信（VeriSign） 就是其中一家非常有名的数字证书认证机构。 我们来介绍一下数字证书认证机构的业务流程。 首先， 服务器的运营人员向数字证书认证机构提出公开密钥的申请。 数字证书认证机构在判明提出申请者的身份之后， 会对已申请的公开密钥做数字签名， 然后分配这个已签名的公开密钥， 并将该公开密钥放入公钥证书后绑定在一起。</p>
+<p>服务器会将这份由数字证书认证机构颁发的公钥证书发送给客户端，以进行公开密钥加密方式通信。 公钥证书也可叫做数字证书或直接称为证书。</p>
+<p>接到证书的客户端可使用数字证书认证机构的公开密钥， 对那张证书上的数字签名进行验证， 一旦验证通过， 客户端便可明确两件事：一， 认证服务器的公开密钥的是真实有效的数字证书认证机构。 二，服务器的公开密钥是值得信赖的。</p>
+<p>此处认证机关的公开密钥必须安全地转交给客户端。 使用通信方式时， 如何安全转交是一件很困难的事， 因此， 多数浏览器开发商发布版本时， 会事先在内部植入常用认证机关的公开密钥。</p>
+<h2 id="数字签名"><a href="#数字签名" class="headerlink" title="数字签名"></a>数字签名</h2><p>数字签名是指将摘要信息使用接收者的公钥进行加密，与密文一起发送给接收者。接收者使用自己的私钥对摘要信息进行解密，然后使用Hash函数(消息摘要算法)对收到的密文产生一个摘要信息，然后将摘要信息与发送着传输过来解密后的摘要信息对比是否一致。如果一致，则表明数据信息没有被篡改。</p>
+<p>也就是说，数字签名能够验证收到的信息的完整性，避免中途信息被劫持篡改或丢失。对方可以根据数字签名来判断获取到的数据信息时候是最原始的数据。</p>
+<h2 id="常用消息摘要算法"><a href="#常用消息摘要算法" class="headerlink" title="常用消息摘要算法"></a>常用消息摘要算法</h2><p><a target="_blank" rel="noopener" href="http://www.semlinker.com/message-digest-intro/">参考链接</a></p>
+<p>消息摘要算法是密码学算法中非常重要的一个分支，它通过对所有数据提取指纹信息以实现数据签名、数据完整性校验等功能，由于其不可逆性，有时候会被用做敏感信息的加密。消息摘要算法也被称为哈希（Hash）算法或散列算法。</p>
+<p>任何消息经过散列函数处理后，都会获得唯一的散列值，这一过程称为 “消息摘要”，其散列值称为 “数字指纹”，其算法自然就是 “消息摘要算法”了。换句话说，如果其数字指纹一致，就说明其消息是一致的。</p>
+<p><strong>消息摘要算法的特点:</strong></p>
+<ul>
+<li><strong>无论输入的消息有多长，计算出来的消息摘要的长度总是固定的。</strong>例如应用 MD5 算法摘要的消息有 128 个比特位，用 SHA-1 算法摘要的消息最终有 160 个比特位的输出，SHA-1 的变体可以产生 192 个比特位和 256 个比特位的消息摘要。一般认为，摘要的最终输出越长，该摘要算法就越安全。</li>
+<li><strong>消息摘要看起来是 “随机的”。</strong>这些比特看上去是胡乱的杂凑在一起的，可以用大量的输入来检验其输出是否相同，一般，不同的输入会有不同的输出，而且输出的摘要消息可以通过随机性检验。<strong>一般地，只要输入的消息不同，对其进行摘要以后产生的摘要消息也必不相同；但相同的输入必会产生相同的输出。</strong></li>
+<li><strong>消息摘要函数是单向函数，即只能进行正向的信息摘要，而无法从摘要中恢复出任何的消息，甚至根本就找不到任何与原信息相关的信息。</strong>当然，可以采用强力攻击的方法，即尝试每一个可能的信息，计算其摘要，看看是否与已有的摘要相同，如果这样做，最终肯定会恢复出摘要的消息。但实际上，要得到的信息可能是无穷个消息之一，所以这种强力攻击几乎是无效的。</li>
+<li>好的摘要算法，没有人能从中找到 “碰撞” 或者说极度难找到，虽然 “碰撞” 是肯定存在的（碰撞即不同的内容产生相同的摘要）。</li>
+</ul>
+<p><strong>消息摘要算法主要分为三大类：MD（Message Digest，消息摘要算法）、SHA-1（Secure Hash Algorithm，安全散列算法）和 MAC（Message Authentication Code，消息认证码算法）。</strong></p>
+<ul>
+<li>MD 系列算法包括 MD2、MD4 和 MD5 共 3 种算法；</li>
+<li>SHA 算法主要包括其代表算法 SHA-1 和 SHA-1 算法的变种 SHA-2 系列算法（包含 SHA-224、SHA-256、SHA-384 和 SHA-512）；</li>
+<li>MAC 算法综合了上述两种算法，主要包括 HmacMD5、HmacSHA1、HmacSHA256、HmacSHA384 和 HmacSHA512 算法。</li>
+</ul>
+<h2 id="HTTPS的请求过程"><a href="#HTTPS的请求过程" class="headerlink" title="HTTPS的请求过程"></a>HTTPS的请求过程</h2><p>HTPS综合运用了证书加密，对称加密和非对称加密3种加密手段。</p>
+<img src="/2021/02/02/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AF%87/4.JPG" class="" title="图片描述">
+
+<ol>
+<li><p>客户端发起HTTPS请求<br>这个没什么好说的，就是用户在浏览器里输入一个https网址，然后连接到server的443端口。</p>
+</li>
+<li><p>服务端的配置<br>采用HTTPS协议的服务器必须要有一套数字证书，可以自己制作，也可以向组织申请。区别就是自己颁发的证书需要客户端验证通过，才可以继续访问，而使用受信任的公司申请的证书则不会弹出提示页面(startssl就是个不错的选择，有1年的免费服务)。这套证书其实就是一对公钥和私钥。</p>
+</li>
+<li><p>传送证书<br>这个证书其实就是公钥，只是包含了很多信息，如证书的颁发机构，过期时间等等。</p>
+</li>
+<li><p>客户端解析证书<br>这部分工作是有客户端的TLS来完成的，首先会验证公钥是否有效，比如颁发机构，过期时间等等，如果发现异常，则会弹出一个警告框，提示证书存在问题。如果证书没有问题，那么就生成一个随机值。然后用证书对该随机值进行加密。</p>
+</li>
+<li><p>传送加密信息<br>这部分传送的是用证书加密后的随机值，目的就是让服务端得到这个随机值，以后客户端和服务端的通信就可以通过这个随机值来进行加密解密了。</p>
+</li>
+<li><p>服务段解密信息<br>服务端用私钥解密后，得到了客户端传过来的随机值(私钥)，然后把内容通过该值进行对称加密。所谓对称加密就是，将信息和私钥通过某种算法混合在一起，这样除非知道私钥，不然无法获取内容，而正好客户端和服务端都知道这个私钥，所以只要加密算法够彪悍，私钥够复杂，数据就够安全。</p>
+</li>
+<li><p>传输加密后的信息<br>这部分信息是服务端用私钥加密后的信息，可以在客户端被还原</p>
+</li>
+<li><p>客户端解密信息<br>客户端用之前生成的私钥解密服务段传过来的信息，于是获取了解密后的内容。整个过程第三方即使监听到了数据，也束手无策。</p>
+</li>
+</ol>
+<h2 id="http和https的区别"><a href="#http和https的区别" class="headerlink" title="http和https的区别"></a>http和https的区别</h2><ol>
+<li><p>https协议需要到ca申请证书，一般免费证书较少，因而需要一定费用。</p>
+</li>
+<li><p>http是超文本传输协议，信息是明文传输，https则是具有安全性的ssl加密传输协议。</p>
+</li>
+<li><p>http和https使用的是完全不同的连接方式，用的端口也不一样，前者是80，后者是443。</p>
+</li>
+<li><p>http的连接很简单，是无状态的；HTTPS协议是由SSL+HTTP协议构建的可进行加密传输、身份认证的网络协议，比http协议安全。</p>
+</li>
+</ol>
+<h2 id="HTTPS的优缺点"><a href="#HTTPS的优缺点" class="headerlink" title="HTTPS的优缺点"></a>HTTPS的优缺点</h2><p><strong>优点：</strong></p>
+<ol>
+<li><p>使用HTTPS协议可认证用户和服务器，确保数据发送到正确的客户机和服务器；</p>
+</li>
+<li><p><strong>HTTPS协议是由SSL+HTTP协议构建的可进行加密传输、身份认证的网络协议，要比http协议安全</strong>，可防止数据在传输过程中不被窃取、改变，确保数据的完整性。</p>
+</li>
+<li><p>HTTPS是现行架构下最安全的解决方案，虽然不是绝对安全，但它大幅增加了中间人攻击的成本。</p>
+</li>
+<li><p>谷歌曾在2014年8月份调整搜索引擎算法，并称“比起同等HTTP网站，采用HTTPS加密的网站在搜索结果中的排名将会更高”</p>
+</li>
+</ol>
+<p><strong>缺点：</strong></p>
+<ol>
+<li><p>HTTPS协议握手阶段比较费时，会使页面的加载时间延长近50%，增加10%到20%的耗电；</p>
+</li>
+<li><p>HTTPS连接缓存不如HTTP高效，会增加数据开销和功耗，甚至已有的安全措施也会因此而受到影响；</p>
+</li>
+<li><p>SSL证书需要钱，功能越强大的证书费用越高，个人网站、小网站没有必要一般不会用。</p>
+</li>
+<li><p>SSL证书通常需要绑定IP，不能在同一IP上绑定多个域名，IPv4资源不可能支撑这个消耗。</p>
+</li>
+<li><p>HTTPS协议的加密范围也比较有限，在黑客攻击、拒绝服务攻击、服务器劫持等方面几乎起不到什么作用。最关键的，SSL证书的信用链体系并不安全，特别是在某些国家可以控制CA根证书的情况下，中间人攻击一样可行。</p>
+</li>
+</ol>
+<h2 id="DNS解析过程"><a href="#DNS解析过程" class="headerlink" title="DNS解析过程"></a>DNS解析过程</h2><p>DNS，就是Domain Name System的缩写，翻译过来就是域名系统，是互联网上作为域名和IP地址相互映射的一个分布式数据库。DNS能够使用户更方便的访问互联网，而不用去记住能够被机器直接读取的IP数串。通过域名，最终得到该域名对应的IP地址的过程叫做域名解析（或主机名解析）。</p>
+<p>下图详细描述了DNS的解析过程</p>
+<img src="/2021/02/02/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AF%87/5.jpg" class="" title="图片描述">
+
+<p>第一步：检查浏览器缓存中是否缓存过该域名对应的IP地址</p>
+<p>第二步：如果在浏览器缓存中没有找到IP，那么将继续查找本机系统是否缓存过IP</p>
+<p>前两步都是在本机上完成的，所以没有在上面示例图上展示出来，从第三步开始，才正在地向远程DNS服务器发起解析域名的请求。</p>
+<p>第三步：向本地域名解析服务系统发起域名解析的请求</p>
+<p>第四步：向根域名解析服务器发起域名解析请求</p>
+<p>第五步：根域名服务器返回域服务器地址</p>
+<p>第六步：向域服务器发起解析请求</p>
+<p>第七步：域服务器接收请求并返回Name Server服务器（注册的域名服务器）地址</p>
+<p>第八步：Name Server服务器返回IP地址给本地服务器</p>
+<p>第九步：本地域名服务器缓存解析结果</p>
+<p>第十步：返回解析结果给用户</p>
+<h2 id="DNS中的传输协议选择为什么是UDP而不是TCP"><a href="#DNS中的传输协议选择为什么是UDP而不是TCP" class="headerlink" title="DNS中的传输协议选择为什么是UDP而不是TCP"></a>DNS中的传输协议选择为什么是UDP而不是TCP</h2><ol>
+<li><p>UDP速度更快。TCP很慢，因为它需要3次握手。</p>
+</li>
+<li><p>DNS请求通常非常小，非常适合UDP段。</p>
+</li>
+<li><p>UDP不可靠，但可以在应用层添加可靠性。应用程序可以使用UDP，并且可以通过在应用程序层使用超时和重新发送来实现可靠性。</p>
+</li>
+</ol>
+<h2 id="TCP三次握手"><a href="#TCP三次握手" class="headerlink" title="TCP三次握手"></a>TCP三次握手</h2><img src="/2021/02/02/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AF%87/6-19110QF62V62.gif" class="" title="图片描述">
+
+<p>SEQ 表示请求序列号，ACK 表示确认序列号，SYN 和 ACK 为标志位。</p>
+<p><strong>第1次握手：</strong>第 1 次握手建立连接时，客户端向服务器发送 SYN 报文（SEQ=x，SYN=1），并进入 SYN_SENT 状态，等待服务器确认。</p>
+<p><strong>第2次握手：</strong>第 2 次握手实际上是分两部分来完成的，即 SYN+ACK（请求和确认）报文。</p>
+<ul>
+<li>服务器收到了客户端的请求，向客户端回复一个确认信息（ACK=x+1）。</li>
+<li>服务器再向客户端发送一个 SYN 包（SEQ=y）建立连接的请求，此时服务器进入 SYN_RECV 状态。</li>
+</ul>
+<p><strong>第 3 次握手</strong>：是客户端收到服务器的回复（SYN+ACK 报文）。此时，客户端也要向服务器发送确认包（ACK）。此包发送完毕客户端和服务器进入 ESTABLISHED 状态，完成 3 次握手。</p>
+<p>三次握手的目的是同步连接双方的序列号和确认号并交换 TCP 窗口大小信息。</p>
+<h2 id="TCP四次挥手"><a href="#TCP四次挥手" class="headerlink" title="TCP四次挥手"></a>TCP四次挥手</h2><img src="/2021/02/02/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AF%87/6-19111109161J31.gif" class="" title="图片描述">
+
+<p><strong>第 1 次挥手</strong>：客户端向服务器端发送断开 TCP 连接请求的 [FIN，ACK] 报文，在报文中随机生成一个序列号 SEQ=x，表示要断开 TCP 连接。</p>
+<p><strong>第 2 次挥手</strong>：当服务器端收到客户端发来的断开 TCP 连接的请求后，回复发送 ACK 报文，表示已经收到断开请求。回复时，随机生成一个序列号 SEQ=y。由于回复的是客户端发来的请求，所以在客户端请求序列号 SEQ=x的基础上加 1，得到 ACK=x+1。</p>
+<p><strong>第 3 次挥手</strong>：服务器端在回复完客户端的 TCP 断开请求后，不会马上进行 TCP 连接的断开。服务器端会先确认断开前，所有传输到客户端的数据是否已经传输完毕。确认数据传输完毕后才进行断开，向客户端发送 [FIN，ACK] 报文，设置字段值为 1。再次随机生成一个序列号 SEQ=z。由于还是对客户端发来的 TCP 断开请求序列号 SEQ=x 进行回复，因此 ACK 依然为 x+1。</p>
+<p><strong>第 4 次挥手</strong>：客户端收到服务器发来的 TCP 断开连接数据包后将进行回复，表示收到断开 TCP 连接数据包。向服务器发送 ACK 报文，生成一个序列号 SEQ=x+1。由于回复的是服务器，所以 ACK 字段的值在服务器发来断开 TCP 连接请求序列号 SEQ=z 的基础上加 1，得到 ACK=z+1。</p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/xiaona-/p/12823737.html">参考</a></p>
+<h2 id="三次握手为什么三次"><a href="#三次握手为什么三次" class="headerlink" title="三次握手为什么三次"></a>三次握手为什么三次</h2><p>三次握手建立连接，是为了确保通信双方都具有收发数据的能力。</p>
+<p>两次不安全：状态迁移变化，确保服务器不会迟到的重复SYN建立连接，而且服务器不能保证客户端具有收发数据的能力。</p>
+<p>四次没必要：SYN和ACK只是两个标志位，没必要分成两个报文进行发送。</p>
+<h2 id="四次挥手为什么是四次"><a href="#四次挥手为什么是四次" class="headerlink" title="四次挥手为什么是四次"></a>四次挥手为什么是四次</h2><p>因为服务器收到FIN请求报文后，立即进行ACK回复，接下来需要等待缓冲区中的数据已经处理完毕，才会向对方发送FIN请求报文，得到ACK回复后，则直接释放socket.因此服务器的ACK和FIN不能直接放在一起回复。</p>
+<h2 id="为什么客户端在TIME-WAIT阶段要等2MSL"><a href="#为什么客户端在TIME-WAIT阶段要等2MSL" class="headerlink" title="为什么客户端在TIME-WAIT阶段要等2MSL?"></a>为什么客户端在TIME-WAIT阶段要等2MSL?</h2><p>为的是确认服务器端是否收到客户端发出的ACK确认报文。<br>当客户端发出最后的ACK确认报文时，并不能确定服务器端能够收到该段报文。所以客户端在发送完ACK确认报文之后，会设置一个时长为2MSL的计时器。MSL指的是Maximum Segment Lifetime：一段TCP报文在传输过程中的最大生命周期。2MSL即是服务器端发出为FIN报文和客户端发出的ACK确认报文所能保持有效的最大时长。<br>服务器端在1MSL内没有收到客户端发出的ACK确认报文，就会再次向客户端发出FIN报文。<br>如果客户端在2MSL内，再次收到了来自服务器端的FIN报文，说明服务器端由于各种原因没有接收到客户端发出的ACK确认报文。客户端再次向服务器端发出ACK确认报文，计时器重置，重新开始2MSL的计时；<br>否则客户端在2MSL内没有再次收到来自服务器端的FIN报文，说明服务器端正常接收了ACK确认报文，客户端可以进入CLOSED阶段，完成“四次挥手”。<br>所以，客户端要经历时长为2SML的TIME-WAIT阶段；这也是为什么客户端比服务器端晚进入CLOSED阶段的原因</p>
+<h2 id="TCP-协议如何保证可靠传输"><a href="#TCP-协议如何保证可靠传输" class="headerlink" title="TCP 协议如何保证可靠传输"></a>TCP 协议如何保证可靠传输</h2><ol>
+<li><p>确认和重传：接收方收到报文就会确认，发送方发送一段时间后没有收到确认就重传。</p>
+</li>
+<li><p>数据校验</p>
+</li>
+<li><p>数据合理分片和排序：</p>
+</li>
+</ol>
+<p>　　UDP：IP数据报大于1500字节,大于MTU.这个时候发送方IP层就需要分片(fragmentation).把数据报分成若干片,使每一片都小于MTU.而接收方IP层则需要进行数据报的重组.这样就会多做许多事情,而更严重的是,由于UDP的特性,当某一片数据传送中丢失时,接收方便无法重组数据报.将导致丢弃整个UDP数据报.</p>
+<p>　　tcp会按MTU合理分片，接收方会缓存未按序到达的数据，重新排序后再交给应用层。</p>
+<ol start="4">
+<li><p>流量控制：当接收方来不及处理发送方的数据，能提示发送方降低发送的速率，防止包丢失。</p>
+</li>
+<li><p>拥塞控制：当网络拥塞时，减少数据的发送。</p>
+</li>
+</ol>
+<h2 id="TCP滑动窗口机制"><a href="#TCP滑动窗口机制" class="headerlink" title="TCP滑动窗口机制"></a>TCP滑动窗口机制</h2><p><a target="_blank" rel="noopener" href="http://c.biancheng.net/view/6427.html">参考1</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/deliver/p/5471231.html">参考2</a></p>
+<p>在进行数据传输时，如果传输的数据比较大，就需要拆分为多个数据包进行发送。TCP 协议需要对数据进行确认后，才可以发送下一个数据包。发送端每发送一个数据包，都需要得到接收端的确认应答以后，才可以发送下一个数据包。这样一来，就会在等待确认应答包环节浪费时间。为了避免这种情况，TCP引入了窗口概念。<strong>窗口大小指的是不需要等待确认应答包而可以继续发送数据包的最大值。</strong></p>
+<p>例如，窗口大小为 3，数据包的传输如图所示。</p>
+<img src="/2021/02/02/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AF%87/6-19110QIKTG.gif" class="" title="图片描述">
+
+<p>从上图中可以看到，发送端发送第一个数据包（1-1000），没有等待对应的确认应答包，就继续发送第二个数据包（1001-2000）和第三个包（2001-3000）。当收到第3个数据包的确认应答包时，会连续发送3个数据包（3001-4000，4001-5000，5001-6000）。当收到第6个数据包的确认应答包时，又会发送3个数据包（6001-7000，7001-8000，8001-9000）。</p>
+<p>以这种方式发送，就可以省去多个数据包（第1、2、4、5、7、8个）的确认应答包时间，从而避免了网络的吞吐量的降低。</p>
+<p>在进行数据包传输时，难免会出现数据丢失情况。这种情况一般分为两种。</p>
+<ul>
+<li>第一种，如果未使用滑动窗口机制，发送的数据包没有收到确认应答包，那么数据都会被重发；如果使用了滑动窗口机制，即使确认应答包丢失，也不会导致数据包重发。</li>
+<li>第二种，发送的数据包丢失，将导致数据包重发。</li>
+</ul>
+<p><strong>确认应答包丢失</strong><br>这种情况指的是前面发送的数据包没有收到对应的确认应答。当收到后面数据包的确认应答包，表示前面的数据包已经成功被接收端接收了，发送端不再重新发送前面的数据包了。</p>
+<p><strong>发送数据包丢失</strong><br>这种情况指的是发送端发送的部分数据包没有达到接收端。那么，如果在接收端收到的数据包，不是本应该要接收的数据包，那么就会给发送端返回消息，告诉发送端自己应该接收的数据包。如果发送端连续收到 3 次这样的数据包，就认为该数据包未成功发送到接收端，这时就开始重发该数据包。</p>
+<h2 id="TCP流量控制"><a href="#TCP流量控制" class="headerlink" title="TCP流量控制"></a>TCP流量控制</h2><p>简单来说就是接收方处理不过来的时候，就把窗口缩小，并把窗口值告诉发送端。</p>
+<img src="/2021/02/02/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AF%87/1200791037.png" class="" title="图片描述">
+
+<p>当窗口值为0，而接受方把窗口值恢复（比如ACK=1，ack=601，rwnd=200），但确认丢失，进入相互等待的死锁局面。所以如果窗口值为0，发送端就会开启一个持续计数器，每个一段时间询问一下接收方。</p>
+<h2 id="TCP拥塞控制"><a href="#TCP拥塞控制" class="headerlink" title="TCP拥塞控制"></a>TCP拥塞控制</h2><p>我们在开始假定：1、数据是单方向传递，另一个窗口只发送确认；2、接收方的缓存足够大，因此发送方的大小的大小由网络的拥塞程度来决定。</p>
+<h3 id="慢开始算法"><a href="#慢开始算法" class="headerlink" title="慢开始算法"></a>慢开始算法</h3><p>发送方维持一个叫做拥塞窗口cwnd（congestion window）的状态变量。拥塞窗口的大小取决于网络的拥塞程度，并且动态地在变化。发送方让自己的发送窗口等于拥塞窗口，另外考虑到接受方的接收能力，发送窗口可能小于拥塞窗口。</p>
+<p>慢开始算法的思路就是，不要一开始就发送大量的数据，先探测一下网络的拥塞程度，也就是说由小到大逐渐增加拥塞窗口的大小。</p>
+<p>这里用报文段的个数作为拥塞窗口的大小举例说明慢开始算法，实际的拥塞窗口大小是以字节为单位的。如下图：</p>
+
+
+<p>从上图可以看到，一个传输轮次所经历的时间其实就是往返时间RTT，而且每经过一个传输轮次（transmission round），拥塞窗口cwnd就加倍。</p>
+<p>为了防止cwnd增长过大引起网络拥塞，还需设置一个慢开始门限ssthresh状态变量。ssthresh的用法如下：</p>
+<ul>
+<li>当cwnd&lt;ssthresh时，使用慢开始算法。</li>
+<li>当cwnd&gt;ssthresh时，改用拥塞避免算法。</li>
+<li>当cwnd=ssthresh时，慢开始与拥塞避免算法任意</li>
+</ul>
+<p>注意，这里的“慢”并不是指cwnd的增长速率慢，而是指在TCP开始发送报文段时先设置cwnd=1，然后逐渐增大，这当然比按照大的cwnd一下子把许多报文段突然注入到网络中要“慢得多”。</p>
+<h3 id="拥塞避免算法"><a href="#拥塞避免算法" class="headerlink" title="拥塞避免算法"></a>拥塞避免算法</h3><p>拥塞避免算法让拥塞窗口缓慢增长，即每经过一个往返时间RTT就把发送方的拥塞窗口cwnd加1，而不是加倍。这样拥塞窗口按线性规律缓慢增长。</p>
+<p>无论是在慢开始阶段还是在拥塞避免阶段，只要发送方判断网络出现拥塞（其根据就是没有按时收到确认，虽然没有收到确认可能是其他原因的分组丢失，但是因为无法判定，所以都当做拥塞来处理），就把慢开始门限ssthresh设置为出现拥塞时的发送窗口大小的一半（但不能小于2）。然后把拥塞窗口cwnd重新设置为1，执行慢开始算法。这样做的目的就是要迅速减少主机发送到网络中的分组数，使得发生拥塞的路由器有足够时间把队列中积压的分组处理完毕。</p>
+<p>整个拥塞控制的流程如下图：</p>
+<img src="/2021/02/02/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AF%87/435616e06216_720w.jpg" class="" title="图片描述">
+
+<ol>
+<li>拥塞窗口cwnd初始化为1个报文段，慢开始门限初始值为16</li>
+<li>执行慢开始算法，指数规律增长到第4轮，即cwnd=16=ssthresh，改为执行拥塞避免算法，拥塞窗口按线性规律增长</li>
+<li>假定cwnd=24时，网络出现超时（拥塞），则更新后的ssthresh=12，cwnd重新设置为1，并执行慢开始算法。当cwnd=12=ssthresh时，改为执行拥塞避免算法</li>
+</ol>
+<blockquote>
+<p>关于 乘法减小（Multiplicative Decrease）和加法增大（Additive Increase）：</p>
+<p>“乘法减小”指的是无论是在慢开始阶段还是在拥塞避免阶段，只要发送方判断网络出现拥塞，就把慢开始门限ssthresh设置为出现拥塞时的发送窗口大小的一半，并执行慢开始算法，所以当网络频繁出现拥塞时，ssthresh下降的很快，以大大减少注入到网络中的分组数。“加法增大”是指执行拥塞避免算法后，使拥塞窗口缓慢增大，以防止过早出现拥塞。常合起来成为AIMD算法。</p>
+</blockquote>
+<p>注意：“拥塞避免”并非完全能够避免了阻塞，而是使网络比较不容易出现拥塞。</p>
+<h3 id="快重传算法"><a href="#快重传算法" class="headerlink" title="快重传算法"></a>快重传算法</h3><p>快重传要求接收方在收到一个失序的报文段后就立即发出重复确认（为的是使发送方及早知道有报文段没有到达对方，可提高网络吞吐量约20%）而不要等到自己发送数据时捎带确认。快重传算法规定，发送方只要一连收到三个重复确认就应当立即重传对方尚未收到的报文段，而不必继续等待设置的重传计时器时间到期。如下图：</p>
+<img src="/2021/02/02/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AF%87/4189430f12cea_720w.jpg" class="" title="图片描述">
+
+<h3 id="快恢复算法"><a href="#快恢复算法" class="headerlink" title="快恢复算法"></a>快恢复算法</h3><p>快重传配合使用的还有快恢复算法，有以下两个要点：</p>
+<p>当发送方连续收到三个重复确认时，就执行“乘法减小”算法，把ssthresh门限减半（为了预防网络发生拥塞）。但是接下去并不执行慢开始算法<br>考虑到如果网络出现拥塞的话就不会收到好几个重复的确认，所以发送方现在认为网络可能没有出现拥塞。所以此时不执行慢开始算法，而是将cwnd设置为ssthresh减半后的值，然后执行拥塞避免算法，使cwnd缓慢增大。如下图：TCP Reno版本是目前使用最广泛的版本。</p>
+<img src="/2021/02/02/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AF%87/5f9ee0259b_720w.jpg" class="" title="图片描述">
+
+<p>注意：在采用快恢复算法时，慢开始算法只是在TCP连接建立时和网络出现超时时才使用</p>
+<h2 id="TCP和UDP特点与区别"><a href="#TCP和UDP特点与区别" class="headerlink" title="TCP和UDP特点与区别"></a>TCP和UDP特点与区别</h2><ol>
+<li>连接<br>TCP是而向连接的传输层协议，即传输数据之前必须先建立好连接。UDP无连接。</li>
+<li>服务对象<br>TCP是点对点的两点间服务，即一条TCP连接只能有两个端点。UDP支持一对一,一对多，多对一，多对多的交互通信。</li>
+<li>可靠性<br>TCP是可靠交付：无差错，不丢失，不重复，按序到达。UDP是尽最大努力交付，不保证可靠交付。</li>
+</ol>
+<h2 id="TTL在IP协议包中的意义和作用"><a href="#TTL在IP协议包中的意义和作用" class="headerlink" title="TTL在IP协议包中的意义和作用"></a>TTL在IP协议包中的意义和作用</h2><p>TTL是IP协议包中的一个值，它告诉网络路由器包在网络中的时间是否太长而应被丢弃。有很多原因使包在一定时间内不能被传递到目的地。例如，不正确的路由表可能导致包的无限循环。一个解决方法就是在一段时间后丢弃这个包，然后给发送者一个报文，由发送者决定是否要重发。TTL的初值通常是系统缺省值，是包头中的8位的域。TTL的最初设想是确定一个时间范围，超过此时间就把包丢弃。由于每个路由器都至少要把TTL域减一，TTL通常表示包在被丢弃前最多能经过的路由器个数。当记数到0时，路由器决定丢弃该包，并发送一个ICMP报文给最初的发送者。</p>
+<p>TTL（Time To Live，生存时间），指定数据报被路由器丢弃之前允许通过的网段数量。</p>
+<p>TTL 是由发送主机设置的，以防止数据包不断在 IP 互联网络上永不终止地循环。转发 IP 数据包时，要求路由器至少将 TTL 减小 1。</p>
+<h2 id="为什么需要-ARP-协议"><a href="#为什么需要-ARP-协议" class="headerlink" title="为什么需要 ARP 协议"></a>为什么需要 ARP 协议</h2><p>在网络访问层中，同一局域网中的一台主机要和另一台主机进行通信，需要通过 MAC 地址进行定位，然后才能进行数据包的发送。</p>
+<p>而在网络层和传输层中，计算机之间是通过 IP 地址定位目标主机，对应的数据报文只包含目标主机的 IP 地址，而没有 MAC 地址。</p>
+<p>因此，在发送之前需要根据 IP 地址获取 MAC 地址，然后才能将数据包发送到正确的目标主机，而这个获取过程是通过 ARP 协议完成的。</p>
+<h2 id="ICMP协议是什么？"><a href="#ICMP协议是什么？" class="headerlink" title="ICMP协议是什么？"></a>ICMP协议是什么？</h2><p>控制报文协议（Internet Control Message Protocol，ICMP）是 TCP/IP 协议族的一个子协议。ICMP 协议用于在 IP 主机和路由器之间传递控制消息，描述网络是否通畅、主机是否可达、路由器是否可用等网络状态。</p>
+<p>由于 IP 协议简单，数据传输天然存在不可靠、无连接等特点，为了解决数据传输出现的问题，人们引入了 ICMP 协议。虽然 ICMP 协议的数据包并不传输用户数据，但是对于用户数据的传递起着重要的作用。</p>
+<h3 id="ICMP-协议作用"><a href="#ICMP-协议作用" class="headerlink" title="ICMP 协议作用"></a>ICMP 协议作用</h3><p>数据包在发送到目标主机的过程中，通常会经过一个或多个路由器。而数据包在通过这些路由进行传输时，可能会遇到各种问题，导致数据包无法发送到目标主机上。为了了解数据包在传输的过程中在哪个环节出现了问题，就需要用到 ICMP 协议。它可以跟踪消息，把问题反馈给源主机。</p>
+<h3 id="ARP-工作的基本流程"><a href="#ARP-工作的基本流程" class="headerlink" title="ARP 工作的基本流程"></a>ARP 工作的基本流程</h3><ol>
+<li><p>主机 A 在本机 ARP 缓存中检查主机 B 的匹配 MAC 地址。</p>
+</li>
+<li><p>如果在 ARP 缓存中没有找到主机 B 的 IP 地址及对应的 MAC 地址，它将询问主机 B 的 MAC 地址，从而将 ARP 请求帧广播到本地网络上的所有主机。源主机 A 的 IP 地址和 MAC 地址都包括在 ARP 请求中。</p>
+</li>
+<li><p>本地网络上的每台主机都接收到 ARP 请求，并且检查是否与自己的 IP 地址匹配。如果主机发现请求的 IP 地址与自己的 IP 地址不匹配，它将丢弃 ARP 请求。主机 B 确定 ARP 请求中的 IP 地址与自己的 IP 地址匹配，则将主机 A 的 IP 地址和 MAC 地址映射添加到本地 ARP 缓存中。</p>
+</li>
+<li><p>主机 B 将包含自身 MAC 地址的 ARP 回复消息直接发送给主机 A。</p>
+</li>
+<li><p>当主机 A 收到从主机 B 发来的 ARP 回复消息时，会用主机 B 的 IP 地址和 MAC 地址更新 ARP 缓存。</p>
+</li>
+<li><p>主机 B 的 MAC 地址一旦确定，主机 A 就能向主机 B 发送 IP 数据包。本机缓存是有生存期的，生存期结束后，将再次重复上面的过程。</p>
+</li>
+</ol>
+<h2 id="ping某个域名的整个过程"><a href="#ping某个域名的整个过程" class="headerlink" title="ping某个域名的整个过程"></a>ping某个域名的整个过程</h2><p>ICMP的一个重要应用就是分组网间探测PING（Packe InterNet Groper），用来测试主机之间的连通性。PING使用了ICMP回送请求与回送回答报文。PING是应用层直接使用网络层ICMP的一个例子，没有经过传输层的TCP或UDP。</p>
+<p>ping某个域名相对于ping IP地址来说，多了一些步骤，主要用来获取域名对应的IP地址，整个过程如下：</p>
+<p>1、主机查找本地系统Hosts文件的DNS缓存，如果存在该域名对应的IP，则获取IP，跳转到第8步；如果不存在，则继续。</p>
+<p>2、主机向本网络路由器发起请求，查找路由DNS缓存，如果存在该域名对于的IP，则获取IP，跳转到第8步；如果不存在，则继续。</p>
+<p>3、路由器向本地ISP（互联网提供商）的DNS服务器发起请求，查找DNS服务器的缓存，如果存在该域名对应的IP，则跳转到第7步；如果不存在，则继续。</p>
+<p>4、本地DNS服务器向根域名服务器发起请求，根域名服务器告诉本地服务器，下一次应查询的顶级域名服务器dns.com的IP地址。</p>
+<p>5、本地域名服务器向顶级域名服务器dns.com进行查询，顶级域名服务器dns.com告诉本地域名服务器，下一步应查询的权限服务器dns.abc.com的IP地址。</p>
+<p>6、本地域名服务器向权限域名服务器dns.abc.com进行查询，权限域名服务器dns.abc.com告诉本地域名服务器，所查询的主机的IP地址。 </p>
+<p>7、本地域名服务器最后把查询结果——该域名对应的IP地址告诉给主机。</p>
+<p>8、至此，主机知道了该域名的IP地址。</p>
+<p>———————————-（以上部分主要是根据域名获取对应的IP地址，涉及DNS）——————————</p>
+<p>9、主机通过子网掩码判断该IP地址是本网段还是跨网段，由于本网段比较简单，我们以跨网段进行讲解。</p>
+<p>10、主机先查看本地ARP高速缓存，查看表中是否有本网络路由器（网关）的MAC地址，如果有，则获取MAC地址，跳转到第12步；如果没有，则继续。</p>
+<p>11、主机使用ARP解析协议获取到本网段路由的MAC地址。</p>
+<p>12、至此，主机知道本网络一个路由的MAC地址。</p>
+<p>———————————（以上部分主要是获取本网络一个路由的MAC地址，涉及ARP）————————–</p>
+<p>13、主机将ICMP报文封装成IP数据报，IP数据报的源地址为主机的IP地址，目的地址是域名对应的IP地址；</p>
+<p>14、主机将IP数据报封装成MAC帧，MAC帧的源地址为主机的MAC地址，目的地址是路由器的MAC地址；</p>
+<p>12、路由器接收到ICMP报文之后，发现MAC帧的目的地址是自己，IP地址是主机想要访问的IP地址，则将MAC帧的源地址改为自己的MAC地址，目的地址改为本网段另一个路由的MAC地址（也要通过ARP协议获取），转发下去…</p>
+<p>13、直到最后一个路由根据ARP协议，找到了主机想要访问的IP地址对应的主机的MAC地址，然后将ICMP报文封装成MAC帧发送给该域名主机。</p>
+<p>14、由于ARP协议具有相互学习性，域名主机接收到主机发送的ICMP回送请求报文之后，将向本网络路由发送ICMP回送回答报文，该路由又会转发下去…</p>
+<p>15、当主机收到域名主机发送的ICMP回送回答报文之后，这样就表明该主机到域名主机是连通可达的。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%9D%A2%E8%AF%95%E9%A2%98/" rel="tag"># 面试题</a>
+              <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/" rel="tag"># 计算机网络</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/01/31/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%AF%87/" rel="prev" title="面试必备知识-操作系统篇">
+      <i class="fa fa-chevron-left"></i> 面试必备知识-操作系统篇
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/05/%E9%9D%A2%E8%AF%95%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AF%87/" rel="next" title="面试必备知识-数据库篇">
+      面试必备知识-数据库篇 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#OSI%E4%B8%83%E5%B1%82%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.</span> <span class="nav-text">OSI七层模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%B8%E7%94%A8%E7%9A%84HTTP%E6%96%B9%E6%B3%95%E6%9C%89%E5%93%AA%E4%BA%9B%EF%BC%9F"><span class="nav-number">2.</span> <span class="nav-text">常用的HTTP方法有哪些？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTP%E8%AF%B7%E6%B1%82%E6%8A%A5%E6%96%87%E4%B8%8E%E5%93%8D%E5%BA%94%E6%8A%A5%E6%96%87%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">HTTP请求报文与响应报文格式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#post%E5%92%8Cget%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">4.</span> <span class="nav-text">post和get的区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#cookie%E4%B8%8Esession"><span class="nav-number">5.</span> <span class="nav-text">cookie与session</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%B8%E8%A7%81%E7%9A%84HTTP%E7%8A%B6%E6%80%81%E7%A0%81"><span class="nav-number">6.</span> <span class="nav-text">常见的HTTP状态码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E6%AC%A1HTTP%E8%AF%B7%E6%B1%82%E7%9A%84%E5%AE%8C%E6%95%B4%E8%BF%87%E7%A8%8B"><span class="nav-number">7.</span> <span class="nav-text">一次HTTP请求的完整过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%B8%E7%94%A8%E5%BA%94%E7%94%A8%E7%AB%AF%E5%8F%A3%E5%8F%B7"><span class="nav-number">8.</span> <span class="nav-text">常用应用端口号</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86%E4%B8%8E%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86"><span class="nav-number">9.</span> <span class="nav-text">对称加密与非对称加密</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86"><span class="nav-number">9.1.</span> <span class="nav-text">对称加密</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86"><span class="nav-number">9.2.</span> <span class="nav-text">非对称加密</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%84%E8%87%AA%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="nav-number">9.3.</span> <span class="nav-text">各自优缺点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E5%AD%97%E8%AF%81%E4%B9%A6"><span class="nav-number">10.</span> <span class="nav-text">数字证书</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D"><span class="nav-number">11.</span> <span class="nav-text">数字签名</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%B8%E7%94%A8%E6%B6%88%E6%81%AF%E6%91%98%E8%A6%81%E7%AE%97%E6%B3%95"><span class="nav-number">12.</span> <span class="nav-text">常用消息摘要算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTPS%E7%9A%84%E8%AF%B7%E6%B1%82%E8%BF%87%E7%A8%8B"><span class="nav-number">13.</span> <span class="nav-text">HTTPS的请求过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#http%E5%92%8Chttps%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">14.</span> <span class="nav-text">http和https的区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTPS%E7%9A%84%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="nav-number">15.</span> <span class="nav-text">HTTPS的优缺点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DNS%E8%A7%A3%E6%9E%90%E8%BF%87%E7%A8%8B"><span class="nav-number">16.</span> <span class="nav-text">DNS解析过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DNS%E4%B8%AD%E7%9A%84%E4%BC%A0%E8%BE%93%E5%8D%8F%E8%AE%AE%E9%80%89%E6%8B%A9%E4%B8%BA%E4%BB%80%E4%B9%88%E6%98%AFUDP%E8%80%8C%E4%B8%8D%E6%98%AFTCP"><span class="nav-number">17.</span> <span class="nav-text">DNS中的传输协议选择为什么是UDP而不是TCP</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TCP%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8B"><span class="nav-number">18.</span> <span class="nav-text">TCP三次握手</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TCP%E5%9B%9B%E6%AC%A1%E6%8C%A5%E6%89%8B"><span class="nav-number">19.</span> <span class="nav-text">TCP四次挥手</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8B%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%89%E6%AC%A1"><span class="nav-number">20.</span> <span class="nav-text">三次握手为什么三次</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E6%AC%A1%E6%8C%A5%E6%89%8B%E4%B8%BA%E4%BB%80%E4%B9%88%E6%98%AF%E5%9B%9B%E6%AC%A1"><span class="nav-number">21.</span> <span class="nav-text">四次挥手为什么是四次</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%9C%A8TIME-WAIT%E9%98%B6%E6%AE%B5%E8%A6%81%E7%AD%892MSL"><span class="nav-number">22.</span> <span class="nav-text">为什么客户端在TIME-WAIT阶段要等2MSL?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TCP-%E5%8D%8F%E8%AE%AE%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E5%8F%AF%E9%9D%A0%E4%BC%A0%E8%BE%93"><span class="nav-number">23.</span> <span class="nav-text">TCP 协议如何保证可靠传输</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TCP%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%E6%9C%BA%E5%88%B6"><span class="nav-number">24.</span> <span class="nav-text">TCP滑动窗口机制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TCP%E6%B5%81%E9%87%8F%E6%8E%A7%E5%88%B6"><span class="nav-number">25.</span> <span class="nav-text">TCP流量控制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TCP%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6"><span class="nav-number">26.</span> <span class="nav-text">TCP拥塞控制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%85%A2%E5%BC%80%E5%A7%8B%E7%AE%97%E6%B3%95"><span class="nav-number">26.1.</span> <span class="nav-text">慢开始算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8B%A5%E5%A1%9E%E9%81%BF%E5%85%8D%E7%AE%97%E6%B3%95"><span class="nav-number">26.2.</span> <span class="nav-text">拥塞避免算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BF%AB%E9%87%8D%E4%BC%A0%E7%AE%97%E6%B3%95"><span class="nav-number">26.3.</span> <span class="nav-text">快重传算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BF%AB%E6%81%A2%E5%A4%8D%E7%AE%97%E6%B3%95"><span class="nav-number">26.4.</span> <span class="nav-text">快恢复算法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TCP%E5%92%8CUDP%E7%89%B9%E7%82%B9%E4%B8%8E%E5%8C%BA%E5%88%AB"><span class="nav-number">27.</span> <span class="nav-text">TCP和UDP特点与区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TTL%E5%9C%A8IP%E5%8D%8F%E8%AE%AE%E5%8C%85%E4%B8%AD%E7%9A%84%E6%84%8F%E4%B9%89%E5%92%8C%E4%BD%9C%E7%94%A8"><span class="nav-number">28.</span> <span class="nav-text">TTL在IP协议包中的意义和作用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-ARP-%E5%8D%8F%E8%AE%AE"><span class="nav-number">29.</span> <span class="nav-text">为什么需要 ARP 协议</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ICMP%E5%8D%8F%E8%AE%AE%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">30.</span> <span class="nav-text">ICMP协议是什么？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ICMP-%E5%8D%8F%E8%AE%AE%E4%BD%9C%E7%94%A8"><span class="nav-number">30.1.</span> <span class="nav-text">ICMP 协议作用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ARP-%E5%B7%A5%E4%BD%9C%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%B5%81%E7%A8%8B"><span class="nav-number">30.2.</span> <span class="nav-text">ARP 工作的基本流程</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ping%E6%9F%90%E4%B8%AA%E5%9F%9F%E5%90%8D%E7%9A%84%E6%95%B4%E4%B8%AA%E8%BF%87%E7%A8%8B"><span class="nav-number">31.</span> <span class="nav-text">ping某个域名的整个过程</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Yu Hong</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">25</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+	
+	
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yu Hong</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">211k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">3:12</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

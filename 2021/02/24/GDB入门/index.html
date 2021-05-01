@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="GDB 全称“GNU symbolic debugger”，从名称上不难看出，它诞生于 GNU 计划（同时诞生的还有 GCC、Emacs 等），是 Linux 下常用的程序调试器。发展至今，GDB 已经迭代了诸多个版本，当下的 GDB 支持调试多种编程语言编写的程序，包括 C、C++、Go、Objective-C、OpenCL、Ada 等。实际场景中，GDB 更常用来调试 C 和 C++ 程序。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GDB入门">
+<meta property="og:url" content="http://example.com/2021/02/24/GDB%E5%85%A5%E9%97%A8/index.html">
+<meta property="og:site_name" content="Hi! Yh">
+<meta property="og:description" content="GDB 全称“GNU symbolic debugger”，从名称上不难看出，它诞生于 GNU 计划（同时诞生的还有 GCC、Emacs 等），是 Linux 下常用的程序调试器。发展至今，GDB 已经迭代了诸多个版本，当下的 GDB 支持调试多种编程语言编写的程序，包括 C、C++、Go、Objective-C、OpenCL、Ada 等。实际场景中，GDB 更常用来调试 C 和 C++ 程序。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-02-24T11:53:38.000Z">
+<meta property="article:modified_time" content="2021-02-28T11:50:36.225Z">
+<meta property="article:author" content="Yu Hong">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="GDB">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2021/02/24/GDB%E5%85%A5%E9%97%A8/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>GDB入门 | Hi! Yh</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hi! Yh</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/02/24/GDB%E5%85%A5%E9%97%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Yu Hong">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hi! Yh">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          GDB入门
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-02-24 19:53:38" itemprop="dateCreated datePublished" datetime="2021-02-24T19:53:38+08:00">2021-02-24</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-02-28 19:50:36" itemprop="dateModified" datetime="2021-02-28T19:50:36+08:00">2021-02-28</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>18k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>17 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>GDB 全称“GNU symbolic debugger”，从名称上不难看出，它诞生于 GNU 计划（同时诞生的还有 GCC、Emacs 等），是 Linux 下常用的程序调试器。发展至今，GDB 已经迭代了诸多个版本，当下的 GDB 支持调试多种编程语言编写的程序，包括 C、C++、Go、Objective-C、OpenCL、Ada 等。实际场景中，GDB 更常用来调试 C 和 C++ 程序。<a id="more"></a></p>
+<h2 id="GDB常用调试指令"><a href="#GDB常用调试指令" class="headerlink" title="GDB常用调试指令"></a>GDB常用调试指令</h2><table>
+<thead>
+<tr>
+<th>调试指令</th>
+<th>作 用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>(gdb) break xxx (gdb) b xxx</td>
+<td>在源代码指定的某一行设置断点，其中 xxx 用于指定具体打断点的位置。</td>
+</tr>
+<tr>
+<td>(gdb) run (gdb) r</td>
+<td>执行被调试的程序，其会自动在第一个断点处暂停执行。</td>
+</tr>
+<tr>
+<td>(gdb) continue (gdb) c</td>
+<td>当程序在某一断点处停止运行后，使用该指令可以继续执行，直至遇到下一个断点或者程序结束。</td>
+</tr>
+<tr>
+<td>(gdb) next (gdb) n</td>
+<td>令程序一行代码一行代码的执行。</td>
+</tr>
+<tr>
+<td>(gdb) print xxx (gdb) p xxx</td>
+<td>打印指定变量的值，其中 xxx 指的就是某一变量名。</td>
+</tr>
+<tr>
+<td>(gdb) list (gdb) l</td>
+<td>显示源程序代码的内容，包括各行代码所在的行号。</td>
+</tr>
+<tr>
+<td>(gdb) quit (gdb) q</td>
+<td>终止调试。</td>
+</tr>
+</tbody></table>
+<h2 id="使用GDB的前期准备"><a href="#使用GDB的前期准备" class="headerlink" title="使用GDB的前期准备"></a>使用GDB的前期准备</h2><p>需要使用 gcc -g 选项编译源文件，生成满足 GDB 要求的可执行文件。命令格式为</p>
+<p><code>gcc 源文件名 -o 目标文件名 -g</code></p>
+<p>由此生成的目标文件，即可使用 GDB 进行调试。</p>
+<h2 id="启动GDB调试器"><a href="#启动GDB调试器" class="headerlink" title="启动GDB调试器"></a>启动GDB调试器</h2><h3 id="调用GDB调试器的4种方法"><a href="#调用GDB调试器的4种方法" class="headerlink" title="调用GDB调试器的4种方法"></a>调用GDB调试器的4种方法</h3><ul>
+<li>直接使用 gdb 指令启动 GDB 调试器</li>
+</ul>
+<blockquote>
+<p>此方式启动的 GDB 调试器，由于事先未指定要调试的具体程序，因此需启动后借助 file 或者 exec-file 命令指定</p>
+</blockquote>
+<ul>
+<li>调试尚未执行的程序</li>
+</ul>
+<p>对于具备调试信息（使用 -g 选项编译而成）的可执行文件，调用 GDB 调试器的指令格式为：</p>
+<p><code>gdb program</code></p>
+<p>其中，program 为可执行文件的文件名。</p>
+<ul>
+<li>调试正在执行的程序</li>
+</ul>
+<p>如果需要使用 GDB 调试正在运行的 C、C++ 程序，需要事先找到该程序运行所对应的进程号。查找方式很简单，执行如下命令即可：</p>
+<p><code>pidof 文件名</code></p>
+<p>在此基础上，可以调用 GDB 对该程序进行调试，调用指令有以下 3 种形式：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1) gdb attach PID</span><br><span class="line">2) gdb 文件名 PID</span><br><span class="line">3) gdb -p PID</span><br></pre></td></tr></tbody></table></figure>
+
+<p>其中，PID 指的就是要调取的程序对应的进程号。</p>
+<p>当 GDB 调试器成功连接到指定进程上时，程序执行会暂停，此时可以通过断点调试、逐步运行等方式监控程序的执行过程。</p>
+<p>当调试完成后，如果想令当前程序进行执行，消除调试操作对它的影响，需手动将 GDB 调试器与程序分离，分离过程分为 2 步：</p>
+<ol>
+<li>执行 detach 指令，使 GDB 调试器和程序分离；</li>
+<li>执行 quit（或 q）指令，退出 GDB 调试。</li>
+</ol>
+<ul>
+<li>调试执行异常崩溃的程序</li>
+</ul>
+<p>在 Linux 操作系统中，当程序执行发生异常崩溃时，系统可以将发生崩溃时的内存数据、调用堆栈情况等信息自动记录下载，并存储到一个文件中，该文件通常称为 core 文件，Linux 系统所具备的这种功能又称为核心转储（core dump）。</p>
+<blockquote>
+<p>认情况下，Linux 系统是不开启 core dump 这一功能的。可使用<code>ulimit -c unlimited</code>开启 core dump 功能。</p>
+</blockquote>
+<p>对于 core 文件的调试，其调用 GDB 调试器的指令为：<code>gdb 文件名 core</code></p>
+<h3 id="GDB调试器启动可用参数"><a href="#GDB调试器启动可用参数" class="headerlink" title="GDB调试器启动可用参数"></a>GDB调试器启动可用参数</h3><table>
+<thead>
+<tr>
+<th>参 数</th>
+<th>功 能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-pid number -p number</td>
+<td>调试进程 ID 为 number 的程序</td>
+</tr>
+<tr>
+<td>-symbols file -s file</td>
+<td>仅从指定 file 文件中读取符号表</td>
+</tr>
+<tr>
+<td>-q -quiet -silent</td>
+<td>取消启动 GDB 调试器时打印的介绍信息和版权信息</td>
+</tr>
+<tr>
+<td>-cd directory</td>
+<td>以 directory 作为启动 GDB 调试器的工作目录，而非当前所在目录</td>
+</tr>
+<tr>
+<td>–args 参数1 参数2…</td>
+<td>向可执行文件传递执行所需要的参数</td>
+</tr>
+</tbody></table>
+<h2 id="run（r）命令"><a href="#run（r）命令" class="headerlink" title="run（r）命令"></a>run（r）命令</h2><p>GDB 调试器提供了多种方式来启动目标程序，其中最常用的就是 run 指令，其次为 start 指令。也就是说，run 和 start 指令都可以用来在 GDB 调试器中启动程序，它们之间的区别是：</p>
+<ul>
+<li>默认情况下，run 指令会一直执行程序，直到执行结束。如果程序中手动设置有断点，则 run 指令会执行程序至第一个断点处；</li>
+<li>start 指令会执行程序至 main() 主函数的起始位置，即在 main() 函数的第一行语句处停止执行（该行代码尚未执行）。</li>
+</ul>
+<blockquote>
+<p>可以这样理解，使用 start 指令启动程序，完全等价于先在 main() 主函数起始位置设置一个断点，然后再使用 run 指令启动程序。另外，程序执行过程中使用 run 或者 start 指令，表示的是重新启动程序。</p>
+</blockquote>
+<h2 id="GDB启动程序的注意事项"><a href="#GDB启动程序的注意事项" class="headerlink" title="GDB启动程序的注意事项"></a>GDB启动程序的注意事项</h2><ol>
+<li><p>首先，对于已启动的 GDB 调试器，我们可以先通过 l指令验证其是否已找到指定的目标程序文件。对于找不到目标程序文件的 GDB 调试器，l 指令的执行结果显示“无法加载符号表”。这种情况下，可以通过借助 file 命令(<code>file 文件名</code>)，则无需重启 GDB 调试器也能指定要调试的目标程序文件。</p>
+</li>
+<li><p>若目标程序需要指定参数，常用的方法有 3 种：</p>
+<ul>
+<li>启动 GDB 调试器时，可以在指定目标调试程序的同时，使用 –args 选项指定需要传递给该程序的数据。<code>gdb --args 目标程序名 参数</code>。</li>
+<li>GDB 调试器启动后，可以借助 set args 命令指定目标调试程序启动所需要的数据。<code>set agrs 参数</code></li>
+<li>除此之外，还可以使用 run 或者 start 启动目标程序时，指定其所需要的数据。<code>run 参数</code>，<code>start 参数</code></li>
+</ul>
+</li>
+<li><p>默认情况下，GDB 调试器的工作目录为启动时所使用的目录，使用<code>cd</code>指令可更改工作目录。</p>
+</li>
+<li><p>某些场景中，目标调试程序的执行还需要临时修改 PATH 环境变量，此时就可以借助 path 指令，例如：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(gdb) path /temp/demo</span><br><span class="line">Executable and object file path: /temp/demo:/usr/local/sbin:/usr/local/bin...</span><br></pre></td></tr></tbody></table></figure>
+
+<blockquote>
+<p>注意，此修改方式只是临时的，退出 GDB 调试后会失效。</p>
+</blockquote>
+</li>
+<li><p>默认情况下，GDB 调试的程序会接收 set args 等方式指定的参数，同时会将输出结果打印到屏幕上。而通过对输入、输出重定向，可以令调试程序接收指定文件或者终端提供的数据，也可以将执行结果输出到文件或者某个终端上。<code>run &gt; 文件或终端</code></p>
+</li>
+</ol>
+<h2 id="break（b）命令"><a href="#break（b）命令" class="headerlink" title="break（b）命令"></a>break（b）命令</h2><h3 id="break命令"><a href="#break命令" class="headerlink" title="break命令"></a>break命令</h3><p>break 命令（可以用 b 代替）常用的语法格式有以下 2 种。</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1、(gdb) break location     // b location</span><br><span class="line">2、(gdb) break ... if cond   // b .. if cond</span><br></pre></td></tr></tbody></table></figure>
+
+<ol>
+<li>第一种格式中，location 用于指定打断点的具体位置，其表示方式有多种，如表所示。</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>location 的值</th>
+<th>含 义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>linenum</td>
+<td>linenum 是一个整数，表示要打断点处代码的行号。要知道，程序中各行代码都有对应的行号，可通过执行 l（小写的 L）命令看到。</td>
+</tr>
+<tr>
+<td>filename:linenum</td>
+<td>filename 表示源程序文件名；linenum 为整数，表示具体行数。整体的意思是在指令文件 filename 中的第 linenum 行打断点。</td>
+</tr>
+<tr>
+<td>+ offset - offset</td>
+<td>offset 为整数（假设值为 2），+offset 表示以当前程序暂停位置（例如第 4 行）为准，向后数 offset 行处（第 6 行）打断点；-offset 表示以当前程序暂停位置为准，向前数 offset 行处（第 2 行）打断点。</td>
+</tr>
+<tr>
+<td>function</td>
+<td>function 表示程序中包含的函数的函数名，即 break 命令会在该函数内部的开头位置打断点，程序会执行到该函数第一行代码处暂停。</td>
+</tr>
+<tr>
+<td>filename:function</td>
+<td>filename 表示远程文件名；function 表示程序中函数的函数名。整体的意思是在指定文件 filename 中 function 函数的开头位置打断点。</td>
+</tr>
+</tbody></table>
+<ol start="2">
+<li>第二种格式中，… 可以是表 1 中所有参数的值，用于指定打断点的具体位置；cond 为某个表达式。整体的含义为：每次程序执行到 … 位置时都计算 cond 的值，如果为 True，则程序在该位置暂停；反之，程序继续执行。</li>
+</ol>
+<h3 id="tbreak命令"><a href="#tbreak命令" class="headerlink" title="tbreak命令"></a>tbreak命令</h3><p>tbreak 和 break 命令的用法和功能都非常相似，唯一的不同在于，使用 tbreak 命令打的断点仅会作用 1 次，即使程序暂停之后，该断点就会自动消失。</p>
+<p>tbreak 命令的使用格式和 break 完全相同，有以下 2 种：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1、(gdb) tbreak location</span><br><span class="line">2、(gdb) tbreak ... if cond</span><br></pre></td></tr></tbody></table></figure>
+
+<p>其中，location、… 和 cond 的含义都和 break 命令中的参数含义相同。</p>
+<h3 id="rbreak命令"><a href="#rbreak命令" class="headerlink" title="rbreak命令"></a>rbreak命令</h3><p>和 break 和 tbreak 命令不同，rbreak 命令的作用对象是 C、C++ 程序中的函数，它会在指定函数的开头位置打断点。</p>
+<p>tbreak 命令的使用语法格式为：</p>
+<p><code>(gdb) tbreak regex</code></p>
+<p>其中 regex 为一个正则表达式，程序中函数的函数名只要满足 regex 条件，tbreak 命令就会其内部的开头位置打断点。值得一提的是，tbreak 命令打的断点和 break 命令打断点的效果是一样的，会一直存在，不会自动消失。</p>
+<p>可以使用<code>info break</code>或<code>info b</code>命令查看所有断点信息</p>
+<h2 id="watch命令"><a href="#watch命令" class="headerlink" title="watch命令"></a>watch命令</h2><p>对于监控 C、C++ 程序中某变量或表达式的值是否发生改变，watch 命令的语法非常简单，如下所示：</p>
+<p><code>(gdb) watch cond</code></p>
+<p>其中，conde 指的就是要监控的变量或表达式。</p>
+<p>和 watch 命令功能相似的，还有 rwatch 和 awatch 命令。其中：</p>
+<ul>
+<li>rwatch 命令：只要程序中出现读取目标变量（表达式）的值的操作，程序就会停止运行；</li>
+<li>awatch 命令：只要程序中出现读取目标变量（表达式）的值或者改变值的操作，程序就会停止运行。</li>
+</ul>
+<blockquote>
+<p>强调一下，watch 命令的功能是：只有当被监控变量（表达式）的值发生改变，程序才会停止运行。</p>
+</blockquote>
+<p>如果我们想查看当前建立的观察点的数量，借助如下指令即可：</p>
+<p><code>(gdb) info watchpoints</code></p>
+<p>值得一提的是，对于使用 watch（rwatch、awatch）命令监控 C、C++ 程序中变量或者表达式的值，有以下几点需要注意：</p>
+<ul>
+<li>当监控的变量（表达式）为局部变量（表达式）时，一旦局部变量（表达式）失效，则监控操作也随即失效；</li>
+<li>如果监控的是一个指针变量（例如 *p），则 watch *p 和 watch p 是有区别的，前者监控的是 p 所指数据的变化情况，而后者监控的是 p 指针本身有没有改变指向；</li>
+<li>这 3 个监控命令还可以用于监控数组中元素值的变化情况，例如对于 a[10] 这个数组，watch a 表示只要 a 数组中存储的数据发生改变，程序就会停止执行。</li>
+</ul>
+<h2 id="catch命令"><a href="#catch命令" class="headerlink" title="catch命令"></a>catch命令</h2><p>catch命令用于建立捕捉断点，捕捉断点的作用是，监控程序中某一事件的发生，例如程序发生某种异常时、某一动态库被加载时等等，一旦目标时间发生，则程序停止执行。</p>
+<p>建立捕捉断点的方式很简单，就是使用 catch 命令，其基本格式为：</p>
+<p><code>(gdb) catch event</code></p>
+<p>其中，event 参数表示要监控的具体事件。对于使用 GDB 调试 C、C++ 程序，常用的 event 事件类型如下表 所示。</p>
+<table>
+<thead>
+<tr>
+<th>event 事件</th>
+<th>含 义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>throw [exception]</td>
+<td>当程序中抛出 exception 指定类型异常时，程序停止执行。如果不指定异常类型（即省略 exception），则表示只要程序发生异常，程序就停止执行。</td>
+</tr>
+<tr>
+<td>catch [exception]</td>
+<td>当程序中捕获到 exception 异常时，程序停止执行。exception 参数也可以省略，表示无论程序中捕获到哪种异常，程序都暂停执行。</td>
+</tr>
+<tr>
+<td>load [regexp] unload [regexp]</td>
+<td>其中，regexp 表示目标动态库的名称，load 命令表示当 regexp 动态库加载时程序停止执行；unload 命令表示当 regexp 动态库被卸载时，程序暂停执行。regexp 参数也可以省略，此时只要程序中某一动态库被加载或卸载，程序就会暂停执行。</td>
+</tr>
+</tbody></table>
+<p>如同 break 命令和 tbreak 命令的关系一样（前者的断点是永久的，后者是一次性的），catch 命令也有另一个版本，即 tcatch 命令。tcatch 命令和 catch 命令的用法完全相同，唯一不同之处在于，对于目标事件，catch 命令的监控是永久的，而 tcatch 命令只监控一次，也就是说，只有目标时间第一次触发时，tcath 命令才会捕获并使程序暂停，之后将失效。</p>
+<h2 id="condition命令"><a href="#condition命令" class="headerlink" title="condition命令"></a>condition命令</h2><p>condition 命令的功能是：既可以为现有的普通断点、观察断点以及捕捉断点添加条件表达式，也可以对条件断点的条件表达式进行修改。</p>
+<p>condition 命令没有缩写形式，使用方法很简单，语法格式如下：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(gdb) condition bnum expression</span><br><span class="line">(gdb) condition bnum</span><br></pre></td></tr></tbody></table></figure>
+
+<p>参数 bnum 用于代指目标断点的编号；参数 expression 表示为断点添加或修改的条件表达式。</p>
+<p>以上 2 种语法格式中，第 1 种用于为 bnum 编号的断点添加或修改 expression 条件表达式；第 2 种用于删除 bnum 编号断点的条件表达式，使其变成普通的无条件断点。</p>
+<p>ignore 命令也可以使一个断点成为条件断点，但这里的“条件”并非自定义的表达式，而仅为一个整数，它用来表示该断点失效的次数。也就会说，ignore 命令可以使目标断点暂时失去作用，当断点失效的次数超过指定次数时，断点的功能会自动恢复。</p>
+<p>ignore 命令也没有缩写形式，其语法格式如下：</p>
+<p><code>ignore bnum count</code></p>
+<p>参数 bnum 为某个断点的编号；参数 count 用于指定该断点失效的次数。</p>
+<h2 id="GDB禁用和删除断点"><a href="#GDB禁用和删除断点" class="headerlink" title="GDB禁用和删除断点"></a>GDB禁用和删除断点</h2><h3 id="查看当前已建好的断点"><a href="#查看当前已建好的断点" class="headerlink" title="查看当前已建好的断点"></a>查看当前已建好的断点</h3><ol>
+<li>借助如下指令，可以查看当前调试环境中存在的所有断点，包括普通断点、观察断点以及捕捉断点：</li>
+</ol>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(gdb) info breakpoint [n]</span><br><span class="line">(gdb) info break [n]</span><br></pre></td></tr></tbody></table></figure>
+
+<p>参数 n 作为可选参数，为某个断点的编号，表示查看指定断点而非全部断点。</p>
+<ol start="2">
+<li>除此之外，对于调试环境中已经建好且未删除的观察断点，也可以使用 info watchpoint 命令进行查看，语法格式如下：</li>
+</ol>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(gdb) info watchpoint [n]</span><br></pre></td></tr></tbody></table></figure>
+
+<p>n 为可选参数，为某个观察断点的编号，功能是只查看该编号的观察断点的信息，而不是全部的观察断点。</p>
+<h3 id="GDB删除断点"><a href="#GDB删除断点" class="headerlink" title="GDB删除断点"></a>GDB删除断点</h3><ol>
+<li>clear命令</li>
+</ol>
+<p>clear 命令可以删除指定位置处的所有断点，常用的语法格式如下所示：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(gdb) clear location</span><br></pre></td></tr></tbody></table></figure>
+
+<p>参数 location 通常为某一行代码的行号或者某个具体的函数名。当 location 参数为某个函数的函数名时，表示删除位于该函数入口处的所有断点。</p>
+<ol start="2">
+<li>delete 命令</li>
+</ol>
+<p>delete 命令（可以缩写为 d ）通常用来删除所有断点，也可以删除指定编号的各类型断点，语法格式如下：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">delete [breakpoints] [num]</span><br></pre></td></tr></tbody></table></figure>
+
+<p>其中，breakpoints 参数可有可无，num 参数为指定断点的编号，其可以是 delete 删除某一个断点，而非全部。</p>
+<p>如果不指定 num 参数，则 delete 命令会删除当前程序中存在的所有断点。</p>
+<h3 id="GDB禁用断点"><a href="#GDB禁用断点" class="headerlink" title="GDB禁用断点"></a>GDB禁用断点</h3><p>所谓禁用，就是使目标断点暂时失去作用，必要时可以再将其激活，恢复断点原有的功能。</p>
+<p>禁用断点可以使用 disable 命令，语法格式如下：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">disable [breakpoints] [num...]</span><br></pre></td></tr></tbody></table></figure>
+
+<p>breakpoints 参数可有可无；num… 表示可以有多个参数，每个参数都为要禁用断点的编号。如果指定 num…，disable 命令会禁用指定编号的断点；反之若不设定 num…，则 disable 会禁用当前程序中所有的断点。</p>
+<p>对于禁用的断点，可以使用 enable 命令激活，该命令的语法格式有多种，分别对应有不同的功能：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">enable [breakpoints] [num...]            激活用 num... 参数指定的多个断点，如果不设定 num...，表示激活所有禁用的断点</span><br><span class="line">enable [breakpoints] once num…         临时激活以 num... 为编号的多个断点，但断点只能使用 1 次，之后会自动回到禁用状态</span><br><span class="line">enable [breakpoints] count num...   临时激活以 num... 为编号的多个断点，断点可以使用 count 次，之后进入禁用状态</span><br><span class="line">enable [breakpoints] delete num…        激活 num.. 为编号的多个断点，但断点只能使用 1 次，之后会被永久删除。</span><br></pre></td></tr></tbody></table></figure>
+
+<p>其中，breakpoints 参数可有可无；num… 表示可以提供多个断点的编号，enable 命令可以同时激活多个断点。</p>
+<h2 id="next-（n）命令"><a href="#next-（n）命令" class="headerlink" title="next （n）命令"></a>next （n）命令</h2><p>next 是最常用来进行单步调试的命令，其最大的特点是当遇到包含调用函数的语句时，无论函数内部包含多少行代码，next 指令都会一步执行完。也就是说，对于调用的函数来说，next 命令只会将其视作一行代码。</p>
+<p>next 命令可以缩写为 n 命令，使用方法也很简单，语法格式如下：</p>
+<p><code>(gdb) next count</code></p>
+<p>参数 count 表示单步执行多少行代码，默认为 1 行。</p>
+<h2 id="step（s）命令"><a href="#step（s）命令" class="headerlink" title="step（s）命令"></a>step（s）命令</h2><p>通常情况下，step 命令和 next 命令的功能相同，都是单步执行程序。不同之处在于，当 step 命令所执行的代码行中包含函数时，会进入该函数内部，并在函数第一行代码处停止执行。</p>
+<p>step 命令可以缩写为 s 命令，用法和 next 命令相同，语法格式如下：</p>
+<p><code>(gdb) step count</code></p>
+<p>参数 count 表示一次执行的行数，默认为 1 行。</p>
+<h2 id="until（u）命令"><a href="#until（u）命令" class="headerlink" title="until（u）命令"></a>until（u）命令</h2><p>until 命令可以简写为 u 命令，有 2 种语法格式，如下所示：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1、(gdb) until</span><br><span class="line">2、(gdb) until location</span><br></pre></td></tr></tbody></table></figure>
+
+<p>其中，参数 location 为某一行代码的行号。</p>
+<p>不带参数的 until 命令，可以使 GDB 调试器快速运行完当前的循环体，并运行至循环体外停止。注意，until 命令并非任何情况下都会发挥这个作用，只有当执行至循环体尾部（最后一行代码）时，until 命令才会发生此作用；反之，until 命令和 next 命令的功能一样，只是单步执行程序。</p>
+<p>until 命令还可以后跟某行代码的行号，以指示 GDB 调试器直接执行至指定位置后停止。</p>
+<h2 id="finish和return命令"><a href="#finish和return命令" class="headerlink" title="finish和return命令"></a>finish和return命令</h2><p>实际调试时，在某个函数中调试一段时间后，可能不需要再一步步执行到函数返回处，希望直接执行完<strong>当前函数</strong>，这时可以使用 finish 命令。与 finish 命令类似的还有 return 命令，它们都可以结束当前执行的函数。</p>
+<p>finish 命令和 return 命令的区别是，finish 命令会执行函数到正常退出；而 return 命令是立即结束执行当前函数并返回，也就是说，如果当前函数还有剩余的代码未执行完毕，也不会执行了。除此之外，return 命令还有一个功能，即可以指定该函数的返回值。</p>
+<h2 id="jump命令"><a href="#jump命令" class="headerlink" title="jump命令"></a>jump命令</h2><p>jump 命令的功能是直接跳到指定行继续执行程序，其语法格式为：</p>
+<p><code>(gdb) jump location</code></p>
+<p>其中，location 通常为某一行代码的行号。</p>
+<p>也就是说，jump 命令可以略过某些代码，直接跳到 location 处的代码继续执行程序。这意味着，如果你跳过了某个变量（对象）的初始化代码，直接执行操作该变量（对象）的代码，很可能会导致程序崩溃或出现其它 Bug。另外，如果 jump 跳转到的位置后续没有断点，那么 GDB 会直接执行自跳转处开始的后续代码。</p>
+<h2 id="print（p）命令"><a href="#print（p）命令" class="headerlink" title="print（p）命令"></a>print（p）命令</h2><p>前面章节中，我们已经多次接触并使用了 print 命令，它的功能就是在 GDB 调试程序的过程中，输出或者修改指定变量或者表达式的值。</p>
+<p>print 命令可以缩写为 p，最常用的语法格式如下所示：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(gdb) print expr (= value)</span><br><span class="line">(gdb) p expr (= value)</span><br></pre></td></tr></tbody></table></figure>
+
+<p>其中，参数 expr 用来代指要查看或者修改的目标变量或者表达式，value为要修改后的值。</p>
+<p>print 命令最基本的用法相比，该命令的完整语法格式如下所示：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(gdb) print [options --] [/fmt] expr</span><br></pre></td></tr></tbody></table></figure>
+
+<blockquote>
+<p>格式中用 [ ] 括起来的部分是可选的，可以使用也可以省略。</p>
+</blockquote>
+<p>其中，各个参数的含义如下：</p>
+<ol>
+<li>options：表示该命令所支持的选项，这些选项可以控制 print 命令输出指定内容的变量或者表达式的值；</li>
+<li>fmt：指定输出变量或表达式值时所采用的格式；</li>
+<li>expr：指定要查看的变量或表达式。</li>
+</ol>
+<p><strong>options参数的取值</strong></p>
+<table>
+<thead>
+<tr>
+<th>options 参数</th>
+<th>功 能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-address on|off</td>
+<td>查看某一指针变量的值时，是否同时打印其占用的内存地址，默认值为 on。该选项等同于单独执行 set print address on|off 命令。</td>
+</tr>
+<tr>
+<td>-array on|off</td>
+<td>是否以便于阅读的格式输出数组中的元素，默认值为 off。该选项等同于单独执行 set printf array on|off 命令。</td>
+</tr>
+<tr>
+<td>-array-indexes on|off</td>
+<td>对于非字符类型数组，在打印数组中每个元素值的同时，是否同时显示每个元素对应的数组下标，默认值为 off。该选项等同于单独执行 set print array-indexes on|off 命令。</td>
+</tr>
+<tr>
+<td>-pretty on|off</td>
+<td>以便于阅读的格式打印某个结构体变量的值，默认值为 off。该选项等同于单独执行 set print pretty on|off 命令。</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>注意，options 参数和 /fmt 或者 expr 之间，必须用<code>--</code>（ 2 个 - 字符）分隔。</p>
+</blockquote>
+<p><strong>常用的 /fmt 参数</strong></p>
+<table>
+<thead>
+<tr>
+<th>/fmt</th>
+<th>功 能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>/x</td>
+<td>以十六进制的形式打印出整数。</td>
+</tr>
+<tr>
+<td>/d</td>
+<td>以有符号、十进制的形式打印出整数。</td>
+</tr>
+<tr>
+<td>/u</td>
+<td>以无符号、十进制的形式打印出整数。</td>
+</tr>
+<tr>
+<td>/o</td>
+<td>以八进制的形式打印出整数。</td>
+</tr>
+<tr>
+<td>/t</td>
+<td>以二进制的形式打印出整数。</td>
+</tr>
+<tr>
+<td>/f</td>
+<td>以浮点数的形式打印变量或表达式的值。</td>
+</tr>
+<tr>
+<td>/c</td>
+<td>以字符形式打印变量或表达式的值。</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>当 print 命令不指定任何 options 参数时，print 和 /fmt 之间不用添加空格，例如以十六进制的形式输出 num 整形变量的值，执行命令为 (gdb) print/x num。</p>
+</blockquote>
+<p>我们知道，print 命令可以打印指定变量或表达式的值。值得一提的是，当指定目标表达式时，除了表达式本身外，GDB 调试器还支持使用<code>@</code>和<code>::</code>运算符。</p>
+<p><code>@</code>运算符用于输出数组中指定区域的元素，使用格式如下：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(gdb) print first@len</span><br></pre></td></tr></tbody></table></figure>
+
+<p>其中，参数 first 用于指定数组查看区域内的首个元素的值；参数 len 用于指令自 first 元素开始查看的元素个数。</p>
+<p>假设有一个 array 数组，其定义如下：</p>
+<figure class="highlight c"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> <span class="built_in">array</span>[<span class="number">5</span>] = {<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>};</span><br></pre></td></tr></tbody></table></figure>
+
+<p>如果我们想查看第 1 个元素和第 2 个元素的值，可以执行如下指令：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(gdb) print array[0]@2</span><br><span class="line">$1 = {1, 2}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>当程序中包含多个作用域不同但名称相同的变量或表达式时，可以借助<code>::</code>运算符明确指定要查看的目标变量或表达式。<code>::</code>运算符的语法格式如下：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(gdb) print file::variable</span><br><span class="line">(gdb) print function::variable</span><br></pre></td></tr></tbody></table></figure>
+
+<p>其中 file 用于指定具体的文件名，funciton 用于指定具体所在函数的函数名，variable 表示要查看的目标变量或表达式。</p>
+<h2 id="display命令"><a href="#display命令" class="headerlink" title="display命令"></a>display命令</h2><p>和 print 命令一样，display 命令也用于调试阶段查看某个变量或表达式的值，它们的区别是，使用 display 命令查看变量或表达式的值，每当程序暂停执行（例如单步执行）时，GDB 调试器都会自动帮我们打印出来，而 print 命令则不会。</p>
+<p>也就是说，使用 1 次 print 命令只能查看 1 次某个变量或表达式的值，而同样使用 1 次 display 命令，每次程序暂停执行时都会自动打印出目标变量或表达式的值。因此，当我们想频繁查看某个变量或表达式的值从而观察它的变化情况时，使用 display 命令可以一劳永逸。</p>
+<p>display 命令没有缩写形式，常用的语法格式如下 2 种：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(gdb) display expr</span><br><span class="line">(gdb) display/fmt expr</span><br></pre></td></tr></tbody></table></figure>
+
+<p>其中，expr 表示要查看的目标变量或表达式；参数 fmt 用于指定输出变量或表达式的格式，下表罗列了常用的一些 fmt 参数。</p>
+<table>
+<thead>
+<tr>
+<th>/fmt</th>
+<th>功 能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>/x</td>
+<td>以十六进制的形式打印出整数。</td>
+</tr>
+<tr>
+<td>/d</td>
+<td>以有符号、十进制的形式打印出整数。</td>
+</tr>
+<tr>
+<td>/u</td>
+<td>以无符号、十进制的形式打印出整数。</td>
+</tr>
+<tr>
+<td>/o</td>
+<td>以八进制的形式打印出整数。</td>
+</tr>
+<tr>
+<td>/t</td>
+<td>以二进制的形式打印出整数。</td>
+</tr>
+<tr>
+<td>/f</td>
+<td>以浮点数的形式打印变量或表达式的值。</td>
+</tr>
+<tr>
+<td>/c</td>
+<td>以字符形式打印变量或表达式的值。</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>注意，display 命令和 /fmt 之间不要留有空格。以 /x 为例，应写为 (gdb)display/x expr。</p>
+</blockquote>
+<p>事实上，对于使用 display 命令查看的目标变量或表达式，都会被记录在一张列表（称为自动显示列表）中。通过执行<code>info dispaly</code>命令，可以打印出这张表。</p>
+<p>对于不需要再打印值的变量或表达式，可以将其删除或者禁用。</p>
+<ol>
+<li>通过执行如下命令，即可删除自动显示列表中的变量或表达式：</li>
+</ol>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(gdb) undisplay num...</span><br><span class="line">(gdb) delete display num...</span><br></pre></td></tr></tbody></table></figure>
+
+<p>参数 num… 表示目标变量或表达式的编号，编号的个数可以是多个。</p>
+<ol start="2">
+<li>通过执行如下命令，可以禁用自动显示列表中处于激活状态下的变量或表达式：</li>
+</ol>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(gdb) disable display num...</span><br></pre></td></tr></tbody></table></figure>
+
+<p>num… 表示要禁用的变量或表达式的编号，编号的个数可以是多个，表示一次性禁用多个变量或表达式。处于禁用状态的变量或表达式，程序停止执行时将不再自动打印出它们的值。</p>
+<p>当然根据需要，也可以激活当前处于禁用状态的变量或表达式，执行如下命令即可：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(gdb) enable display num...</span><br></pre></td></tr></tbody></table></figure>
+
+<p>参数 num… 表示要激活的变量或表达式的编号，编号的个数可以是多个，表示一次性激活多个变量或表达式。</p>
+<h2 id="GDB多线程调试"><a href="#GDB多线程调试" class="headerlink" title="GDB多线程调试"></a>GDB多线程调试</h2><p> GDB调试多线程程序常用命令</p>
+<table>
+<thead>
+<tr>
+<th>调试命令</th>
+<th>功 能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>info threads [id…]</td>
+<td>查看当前调试环境中包含多少个线程，并打印出各个线程的相关信息，包括线程编号（ID）、线程名称等。其中，参数 id… 作为可选参数，表示要查看的线程编号，编号个数可以是多个。</td>
+</tr>
+<tr>
+<td>thread id</td>
+<td>将线程编号为 id 的线程设置为当前线程。</td>
+</tr>
+<tr>
+<td>thread apply id… command</td>
+<td>id… 表示线程的编号；command 代指 GDB 命令，如 next、continue 等。整个命令的功能是将 command 命令作用于指定编号的线程。当然，如果想将 command 命令作用于所有线程，id… 可以用 all 代替。</td>
+</tr>
+<tr>
+<td>break location thread id</td>
+<td>在 location 指定的位置建立普通断点，并且该断点仅用于暂停编号为 id 的线程。</td>
+</tr>
+<tr>
+<td>set scheduler-locking off|on|step</td>
+<td>默认情况下，当程序中某一线程暂停执行时，所有执行的线程都会暂停(all-stop模式)；同样，当执行 continue 命令时，默认所有暂停的程序都会继续执行。该命令可以打破此默认设置，即只继续执行当前线程，其它线程仍停止执行。</td>
+</tr>
+</tbody></table>
+<p>但在某些场景中，我们可能需要调试个别的线程，并且不想在调试过程中，影响其它线程的运行。这种情况下，可以将 GDB 的调试模式由 all-stop 模式更改为 non-stop 模式，该模式下调试多线程程序，当某一线程暂停运行时，其它线程仍可以继续执行。</p>
+<p>non-stop 模式下可以进行 all-stop 模式无法做到的调试工作，例如：</p>
+<ul>
+<li>保持其它线程继续执行的状态下，单独调试某个线程；</li>
+<li>在所有线程都暂停执行的状态下，单步调试某个线程；</li>
+<li>单独执行多个线程等等。</li>
+<li>在 non-stop 模式下，continue、next、step 命令只作用于当前线程</li>
+</ul>
+<p>执行 show non-stop 命令，可以查看 non-stop 模式是否开启。<code>(gdb) show non-stop</code></p>
+<p>由 all-stop 模式转换到 non-stop 模式，命令<code>gdb) set non-stop on|off</code></p>
+<p>对于在后台处于执行状态的线程，可以使用<code> interrupt</code> 命令将其中断。</p>
+<h2 id="GDB后台调试"><a href="#GDB后台调试" class="headerlink" title="GDB后台调试"></a>GDB后台调试</h2><p>对于某些调试命令，GDB 调试器提供有 2 种执行方式：</p>
+<ul>
+<li>同步执行：“一个一个”的执行，即必须等待前一个命令执行完毕，才能执行下一个调试命令。</li>
+<li>后台执行：又称“异步执行”，即当某个调试命令开始执行时，(gdb) 命令提示符会立即出现，我们无需等待前一个命令执行完毕就可以继续执行下一个调试命令。 </li>
+</ul>
+<p>以后台（异步）的方式执行一个调试命令，其语法格式如下：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(gdb) command&amp;</span><br></pre></td></tr></tbody></table></figure>
+
+<p>其中，command 表示就是要执行的调试命令。command 和 &amp; 之间不需要添加空格。</p>
+<p>显然，通过在目标命令的后面添加一个 ‘&amp;’ 字符，即可使该命令以后台的方式执行。例如，continue 命令的异步执行版本为<code>continue&amp;</code> 或者<code>c&amp;</code>。</p>
+<p>下表罗列了支持后台执行的一些常用的调试命令。</p>
+<table>
+<thead>
+<tr>
+<th>调试命令</th>
+<th>含 义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>run（r）</td>
+<td>启动被调试的程序。</td>
+</tr>
+<tr>
+<td>attach</td>
+<td>调试处于运行着的的程序。</td>
+</tr>
+<tr>
+<td>step</td>
+<td>单步调试程序。</td>
+</tr>
+<tr>
+<td>stepi</td>
+<td>执行一条机器指令。</td>
+</tr>
+<tr>
+<td>next(n)</td>
+<td>单步调试程序。</td>
+</tr>
+<tr>
+<td>nexti</td>
+<td>执行一条机器指令，其与 stepi 命令的区别，类似于 step 和 next 命令的区别。</td>
+</tr>
+<tr>
+<td>continue</td>
+<td>继续执行程序。</td>
+</tr>
+<tr>
+<td>finish</td>
+<td>结束当前正在执行的函数。</td>
+</tr>
+<tr>
+<td>until（u）</td>
+<td>快速执行完当前的循环体。</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>注意，并非所有的调试命令都支持异步执行。如果目标调试命令不支持后台执行的形式，当我们尝试使用“命令名+&amp;”的方式执行该命令时，GDB 调试器会提示类似“Function “&amp;” not defined.”的错误信息。</p>
+</blockquote>
+<p>后台执行命令异步调试程序的方法，多用于 non-stop 模式中。虽然 all-stop 模式中也可以使用，但在前一个异步命令未执行完毕前，仍旧不能执行其它命令。</p>
+<h2 id="GDB调试多进程程序"><a href="#GDB调试多进程程序" class="headerlink" title="GDB调试多进程程序"></a>GDB调试多进程程序</h2><h3 id="attach命令调试进程"><a href="#attach命令调试进程" class="headerlink" title="attach命令调试进程"></a>attach命令调试进程</h3><p>可以使用 <code>(gdb) attach 进程号</code> 命令调试指定进程号的进程</p>
+<h3 id="GDB显式指定要调试的进程"><a href="#GDB显式指定要调试的进程" class="headerlink" title="GDB显式指定要调试的进程"></a>GDB显式指定要调试的进程</h3><p>对于使用 fork() 或者 vfork() 函数构建的多进程程序，借助 follow-fork-mode 选项可以设定 GDB 调试父进程还是子进程。该选项的使用语法格式为：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(gdb) set follow-fork-mode mode</span><br></pre></td></tr></tbody></table></figure>
+
+<p>参数 mode 的可选值有 2 个：</p>
+<ul>
+<li>parent：选项的默认值，表示 GDB 调试器默认只调试父进程；</li>
+<li>child：和 parent 完全相反，它使的 GDB 只调试子进程。且当程序中包含多个子进程时，我们可以逐一对它们进行调试。</li>
+</ul>
+<p>通过执行<code>(gdb) show follow-fork-mode</code>命令，我们可以轻松了解到当前调试环境中 follow-fork-mode 选项的值。</p>
+<p>注意，借助 follow-fork-mode 选项，我们只能选择调试子进程还是父进程，且一经选定，调试过程中将无法改变。如果既想调试父进程，又想随时切换并调试某个子进程，就需要借助 detach-on-fork 选项。</p>
+<p>detach-on-fork 选项的语法格式如下：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(gdb) set detach-on-fork mode</span><br></pre></td></tr></tbody></table></figure>
+
+<p>其中，mode 参数的可选值有 2 个：</p>
+<ul>
+<li>on：默认值，表明 GDB 只调试一个进程，可以是父进程，或者某个子进程；</li>
+<li>off：程序中出现的每个进程都会被 GDB 记录，我们可以随时切换到任意一个进程进行调试。</li>
+</ul>
+<p>和 detach-on-fork 搭配使用的，还有如下表所示的几个命令。</p>
+<table>
+<thead>
+<tr>
+<th>命令语法格式</th>
+<th>功 能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>(gdb)show detach-on-fork</td>
+<td>查看当前调试环境中 detach-on-fork 选项的值。</td>
+</tr>
+<tr>
+<td>(gdb) info inferiors</td>
+<td>查看当前调试环境中有多少个进程。其中，进程 id 号前带有 * 号的为当前正在调试的进程。</td>
+</tr>
+<tr>
+<td>(gdb) inferiors id</td>
+<td>切换到指定 ID 编号的进程对其进行调试。</td>
+</tr>
+<tr>
+<td>(gdb) detach inferior id</td>
+<td>断开 GDB 与指定 id 编号进程之间的联系，使该进程可以独立运行。不过，该进程仍存在 info inferiors 打印的列表中，其 Describution 列为 <null>，并且借助 run 仍可以重新启用。</null></td>
+</tr>
+<tr>
+<td>(gdb) kill inferior id</td>
+<td>断开 GDB 与指定 id 编号进程之间的联系，并中断该进程的执行。不过，该进程仍存在 info inferiors 打印的列表中，其 Describution 列为 <null>，并且借助 run 仍可以重新启用。</null></td>
+</tr>
+<tr>
+<td>remove-inferior id</td>
+<td>彻底删除指令 id 编号的进程（从 info inferiors 打印的列表中消除），不过在执行此操作之前，需先使用 detach inferior id 或者 kill inferior id 命令将该进程与 GDB 分离，同时确认其不是当前进程。</td>
+</tr>
+</tbody></table>
+<h2 id="GDB反向调试"><a href="#GDB反向调试" class="headerlink" title="GDB反向调试"></a>GDB反向调试</h2><p>所谓反向调试，指的是临时改变程序的执行方向，反向执行指定行数的代码，此过程中 GDB 调试器可以消除这些代码所做的工作，将调试环境还原到这些代码未执行前的状态。</p>
+<blockquote>
+<p>注意，目前 GDB 调试器对反向调试的功能支持还不完善，反向调试尚不能适用于所有的调试场景</p>
+</blockquote>
+<p>下表罗列了完成反向调试常用的一些命令，并且展示各个命令的使用格式和对应的功能。</p>
+<table>
+<thead>
+<tr>
+<th>命 令</th>
+<th>功 能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>(gdb) record (gdb) record btrace</td>
+<td>让程序开始记录反向调试所必要的信息，其中包括保存程序每一步运行的结果等等信息。进行反向调试之前（启动程序之后），需执行此命令，否则是无法进行反向调试的。</td>
+</tr>
+<tr>
+<td>(gdb) reverse-continue (gdb) rc</td>
+<td>反向运行程序，直到遇到使程序中断的事件，比如断点或者已经退回到 record 命令开启时程序执行到的位置。</td>
+</tr>
+<tr>
+<td>(gdb) reverse-step</td>
+<td>反向执行一行代码，并在上一行代码的开头处暂停。和 step 命令类似，当反向遇到函数时，该命令会回退到函数内部，并在函数最后一行代码的开头处（通常为 return 0; ）暂停执行。</td>
+</tr>
+<tr>
+<td>(gdb) reverse-next</td>
+<td>反向执行一行代码，并在上一行代码的开头处暂停。和 reverse-step 命令不同，该命令不会进入函数内部，而仅将被调用函数视为一行代码。</td>
+</tr>
+<tr>
+<td>(gdb) reverse-finish</td>
+<td>当在函数内部进行反向调试时，该命令可以回退到调用当前函数的代码处。</td>
+</tr>
+<tr>
+<td>(gdb) set exec-direction mode</td>
+<td>mode 参数值可以为 forward （默认值）和 reverse：forward 表示 GDB 以正常的方式执行所有命令；reverse 表示 GDB 将反向执行所有命令，由此我们直接只用step、next、continue、finish 命令来反向调试程序。注意，return 命令不能在 reverse 模式中使用。</td>
+</tr>
+</tbody></table>
+<h2 id="handle命令"><a href="#handle命令" class="headerlink" title="handle命令"></a>handle命令</h2><p>handle 命令的语法格式如下：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(gdb) handle signal mode</span><br></pre></td></tr></tbody></table></figure>
+
+<p>其中，signal 参数表示要设定的目标信号，它通常为某个信号的全名（SIGINT）或者简称（去除‘SIG’后的部分，如 INT）；如果要指定所有信号，可以用 all 表示。mode 参数用于明确 GDB 处理该目标信号的方式，其值可以是如下几个：</p>
+<ul>
+<li>nostop：当信号发生时，GDB 不会暂停程序，其可以继续执行，但会打印出一条提示信息，告诉我们信号已经发生；</li>
+<li>stop：当信号发生时，GDB 会暂停程序执行。</li>
+<li>noprint：当信号发生时，GDB 不会打印出任何提示信息；</li>
+<li>print：当信号发生时，GDB 会打印出必要的提示信息；</li>
+<li>nopass（或者 ignore）：GDB 捕获目标信号的同时，不允许程序自行处理该信号；</li>
+<li>pass（或者 noignore）：GDB 调试在捕获目标信号的同时，也允许程序自动处理该信号。</li>
+</ul>
+<p>GDB 调试器提供了<code>info handles</code>指令，用于查看 GDB 可以处理的信号种类，以及各个信号的具体处理方式。例如：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">(gdb) info signals</span><br><span class="line">Signal        Stop Print  Pass to program  Description</span><br><span class="line"></span><br><span class="line">SIGHUP        Yes  Yes    Yes              Hangup</span><br><span class="line">SIGINT        Yes  Yes    No               Interrupt</span><br><span class="line">SIGQUIT       Yes  Yes    Yes              Quit</span><br><span class="line">SIGILL        Yes  Yes    Yes              Illegal instruction</span><br><span class="line">SIGTRAP       Yes  Yes    No               Trace/breakpoint trap</span><br><span class="line">SIGABRT       Yes  Yes    Yes              Aborted</span><br><span class="line">SIGEMT        Yes  Yes    Yes              Emulation trap</span><br><span class="line">SIGFPE        Yes  Yes    Yes              Arithmetic exception</span><br><span class="line">SIGKILL       Yes  Yes    Yes              Killed</span><br><span class="line">......</span><br></pre></td></tr></tbody></table></figure>
+
+<p>其中各列的含义分别为：</p>
+<ul>
+<li>Signal：各个信号的名称；</li>
+<li>Stop：当信号发生时，是否终止程序执行。Yes 表示终止，No 表示当信号发生时程序认可继续执行；</li>
+<li>Print：当信号发生时，是否要求 GDB 打印出一条提示信息。Yes 表示打印，No 表示不打印；</li>
+<li>Pass：当信号发生时，该信号是否对程序可见。Yes 表示程序可以捕捉到该信息，No 表示程序不会捕捉到该信息；</li>
+<li>Description：对信号所表示含义的简单描述。</li>
+</ul>
+<h2 id="frame命令"><a href="#frame命令" class="headerlink" title="frame命令"></a>frame命令</h2><p>GDB 调试器为了方便用户在调试程序时查看某个栈帧中记录的信息，提供了 frame 和 backtrace 命令。</p>
+<p>对于当前调试环境中存在的栈帧，GDB 调试器会按照既定规则对它们进行编号：当前正被调用函数对应的栈帧的编号为 0，调用它的函数对应栈帧的编号为 1，以此类推。</p>
+<p>frame 命令的常用形式有 2 个：</p>
+<ol>
+<li>根据栈帧编号或者栈帧地址，选定要查看的栈帧，语法格式如下：</li>
+</ol>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(gdb) frame spec</span><br></pre></td></tr></tbody></table></figure>
+
+<p>该命令可以将 spec 参数指定的栈帧选定为当前栈帧。spec 参数的值，常用的指定方法有 3 种：</p>
+<ol>
+<li>通过栈帧的编号指定。0 为当前被调用函数对应的栈帧号，最大编号的栈帧对应的函数通常就是 main() 主函数；</li>
+<li>借助栈帧的地址指定。栈帧地址可以通过 info frame 命令打印出的信息中看到；</li>
+<li>通过函数的函数名指定。注意，如果是类似递归函数，其对应多个栈帧的话，通过此方法指定的是编号最小的那个栈帧。</li>
+</ol>
+<p>除此之外，对于选定一个栈帧作为当前栈帧，GDB 调试器还提供有 up 和 down 两个命令。其中，up 命令的语法格式为：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(gdb) up n</span><br></pre></td></tr></tbody></table></figure>
+
+<p>其中 n 为整数，默认值为 1。该命令表示在当前栈帧编号（假设为 m）的基础上，选定 m+n 为编号的栈帧作为新的当前栈帧。</p>
+<p>相对地，down 命令的语法格式为：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(gdb) down n</span><br></pre></td></tr></tbody></table></figure>
+
+<p>其中 n 为整数，默认值为 1。该命令表示在当前栈帧编号（假设为 m）的基础上，选定 m-n 为编号的栈帧作为新的当前栈帧。</p>
+<ol start="2">
+<li>借助如下命令，我们可以查看当前栈帧中存储的信息：</li>
+</ol>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(gdb) info frame</span><br></pre></td></tr></tbody></table></figure>
+
+<p>该命令会依次打印出当前栈帧的如下信息：</p>
+<ul>
+<li>当前栈帧的编号，以及栈帧的地址；</li>
+<li>当前栈帧对应函数的存储地址，以及该函数被调用时的代码存储的地址</li>
+<li>当前函数的调用者，对应的栈帧的地址；</li>
+<li>编写此栈帧所用的编程语言；</li>
+<li>函数参数的存储地址以及值；</li>
+<li>函数中局部变量的存储地址；</li>
+<li>栈帧中存储的寄存器变量，例如指令寄存器（64位环境中用 rip 表示，32为环境中用 eip 表示）、堆栈基指针寄存器（64位环境用 rbp 表示，32位环境用 ebp 表示）等。</li>
+</ul>
+<p>除此之外，还可以使用<code>info args</code>命令查看当前函数各个参数的值；使用<code>info locals</code>命令查看当前函数中各局部变量的值。</p>
+<h2 id="backtrace命令"><a href="#backtrace命令" class="headerlink" title="backtrace命令"></a>backtrace命令</h2><p>backtrace 命令用于打印当前调试环境中所有栈帧的信息，常用的语法格式如下：</p>
+<p>(gdb) backtrace [-full] [n]</p>
+<p>其中，用 [ ] 括起来的参数为可选项，它们的含义分别为：</p>
+<ul>
+<li>n：一个整数值，当为正整数时，表示打印最里层的 n 个栈帧的信息；n 为负整数时，那么表示打印最外层 n 个栈帧的信息；</li>
+<li>-full：打印栈帧信息的同时，打印出局部变量的值。</li>
+</ul>
+<blockquote>
+<p>除此之外，backtrace 命令还有其它可选参数，感兴趣的读者可自行前往<a target="_blank" rel="noopener" href="https://sourceware.org/gdb/current/onlinedocs/gdb/Backtrace.html#Backtrace"> GDB 官网</a>查看。</p>
+</blockquote>
+<p>注意，当调试多线程程序时，该命令仅用于打印当前线程中所有栈帧的信息。如果想要打印所有线程的栈帧信息，应执行<code>thread apply all backtrace</code>命令。</p>
+<h2 id="edit命令"><a href="#edit命令" class="headerlink" title="edit命令"></a>edit命令</h2><p>在 GDB 中编辑源文件中使用 edit 命令，该命令的语法格式如下：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(gdb) edit [location]</span><br><span class="line">(gdb) edit [filename] : [location]</span><br></pre></td></tr></tbody></table></figure>
+
+<p>location 表示程序中的位置。这个命令表示激活文件的指定位置，然后进行编辑。</p>
+<h2 id="search命令"><a href="#search命令" class="headerlink" title="search命令"></a>search命令</h2><p>search 命令的语法格式为：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">search &lt;regexp&gt;</span><br><span class="line">reverse-search &lt;regexp&gt;</span><br></pre></td></tr></tbody></table></figure>
+
+<p>第一项命令格式表示从当前行的开始向前搜索，后一项表示从当前行开始向后搜索。其中 regexp 就是正则表达式，正则表达式描述了一种字符串匹配的模式，可以用来检查一个串中是否含有某种子串、将匹配的子串替换或者从某个串中取出符合某个条件的子串。很多的编程语言都支持使用正则表达式。</p>
+<p>使用命令时可能会下面的情况：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(gdb) search func</span><br><span class="line">Expression not found</span><br></pre></td></tr></tbody></table></figure>
+
+<p>表示搜索的范围没有出现要寻找的字符串或者定位到了代码行的末尾。</p>
+<h2 id="help命令"><a href="#help命令" class="headerlink" title="help命令"></a>help命令</h2><p>方便用户能够快速地从众多 GDB 命令中查找到目标命令，help 命令根据不同 GDB 命令的功能对它们做了分类</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">(gdb) help</span><br><span class="line">List of classes of commands:</span><br><span class="line"></span><br><span class="line">aliases -- Aliases of other commands</span><br><span class="line">breakpoints -- Making program stop at certain points</span><br><span class="line">data -- Examining data</span><br><span class="line">files -- Specifying and examining files</span><br><span class="line">internals -- Maintenance commands</span><br><span class="line">obscure -- Obscure features</span><br><span class="line">running -- Running the program</span><br><span class="line">stack -- Examining the stack</span><br><span class="line">status -- Status inquiries</span><br><span class="line">support -- Support facilities</span><br><span class="line">tracepoints -- Tracing of program execution without stopping the program</span><br><span class="line">user-defined -- User-defined commands</span><br></pre></td></tr></tbody></table></figure>
+
+<p>以 breakpoints 类为例，该类中包含了 GDB 所有的断点命令。借助 help 命令，我们可以查看某一类中具体包含的 GDB 命令：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">(gdb) help breakpoints</span><br><span class="line">Making program stop at certain points.</span><br><span class="line"></span><br><span class="line">List of commands:</span><br><span class="line"></span><br><span class="line">awatch -- Set a watchpoint for an expression</span><br><span class="line">break -- Set breakpoint at specified location</span><br><span class="line">break-range -- Set a breakpoint for an address range</span><br><span class="line">catch -- Set catchpoints to catch events</span><br><span class="line">catch assert -- Catch failed Ada assertions</span><br><span class="line">catch catch -- Catch an exception</span><br><span class="line">……</span><br></pre></td></tr></tbody></table></figure>
+
+
+<p>在此基础上，通过 help 命令，我们可以查看指定命令的功能和用法。例如：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">(gdb) help break</span><br><span class="line">Set breakpoint at specified line or function.</span><br><span class="line">break [LOCATION] [thread THREADNUM] [if CONDITION]</span><br><span class="line">LOCATION may be a line number, function name, or "*" and an address.</span><br><span class="line">If a line number is specified, break at start of code for that line.</span><br><span class="line">If a function is specified, break at start of code for that function.</span><br><span class="line">If an address is specified, break at that exact address.</span><br><span class="line">With no LOCATION, uses current execution address of the selected</span><br><span class="line">stack frame. This is useful for breaking on return to a stack frame.</span><br><span class="line"></span><br><span class="line">THREADNUM is the number from "info threads".</span><br><span class="line">CONDITION is a boolean expression.</span><br><span class="line"></span><br><span class="line">Multiple breakpoints at one place are permitted, and useful if their</span><br><span class="line">conditions are different.</span><br><span class="line"></span><br><span class="line">Do "help breakpoints" for info on other commands dealing with breakpoints.</span><br></pre></td></tr></tbody></table></figure>
+
+<p>可以看到，我们尝试借助 help 命令查看 break 命令，其打印信息中包括 break 命令的具体功能、完整语法格式以及各个参数的具体含义。由此，只要系统学习过目标命令的读者，借助 help 命令打印出的提示信息，一定可以回忆起来并切实用目标命令开始对程序进行调试。</p>
+<h2 id="GDB自动补全命令"><a href="#GDB自动补全命令" class="headerlink" title="GDB自动补全命令"></a>GDB自动补全命令</h2><p>所谓自动补全，即在 (gdb) 右侧输入 GDB 命令时，对于特别长的命令，我们只需要输入命令的前几个字符，然后按下 Tab 键，GDB 就会自动帮我们补全整个命令。</p>
+<p>需要注意的是，有些 GDB 命令长得很像，例如 condition 和 continue，此时如果我们只输入 con，GDB 是无法领会我们要使用哪个命令的。这种情况下，我们可以双击 Tab 键，GDB 会将所有可能的命令都罗列出来。</p>
+<p>除此之外，当我们输入完成的 GDB 命令后，通过双击 Tab 键，GDB 会给我们罗列出该命令可用的所有参数。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Linux/" rel="tag"># Linux</a>
+              <a href="/tags/GDB/" rel="tag"># GDB</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/20/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%88%E4%BA%94%EF%BC%89-%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C%E4%B8%8E%E6%97%A0%E9%94%81%E7%BC%96%E7%A8%8B/" rel="prev" title="C++多线程（五）---原子操作与无锁编程">
+      <i class="fa fa-chevron-left"></i> C++多线程（五）---原子操作与无锁编程
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/28/C-socket%E7%BC%96%E7%A8%8B%E5%85%A5%E9%97%A8/" rel="next" title="socket编程入门">
+      socket编程入门 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#GDB%E5%B8%B8%E7%94%A8%E8%B0%83%E8%AF%95%E6%8C%87%E4%BB%A4"><span class="nav-number">1.</span> <span class="nav-text">GDB常用调试指令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8GDB%E7%9A%84%E5%89%8D%E6%9C%9F%E5%87%86%E5%A4%87"><span class="nav-number">2.</span> <span class="nav-text">使用GDB的前期准备</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8GDB%E8%B0%83%E8%AF%95%E5%99%A8"><span class="nav-number">3.</span> <span class="nav-text">启动GDB调试器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B0%83%E7%94%A8GDB%E8%B0%83%E8%AF%95%E5%99%A8%E7%9A%844%E7%A7%8D%E6%96%B9%E6%B3%95"><span class="nav-number">3.1.</span> <span class="nav-text">调用GDB调试器的4种方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GDB%E8%B0%83%E8%AF%95%E5%99%A8%E5%90%AF%E5%8A%A8%E5%8F%AF%E7%94%A8%E5%8F%82%E6%95%B0"><span class="nav-number">3.2.</span> <span class="nav-text">GDB调试器启动可用参数</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#run%EF%BC%88r%EF%BC%89%E5%91%BD%E4%BB%A4"><span class="nav-number">4.</span> <span class="nav-text">run（r）命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GDB%E5%90%AF%E5%8A%A8%E7%A8%8B%E5%BA%8F%E7%9A%84%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="nav-number">5.</span> <span class="nav-text">GDB启动程序的注意事项</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#break%EF%BC%88b%EF%BC%89%E5%91%BD%E4%BB%A4"><span class="nav-number">6.</span> <span class="nav-text">break（b）命令</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#break%E5%91%BD%E4%BB%A4"><span class="nav-number">6.1.</span> <span class="nav-text">break命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tbreak%E5%91%BD%E4%BB%A4"><span class="nav-number">6.2.</span> <span class="nav-text">tbreak命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#rbreak%E5%91%BD%E4%BB%A4"><span class="nav-number">6.3.</span> <span class="nav-text">rbreak命令</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#watch%E5%91%BD%E4%BB%A4"><span class="nav-number">7.</span> <span class="nav-text">watch命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#catch%E5%91%BD%E4%BB%A4"><span class="nav-number">8.</span> <span class="nav-text">catch命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#condition%E5%91%BD%E4%BB%A4"><span class="nav-number">9.</span> <span class="nav-text">condition命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GDB%E7%A6%81%E7%94%A8%E5%92%8C%E5%88%A0%E9%99%A4%E6%96%AD%E7%82%B9"><span class="nav-number">10.</span> <span class="nav-text">GDB禁用和删除断点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E5%BD%93%E5%89%8D%E5%B7%B2%E5%BB%BA%E5%A5%BD%E7%9A%84%E6%96%AD%E7%82%B9"><span class="nav-number">10.1.</span> <span class="nav-text">查看当前已建好的断点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GDB%E5%88%A0%E9%99%A4%E6%96%AD%E7%82%B9"><span class="nav-number">10.2.</span> <span class="nav-text">GDB删除断点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GDB%E7%A6%81%E7%94%A8%E6%96%AD%E7%82%B9"><span class="nav-number">10.3.</span> <span class="nav-text">GDB禁用断点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#next-%EF%BC%88n%EF%BC%89%E5%91%BD%E4%BB%A4"><span class="nav-number">11.</span> <span class="nav-text">next （n）命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#step%EF%BC%88s%EF%BC%89%E5%91%BD%E4%BB%A4"><span class="nav-number">12.</span> <span class="nav-text">step（s）命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#until%EF%BC%88u%EF%BC%89%E5%91%BD%E4%BB%A4"><span class="nav-number">13.</span> <span class="nav-text">until（u）命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#finish%E5%92%8Creturn%E5%91%BD%E4%BB%A4"><span class="nav-number">14.</span> <span class="nav-text">finish和return命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#jump%E5%91%BD%E4%BB%A4"><span class="nav-number">15.</span> <span class="nav-text">jump命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#print%EF%BC%88p%EF%BC%89%E5%91%BD%E4%BB%A4"><span class="nav-number">16.</span> <span class="nav-text">print（p）命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#display%E5%91%BD%E4%BB%A4"><span class="nav-number">17.</span> <span class="nav-text">display命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GDB%E5%A4%9A%E7%BA%BF%E7%A8%8B%E8%B0%83%E8%AF%95"><span class="nav-number">18.</span> <span class="nav-text">GDB多线程调试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GDB%E5%90%8E%E5%8F%B0%E8%B0%83%E8%AF%95"><span class="nav-number">19.</span> <span class="nav-text">GDB后台调试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GDB%E8%B0%83%E8%AF%95%E5%A4%9A%E8%BF%9B%E7%A8%8B%E7%A8%8B%E5%BA%8F"><span class="nav-number">20.</span> <span class="nav-text">GDB调试多进程程序</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#attach%E5%91%BD%E4%BB%A4%E8%B0%83%E8%AF%95%E8%BF%9B%E7%A8%8B"><span class="nav-number">20.1.</span> <span class="nav-text">attach命令调试进程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GDB%E6%98%BE%E5%BC%8F%E6%8C%87%E5%AE%9A%E8%A6%81%E8%B0%83%E8%AF%95%E7%9A%84%E8%BF%9B%E7%A8%8B"><span class="nav-number">20.2.</span> <span class="nav-text">GDB显式指定要调试的进程</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GDB%E5%8F%8D%E5%90%91%E8%B0%83%E8%AF%95"><span class="nav-number">21.</span> <span class="nav-text">GDB反向调试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#handle%E5%91%BD%E4%BB%A4"><span class="nav-number">22.</span> <span class="nav-text">handle命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#frame%E5%91%BD%E4%BB%A4"><span class="nav-number">23.</span> <span class="nav-text">frame命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#backtrace%E5%91%BD%E4%BB%A4"><span class="nav-number">24.</span> <span class="nav-text">backtrace命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#edit%E5%91%BD%E4%BB%A4"><span class="nav-number">25.</span> <span class="nav-text">edit命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#search%E5%91%BD%E4%BB%A4"><span class="nav-number">26.</span> <span class="nav-text">search命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#help%E5%91%BD%E4%BB%A4"><span class="nav-number">27.</span> <span class="nav-text">help命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GDB%E8%87%AA%E5%8A%A8%E8%A1%A5%E5%85%A8%E5%91%BD%E4%BB%A4"><span class="nav-number">28.</span> <span class="nav-text">GDB自动补全命令</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Yu Hong</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">25</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+	
+	
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yu Hong</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">211k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">3:12</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

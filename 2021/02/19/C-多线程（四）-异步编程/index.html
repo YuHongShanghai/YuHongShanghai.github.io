@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="何为异步编程线程同步主要是对共享数据的访问同步化（按照既定的先后次序，一个访问需要阻塞等待前一个访问完成后才能开始）。异步编程主要是针对任务或线程的执行顺序，也即一个任务不需要阻塞等待上一个任务执行完成后再开始执行，程序的执行顺序与任务的排列顺序是不一致的。下面从任务执行顺序的角度解释下同步与异步的区别：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++多线程（四）---异步编程">
+<meta property="og:url" content="http://example.com/2021/02/19/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%88%E5%9B%9B%EF%BC%89-%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B/index.html">
+<meta property="og:site_name" content="Hi! Yh">
+<meta property="og:description" content="何为异步编程线程同步主要是对共享数据的访问同步化（按照既定的先后次序，一个访问需要阻塞等待前一个访问完成后才能开始）。异步编程主要是针对任务或线程的执行顺序，也即一个任务不需要阻塞等待上一个任务执行完成后再开始执行，程序的执行顺序与任务的排列顺序是不一致的。下面从任务执行顺序的角度解释下同步与异步的区别：">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/2021/02/19/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%88%E5%9B%9B%EF%BC%89-%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B/1.png">
+<meta property="og:image" content="http://example.com/2021/02/19/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%88%E5%9B%9B%EF%BC%89-%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B/2.png">
+<meta property="og:image" content="http://example.com/2021/02/19/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%88%E5%9B%9B%EF%BC%89-%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B/3.png">
+<meta property="og:image" content="http://example.com/2021/02/19/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%88%E5%9B%9B%EF%BC%89-%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B/4.png">
+<meta property="article:published_time" content="2021-02-19T11:34:24.000Z">
+<meta property="article:modified_time" content="2021-02-19T12:13:14.260Z">
+<meta property="article:author" content="Yu Hong">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="多线程">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2021/02/19/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%88%E5%9B%9B%EF%BC%89-%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B/1.png">
+
+<link rel="canonical" href="http://example.com/2021/02/19/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%88%E5%9B%9B%EF%BC%89-%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>C++多线程（四）---异步编程 | Hi! Yh</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hi! Yh</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/02/19/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%88%E5%9B%9B%EF%BC%89-%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Yu Hong">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hi! Yh">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          C++多线程（四）---异步编程
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-02-19 19:34:24 / 修改时间：20:13:14" itemprop="dateCreated datePublished" datetime="2021-02-19T19:34:24+08:00">2021-02-19</time>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>6.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="何为异步编程"><a href="#何为异步编程" class="headerlink" title="何为异步编程"></a>何为异步编程</h2><p>线程同步主要是对共享数据的访问同步化（按照既定的先后次序，一个访问需要阻塞等待前一个访问完成后才能开始）。异步编程主要是针对任务或线程的执行顺序，也即一个任务不需要阻塞等待上一个任务执行完成后再开始执行，程序的执行顺序与任务的排列顺序是不一致的。下面从任务执行顺序的角度解释下同步与异步的区别：<a id="more"></a></p>
+<p>同步：就是在发出一个调用时，在没有得到结果之前，该调用就不返回。但是一旦调用返回，就得到返回值了。换句话说，就是由调用者主动等待这个调用的结果。<br>异步：调用在发出之后，这个调用就直接返回了，所以没有返回结果。换句话说，当一个异步过程调用发出后，调用者不会立刻得到结果。而是在调用发出后，被调用者通过状态、通知来通知调用者，或通过回调函数处理这个调用。</p>
+<img src="/2021/02/19/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%88%E5%9B%9B%EF%BC%89-%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B/1.png" class="" title="图片">
+
+<h2 id="如何使用异步编程"><a href="#如何使用异步编程" class="headerlink" title="如何使用异步编程"></a>如何使用异步编程</h2><h3 id="使用全局变量与条件变量传递结果"><a href="#使用全局变量与条件变量传递结果" class="headerlink" title="使用全局变量与条件变量传递结果"></a>使用全局变量与条件变量传递结果</h3><p>条件变量具有“通知–唤醒”功能，可以把执行结果或执行状态放入一个全局变量中，当被调用者执行完任务后，通过条件变量通知调用者结果或状态已更新，可以使用了。下面给出一个程序示例：</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;numeric&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;mutex&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;condition_variable&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> res = <span class="number">0</span>;						<span class="comment">//保存结果的全局变量</span></span><br><span class="line"><span class="built_in">std</span>::mutex mu;						<span class="comment">//互斥锁全局变量</span></span><br><span class="line"><span class="built_in">std</span>::condition_variable cond;       <span class="comment">//全局条件变量</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">accumulate</span><span class="params">(<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;::iterator first,</span></span></span><br><span class="line"><span class="function"><span class="params">                <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;::iterator last)</span></span></span><br><span class="line"><span class="function"></span>{</span><br><span class="line">    <span class="keyword">int</span> sum = <span class="built_in">std</span>::accumulate(first, last, <span class="number">0</span>);      <span class="comment">//标准库求和函数</span></span><br><span class="line">    <span class="function"><span class="built_in">std</span>::unique_lock&lt;<span class="built_in">std</span>::mutex&gt; <span class="title">locker</span><span class="params">(mu)</span></span>;</span><br><span class="line">    res = sum;</span><br><span class="line">    locker.unlock();</span><br><span class="line">    cond.notify_one();              <span class="comment">// 向一个等待线程发出“条件已满足”的通知</span></span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>{</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; numbers = { <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span> };</span><br><span class="line">    <span class="function"><span class="built_in">std</span>::thread <span class="title">work_thread</span><span class="params">(accumulate, numbers.begin(), numbers.end())</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="built_in">std</span>::unique_lock&lt;<span class="built_in">std</span>::mutex&gt; <span class="title">locker</span><span class="params">(mu)</span></span>;</span><br><span class="line">    cond.wait(locker, [](){ <span class="keyword">return</span> res;});   <span class="comment">//如果条件变量被唤醒，检查结果是否被改变，为真则直接返回，为假则继续等待</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"result="</span> &lt;&lt; res &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    locker.unlock();</span><br><span class="line">    work_thread.join();         <span class="comment">//阻塞等待线程执行完成</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>结果为</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">result=21</span><br></pre></td></tr></tbody></table></figure>
+
+<p>从上面的代码可以看出，虽然也实现了获取异步任务执行结果的功能，但需要的全局变量较多，多线程间的耦合度也较高，编写复杂程序时容易引入bug。有没有更好的方式实现异步编程呢？C++ 11新增了一个&lt; future &gt;库函数为异步编程提供了很大的便利。</p>
+<h3 id="使用promise与future传递结果"><a href="#使用promise与future传递结果" class="headerlink" title="使用promise与future传递结果"></a>使用promise与future传递结果</h3><p>线程间传递的返回值或抛出的异常都是在共享状态中交流的。我们知道多线程间并发访问共享数据是需要保持同步的，这里的共享状态是保证返回值或异常在线程间正确传递的关键，被调用线程可以通过改变共享状态通知调用线程返回值或异常已写入完毕，可以访问或操作了。future的状态（future_status）有以下三种：</p>
+<ul>
+<li>deferred：异步操作还没开始；</li>
+<li>ready：异步操作已经完成；</li>
+<li>timeout：异步操作超时。</li>
+</ul>
+<p>既然线程间传递返回值或异常是通过共享状态进行的，就涉及到共享状态的提供方与获取方，只有该任务或线程拥有包含共享状态的对象，其他任务或线程才能够通过共享状态的通知机制同步获取到该任务或线程的返回值或异常。我们通常使用的&lt; thread &gt;创建线程并不拥有共享状态，我们需要为该线程提供一个共享状态，以便后续对其返回值或异常的访问。那么，怎么为一个线程提供一个包含共享状态的对象呢？这就需要借助std::promise&lt; T &gt;类模板实现了，其具体用法如下：</p>
+<img src="/2021/02/19/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%88%E5%9B%9B%EF%BC%89-%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B/2.png" class="" title="图片">
+
+<p>std::promise&lt; T &gt;构造时，产生一个未就绪的共享状态（包含存储的T值和是否就绪的状态）。可设置T值，并让状态变为ready。也可以通过产生一个future对象获取到已就绪的共享状态中的T值。继续使用上面的程序示例，改为使用promise传递结果，修改后的代码如下：</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;future&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;numeric&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;chrono&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">accumulate</span><span class="params">(<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;::iterator first,</span></span></span><br><span class="line"><span class="function"><span class="params">                <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;::iterator last,</span></span></span><br><span class="line"><span class="function"><span class="params">                <span class="built_in">std</span>::promise&lt;<span class="keyword">int</span>&gt; accumulate_promise)</span></span></span><br><span class="line"><span class="function"></span>{</span><br><span class="line">    <span class="keyword">int</span> sum = <span class="built_in">std</span>::accumulate(first, last, <span class="number">0</span>);</span><br><span class="line">    accumulate_promise.set_value(sum);  <span class="comment">// 将结果存入，并让共享状态变为就绪以提醒future</span></span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>{</span><br><span class="line">    <span class="comment">// 演示用 promise&lt;int&gt; 在线程间传递结果。</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; numbers = { <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span> };</span><br><span class="line">    <span class="built_in">std</span>::promise&lt;<span class="keyword">int</span>&gt; accumulate_promise;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">future</span>&lt;<span class="keyword">int</span>&gt; accumulate_future = accumulate_promise.get_future();</span><br><span class="line">    <span class="function"><span class="built_in">std</span>::thread <span class="title">work_thread</span><span class="params">(accumulate, numbers.begin(), numbers.end(),</span></span></span><br><span class="line"><span class="function"><span class="params">                            <span class="built_in">std</span>::move(accumulate_promise))</span></span>;</span><br><span class="line">    accumulate_future.wait();  <span class="comment">//等待结果</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"result="</span> &lt;&lt; accumulate_future.get() &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    work_thread.join();  <span class="comment">//阻塞等待线程执行完成</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">}</span><br><span class="line"></span><br></pre></td></tr></tbody></table></figure>
+
+<img src="/2021/02/19/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%88%E5%9B%9B%EF%BC%89-%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B/3.png" class="" title="图片">
+
+<p>值得注意的是，std::future&lt; T &gt;在多个线程等待时，只有一个线程能获取等待结果。当需要多个线程等待相同的事件的结果(即多处访问同一个共享状态)，需要用std::shared_future&lt; T &gt;来替代std::future &lt; T &gt;，std::future&lt; T &gt;也提供了一个将future转换为shared_future的方法f.share()，但转换后原future状态失效。这有点类似于智能指针std::unique_ptr&lt; T &gt;与std::shared_ptr&lt; T &gt;的关系，使用时需要留心。</p>
+<h3 id="使用packaged-task与future传递结果"><a href="#使用packaged-task与future传递结果" class="headerlink" title="使用packaged_task与future传递结果"></a>使用packaged_task与future传递结果</h3><p>除了为一个任务或线程提供一个包含共享状态的变量，还可以直接把共享状态包装进一个任务或线程中。这就需要借助std::packaged_task&lt; Func &gt;来实现了，其具体用法如下：</p>
+<img src="/2021/02/19/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%88%E5%9B%9B%EF%BC%89-%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B/4.png" class="" title="图片">
+
+<p>std::packaged_task&lt; Func &gt;构造时绑定一个函数对象，也产生一个未就绪的共享状态。通过thread启动或者仿函数形式启动该函数对象。但是相比promise，没有提供set_value()公用接口，而是当执行完绑定的函数对象，其执行结果返回值或所抛异常被存储于能通过 std::future 对象访问的共享状态中。继续使用上面的程序示例，改为使用packaged_task传递结果，修改后的代码如下：</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;future&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;numeric&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;chrono&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">accumulate</span><span class="params">(<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;::iterator first,</span></span></span><br><span class="line"><span class="function"><span class="params">               <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;::iterator last)</span></span></span><br><span class="line"><span class="function"></span>{</span><br><span class="line">    <span class="keyword">int</span> sum = <span class="built_in">std</span>::accumulate(first, last, <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">return</span> sum;</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>{</span><br><span class="line">    <span class="comment">// 演示用 packaged_task 在线程间传递结果。</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; numbers = { <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span> };</span><br><span class="line">    <span class="function"><span class="built_in">std</span>::packaged_task&lt;<span class="title">int</span><span class="params">(<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;::iterator,<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;::iterator)</span>&gt; <span class="title">accumulate_task</span><span class="params">(accumulate)</span></span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">future</span>&lt;<span class="keyword">int</span>&gt; accumulate_future = accumulate_task.get_future();</span><br><span class="line">    <span class="function"><span class="built_in">std</span>::thread <span class="title">work_thread</span><span class="params">(<span class="built_in">std</span>::move(accumulate_task), numbers.begin(), numbers.end())</span></span>;</span><br><span class="line">    accumulate_future.wait();  <span class="comment">//等待结果</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"result="</span> &lt;&lt; accumulate_future.get() &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    work_thread.join();  <span class="comment">//阻塞等待线程执行完成</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>一般不同函数间传递数据时，主要是借助全局变量、返回值、函数参数等来实现的。上面第一种方法使用全局变量传递数据，会使得不同函数间的耦合度较高，不利于模块化编程。后面两种方法分别通过函数参数与返回值来传递数据，可以降低函数间的耦合度，使编程和维护更简单快捷。</p>
+<h3 id="使用async传递结果"><a href="#使用async传递结果" class="headerlink" title="使用async传递结果"></a>使用async传递结果</h3><p>前面介绍的std::promise&lt; T &gt;与std::packaged_task&lt; Func &gt;已经提供了较丰富的异步编程工具，但在使用时既需要创建提供共享状态的对象(promise与packaged_task)，又需要创建访问共享状态的对象(future与shared_future)，还是觉得使用起来不够方便。有没有更简单的异步编程工具呢？future头文件也确实封装了更高级别的函数std::async，其具体用法如下：</p>
+<p><code>std::future std::async(std::launch policy, Func, Args…)</code></p>
+<p>std::async是一个函数而非类模板，其函数执行完后的返回值绑定给使用std::async的std::futrue对象（std::async其实是封装了thread,packged_task的功能，使异步执行一个任务更为方便）。Func是要调用的可调用对象(function, member function, function object, lambda)，Args是传递给Func的参数，std::launch policy是启动策略，它控制std::async的异步行为，我们可以用三种不同的启动策略来创建std::async：</p>
+<ul>
+<li>std::launch::async参数 保证异步行为，即传递函数将在单独的线程中执行；</li>
+<li>std::launch::deferred参数 当其他线程调用get()/wait()来访问共享状态时，将调用非异步行为；</li>
+<li>std::launch::async | std::launch::deferred参数 是默认行为(可省略)。有了这个启动策略，它可以异步运行或不运行，这取决于系统的负载。</li>
+</ul>
+<p>继续使用上面的程序示例，改为使用std::async传递结果，修改后的代码如下：</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;future&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;numeric&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;chrono&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">accumulate</span><span class="params">(<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;::iterator first,</span></span></span><br><span class="line"><span class="function"><span class="params">               <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;::iterator last)</span></span></span><br><span class="line"><span class="function"></span>{</span><br><span class="line">    <span class="keyword">int</span> sum = <span class="built_in">std</span>::accumulate(first, last, <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">return</span> sum;</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>{</span><br><span class="line">    <span class="comment">// 演示用 async 在线程间传递结果。</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; numbers = { <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span> };</span><br><span class="line">    <span class="keyword">auto</span> accumulate_future = <span class="built_in">std</span>::async(<span class="built_in">std</span>::launch::async, accumulate, numbers.begin(), numbers.end());		<span class="comment">//auto可以自动推断变量的类型</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"result="</span> &lt;&lt; accumulate_future.get() &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">}</span><br><span class="line"></span><br></pre></td></tr></tbody></table></figure>
+
+<p>从上面的代码可以看出使用std::async能在很大程度上简少编程工作量，使我们不用关注线程创建内部细节，就能方便的获取异步执行状态和结果，还可以指定线程创建策略。所以，我们可以使用std::async替代线程的创建，让它成为我们做异步操作的首选。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/C/" rel="tag"># C++</a>
+              <a href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" rel="tag"># 多线程</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/18/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%88%E4%B8%89%EF%BC%89-%E7%BA%BF%E7%A8%8B%E5%90%8C%E6%AD%A5%E4%B9%8B%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F/" rel="prev" title="C++多线程（三）---线程同步之条件变量">
+      <i class="fa fa-chevron-left"></i> C++多线程（三）---线程同步之条件变量
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/20/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%88%E4%BA%94%EF%BC%89-%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C%E4%B8%8E%E6%97%A0%E9%94%81%E7%BC%96%E7%A8%8B/" rel="next" title="C++多线程（五）---原子操作与无锁编程">
+      C++多线程（五）---原子操作与无锁编程 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%95%E4%B8%BA%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B"><span class="nav-number">1.</span> <span class="nav-text">何为异步编程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B"><span class="nav-number">2.</span> <span class="nav-text">如何使用异步编程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E5%85%A8%E5%B1%80%E5%8F%98%E9%87%8F%E4%B8%8E%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F%E4%BC%A0%E9%80%92%E7%BB%93%E6%9E%9C"><span class="nav-number">2.1.</span> <span class="nav-text">使用全局变量与条件变量传递结果</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8promise%E4%B8%8Efuture%E4%BC%A0%E9%80%92%E7%BB%93%E6%9E%9C"><span class="nav-number">2.2.</span> <span class="nav-text">使用promise与future传递结果</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8packaged-task%E4%B8%8Efuture%E4%BC%A0%E9%80%92%E7%BB%93%E6%9E%9C"><span class="nav-number">2.3.</span> <span class="nav-text">使用packaged_task与future传递结果</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8async%E4%BC%A0%E9%80%92%E7%BB%93%E6%9E%9C"><span class="nav-number">2.4.</span> <span class="nav-text">使用async传递结果</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Yu Hong</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">25</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+	
+	
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yu Hong</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">211k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">3:12</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

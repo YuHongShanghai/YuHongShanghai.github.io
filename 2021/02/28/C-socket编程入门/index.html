@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="什么是 socket？socket 的原意是“插座”，在计算机通信领域，socket 被翻译为“套接字”，它是计算机之间进行通信的一种约定或一种方式。通过 socket 这种约定，一台计算机可以接收其他计算机的数据，也可以向其他计算机发送数据。 socket 的典型应用就是 Web 服务器和浏览器：浏览器获取用户输入的 URL，向服务器发起请求，服务器分析接收到的 URL，将对应的网页内容返回给浏">
+<meta property="og:type" content="article">
+<meta property="og:title" content="socket编程入门">
+<meta property="og:url" content="http://example.com/2021/02/28/C-socket%E7%BC%96%E7%A8%8B%E5%85%A5%E9%97%A8/index.html">
+<meta property="og:site_name" content="Hi! Yh">
+<meta property="og:description" content="什么是 socket？socket 的原意是“插座”，在计算机通信领域，socket 被翻译为“套接字”，它是计算机之间进行通信的一种约定或一种方式。通过 socket 这种约定，一台计算机可以接收其他计算机的数据，也可以向其他计算机发送数据。 socket 的典型应用就是 Web 服务器和浏览器：浏览器获取用户输入的 URL，向服务器发起请求，服务器分析接收到的 URL，将对应的网页内容返回给浏">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/2021/02/28/C-socket%E7%BC%96%E7%A8%8B%E5%85%A5%E9%97%A8/socket.jpg">
+<meta property="og:image" content="http://example.com/2021/02/28/C-socket%E7%BC%96%E7%A8%8B%E5%85%A5%E9%97%A8/1.JPG">
+<meta property="og:image" content="http://example.com/2021/02/28/C-socket%E7%BC%96%E7%A8%8B%E5%85%A5%E9%97%A8/2.JPG">
+<meta property="og:image" content="http://example.com/2021/02/28/C-socket%E7%BC%96%E7%A8%8B%E5%85%A5%E9%97%A8/3.jpg">
+<meta property="og:image" content="http://example.com/2021/02/28/C-socket%E7%BC%96%E7%A8%8B%E5%85%A5%E9%97%A8/4.jpg">
+<meta property="og:image" content="http://example.com/2021/02/28/C-socket%E7%BC%96%E7%A8%8B%E5%85%A5%E9%97%A8/5.jpg">
+<meta property="article:published_time" content="2021-02-28T13:16:11.000Z">
+<meta property="article:modified_time" content="2021-03-02T11:24:36.517Z">
+<meta property="article:author" content="Yu Hong">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="socket">
+<meta property="article:tag" content="网络编程">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2021/02/28/C-socket%E7%BC%96%E7%A8%8B%E5%85%A5%E9%97%A8/socket.jpg">
+
+<link rel="canonical" href="http://example.com/2021/02/28/C-socket%E7%BC%96%E7%A8%8B%E5%85%A5%E9%97%A8/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>socket编程入门 | Hi! Yh</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hi! Yh</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/02/28/C-socket%E7%BC%96%E7%A8%8B%E5%85%A5%E9%97%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Yu Hong">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hi! Yh">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          socket编程入门
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-02-28 21:16:11" itemprop="dateCreated datePublished" datetime="2021-02-28T21:16:11+08:00">2021-02-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-02 19:24:36" itemprop="dateModified" datetime="2021-03-02T19:24:36+08:00">2021-03-02</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>19k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>18 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="什么是-socket？"><a href="#什么是-socket？" class="headerlink" title="什么是 socket？"></a>什么是 socket？</h2><p>socket 的原意是“插座”，在计算机通信领域，socket 被翻译为“套接字”，它是计算机之间进行通信的一种约定或一种方式。通过 socket 这种约定，一台计算机可以接收其他计算机的数据，也可以向其他计算机发送数据。</p>
+<p>socket 的典型应用就是 Web 服务器和浏览器：浏览器获取用户输入的 URL，向服务器发起请求，服务器分析接收到的 URL，将对应的网页内容返回给浏览器，浏览器再经过解析和渲染，就将文字、图片、视频等元素呈现给用户。<a id="more"></a></p>
+<h2 id="套接字类型"><a href="#套接字类型" class="headerlink" title="套接字类型"></a>套接字类型</h2><h3 id="流格式套接字（SOCK-STREAM）"><a href="#流格式套接字（SOCK-STREAM）" class="headerlink" title="流格式套接字（SOCK_STREAM）"></a>流格式套接字（SOCK_STREAM）</h3><p>流格式套接字（Stream Sockets）也叫“面向连接的套接字”，在代码中使用 SOCK_STREAM 表示。</p>
+<p>SOCK_STREAM 是一种可靠的、双向的通信数据流，数据可以准确无误地到达另一台计算机，如果损坏或丢失，可以重新发送。</p>
+<p>SOCK_STREAM 有以下几个特征：</p>
+<ul>
+<li>数据在传输过程中不会消失；</li>
+<li>数据是按照顺序传输的；</li>
+<li>数据的发送和接收不是同步的（有的教程也称“不存在数据边界”）。</li>
+</ul>
+<blockquote>
+<p>流格式套接字的内部有一个缓冲区（也就是字符数组），通过 socket 传输的数据将保存到这个缓冲区。接收端在收到数据后并不一定立即读取，只要数据不超过缓冲区的容量，接收端有可能在缓冲区被填满以后一次性地读取，也可能分成好几次读取。</p>
+<p>也就是说，不管数据分几次传送过来，接收端只需要根据自己的要求读取，不用非得在数据到达时立即读取。传送端有自己的节奏，接收端也有自己的节奏，它们是不一致的。</p>
+</blockquote>
+<p>浏览器所使用的 http 协议就基于面向连接的套接字，因为必须要确保数据准确无误，否则加载的 HTML 将无法解析。</p>
+<h3 id="数据报格式套接字（SOCK-DGRAM）"><a href="#数据报格式套接字（SOCK-DGRAM）" class="headerlink" title="数据报格式套接字（SOCK_DGRAM）"></a>数据报格式套接字（SOCK_DGRAM）</h3><p>数据报格式套接字（Datagram Sockets）也叫“无连接的套接字”，在代码中使用 SOCK_DGRAM 表示。</p>
+<p>计算机只管传输数据，不作数据校验，如果数据在传输中损坏，或者没有到达另一台计算机，是没有办法补救的。也就是说，数据错了就错了，无法重传。</p>
+<p>因为数据报套接字所做的校验工作少，所以在传输效率方面比流格式套接字要高。</p>
+<p>可以将 SOCK_DGRAM 比喻成高速移动的摩托车快递，它有以下特征：</p>
+<ul>
+<li>强调快速传输而非传输顺序；</li>
+<li>传输的数据可能丢失也可能损毁；</li>
+<li>限制每次传输的数据大小；</li>
+<li>数据的发送和接收是同步的（有的教程也称“存在数据边界”）。</li>
+</ul>
+<p>数据报套接字也使用 IP 协议作路由，但是它不使用 TCP 协议，而是使用 UDP 协议（User Datagram Protocol，用户数据报协议）。</p>
+<p>QQ 视频聊天和语音聊天就使用 SOCK_DGRAM 来传输数据，因为首先要保证通信的效率，尽量减小延迟，而数据的正确性是次要的，即使丢失很小的一部分数据，视频和音频也可以正常解析，最多出现噪点或杂音，不会对通信质量有实质的影响。</p>
+<h3 id="两种套接字对比"><a href="#两种套接字对比" class="headerlink" title="两种套接字对比"></a>两种套接字对比</h3><p>两种套接字各有优缺点：</p>
+<ul>
+<li>无连接套接字传输效率高，但是不可靠，有丢失数据包、捣乱数据的风险；</li>
+<li>有连接套接字非常可靠，万无一失，但是传输效率低，耗费资源多。</li>
+</ul>
+<p>两种套接字的特点决定了它们的应用场景，有些服务对可靠性要求比较高，必须数据包能够完整无误地送达，那就得选择有连接的套接字（TCP 服务），比如 HTTP、FTP 等；而另一些服务，并不需要那么高的可靠性，效率和实时才是它们所关心的，那就可以选择无连接的套接字（UDP 服务），比如 DNS、即时聊天工具等。</p>
+<h2 id="socket编程原理"><a href="#socket编程原理" class="headerlink" title="socket编程原理"></a>socket编程原理</h2><img src="/2021/02/28/C-socket%E7%BC%96%E7%A8%8B%E5%85%A5%E9%97%A8/socket.jpg" class="" title="图片">
+
+<h2 id="Linux下的socket演示程序"><a href="#Linux下的socket演示程序" class="headerlink" title="Linux下的socket演示程序"></a>Linux下的socket演示程序</h2><p>服务器端代码 server.cpp：</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;arpa/inet.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;netinet/in.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>{</span><br><span class="line">    <span class="comment">//创建套接字</span></span><br><span class="line">    <span class="keyword">int</span> serv_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//将套接字和IP、端口绑定</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">serv_addr</span>;</span></span><br><span class="line">    <span class="built_in">memset</span>(&amp;serv_addr, <span class="number">0</span>, <span class="keyword">sizeof</span>(serv_addr));  <span class="comment">//每个字节都用0填充</span></span><br><span class="line">    serv_addr.sin_family = AF_INET;  <span class="comment">//使用IPv4地址</span></span><br><span class="line">    serv_addr.sin_addr.s_addr = inet_addr(<span class="string">"127.0.0.1"</span>);  <span class="comment">//具体的IP地址</span></span><br><span class="line">    serv_addr.sin_port = htons(<span class="number">1234</span>);  <span class="comment">//端口</span></span><br><span class="line">    bind(serv_sock, (struct sockaddr*)&amp;serv_addr, <span class="keyword">sizeof</span>(serv_addr));</span><br><span class="line"></span><br><span class="line">    <span class="comment">//进入监听状态，等待用户发起请求</span></span><br><span class="line">    listen(serv_sock, <span class="number">20</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//接收客户端请求</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">clnt_addr</span>;</span></span><br><span class="line">    <span class="keyword">socklen_t</span> clnt_addr_size = <span class="keyword">sizeof</span>(clnt_addr);</span><br><span class="line">    <span class="keyword">int</span> clnt_sock = accept(serv_sock, (struct sockaddr*)&amp;clnt_addr, &amp;clnt_addr_size);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//向客户端发送数据</span></span><br><span class="line">    <span class="keyword">char</span> str[] = <span class="string">"http://c.biancheng.net/socket/"</span>;</span><br><span class="line">    write(clnt_sock, str, <span class="keyword">sizeof</span>(str));</span><br><span class="line">   </span><br><span class="line">    <span class="comment">//关闭套接字</span></span><br><span class="line">    close(clnt_sock);</span><br><span class="line">    close(serv_sock);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>客户端代码 client.cpp：</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;arpa/inet.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>{</span><br><span class="line">    <span class="comment">//创建套接字</span></span><br><span class="line">    <span class="keyword">int</span> sock = socket(AF_INET, SOCK_STREAM, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//向服务器（特定的IP和端口）发起请求</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">serv_addr</span>;</span></span><br><span class="line">    <span class="built_in">memset</span>(&amp;serv_addr, <span class="number">0</span>, <span class="keyword">sizeof</span>(serv_addr));  <span class="comment">//每个字节都用0填充</span></span><br><span class="line">    serv_addr.sin_family = AF_INET;  <span class="comment">//使用IPv4地址</span></span><br><span class="line">    serv_addr.sin_addr.s_addr = inet_addr(<span class="string">"127.0.0.1"</span>);  <span class="comment">//具体的IP地址</span></span><br><span class="line">    serv_addr.sin_port = htons(<span class="number">1234</span>);  <span class="comment">//端口</span></span><br><span class="line">    connect(sock, (struct sockaddr*)&amp;serv_addr, <span class="keyword">sizeof</span>(serv_addr));</span><br><span class="line">   </span><br><span class="line">    <span class="comment">//读取服务器传回的数据</span></span><br><span class="line">    <span class="keyword">char</span> buffer[<span class="number">40</span>];</span><br><span class="line">    read(sock, buffer, <span class="keyword">sizeof</span>(buffer)<span class="number">-1</span>);</span><br><span class="line">   </span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"Message form server: %s\n"</span>, buffer);</span><br><span class="line">   </span><br><span class="line">    <span class="comment">//关闭套接字</span></span><br><span class="line">    close(sock);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<h3 id="源码解析"><a href="#源码解析" class="headerlink" title="源码解析"></a>源码解析</h3><ol>
+<li>先说一下 server.cpp 中的代码。</li>
+</ol>
+<p>第 11 行通过 socket() 函数创建了一个套接字，参数 AF_INET 表示使用 IPv4 地址，SOCK_STREAM 表示使用面向连接的套接字，IPPROTO_TCP 表示使用 TCP 协议。在 Linux 中，socket 也是一种文件，有文件描述符，可以使用 write() / read() 函数进行 I/O 操作。</p>
+<p>第 19 行通过 bind() 函数将套接字 serv_sock 与特定的 IP 地址和端口绑定，IP 地址和端口都保存在 sockaddr_in 结构体中。</p>
+<p>socket() 函数确定了套接字的各种属性，bind() 函数让套接字与特定的IP地址和端口对应起来，这样客户端才能连接到该套接字。</p>
+<p>第 22 行让套接字处于被动监听状态。所谓被动监听，是指套接字一直处于“睡眠”中，直到客户端发起请求才会被“唤醒”。</p>
+<p>第 27 行的 accept() 函数用来接收客户端的请求。程序一旦执行到 accept() 就会被阻塞（暂停运行），直到客户端发起请求。</p>
+<p>第 31 行的 write() 函数用来向套接字文件中写入数据，也就是向客户端发送数据。</p>
+<p>和普通文件一样，socket 在使用完毕后也要用 close() 关闭。</p>
+<ol start="2">
+<li>再说一下 client.cpp 中的代码。client.cpp 中的代码和 server.cpp 中有一些区别。</li>
+</ol>
+<p>第 19 行代码通过 connect() 向服务器发起请求，服务器的IP地址和端口号保存在 sockaddr_in 结构体中。直到服务器传回数据后，connect() 才运行结束。</p>
+<p>第 23 行代码通过 read() 从套接字文件中读取数据。</p>
+<h3 id="运行结果"><a href="#运行结果" class="headerlink" title="运行结果"></a>运行结果</h3><p>启动一个终端（Shell），先编译 server.cpp 并运行：</p>
+<img src="/2021/02/28/C-socket%E7%BC%96%E7%A8%8B%E5%85%A5%E9%97%A8/1.JPG" class="" title="图片">
+
+<p>正常情况下，程序运行到 accept() 函数就会被阻塞，等待客户端发起请求。</p>
+<p>接下再启动一个终端，编译 client.cpp 并运行：</p>
+<img src="/2021/02/28/C-socket%E7%BC%96%E7%A8%8B%E5%85%A5%E9%97%A8/2.JPG" class="" title="图片">
+
+<p>client 接收到从 server发送过来的字符串就运行结束了，同时，server 完成发送字符串的任务也运行结束了。大家可以通过两个打开的终端来观察。</p>
+<p>client 运行后，通过 connect() 函数向 server 发起请求，处于监听状态的 server 被激活，执行 accept() 函数，接受客户端的请求，然后执行 write() 函数向 client 传回数据。client 接收到传回的数据后，connect() 就运行结束了，然后使用 read() 将数据读取出来。</p>
+<h2 id="Windows下的socket演示程序"><a href="#Windows下的socket演示程序" class="headerlink" title="Windows下的socket演示程序"></a>Windows下的socket演示程序</h2><p>服务器端代码 server.cpp：</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;winsock2.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> comment (lib, <span class="meta-string">"ws2_32.lib"</span>)  <span class="comment">//加载 ws2_32.dll</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>{</span><br><span class="line">    <span class="comment">//初始化 DLL</span></span><br><span class="line">    WSADATA wsaData;</span><br><span class="line">    WSAStartup( MAKEWORD(<span class="number">2</span>, <span class="number">2</span>), &amp;wsaData);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//创建套接字</span></span><br><span class="line">    SOCKET servSock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//绑定套接字</span></span><br><span class="line">    sockaddr_in sockAddr;</span><br><span class="line">    <span class="built_in">memset</span>(&amp;sockAddr, <span class="number">0</span>, <span class="keyword">sizeof</span>(sockAddr));  <span class="comment">//每个字节都用0填充</span></span><br><span class="line">    sockAddr.sin_family = PF_INET;  <span class="comment">//使用IPv4地址</span></span><br><span class="line">    sockAddr.sin_addr.s_addr = inet_addr(<span class="string">"127.0.0.1"</span>);  <span class="comment">//具体的IP地址</span></span><br><span class="line">    sockAddr.sin_port = htons(<span class="number">1234</span>);  <span class="comment">//端口</span></span><br><span class="line">    bind(servSock, (SOCKADDR*)&amp;sockAddr, <span class="keyword">sizeof</span>(SOCKADDR));</span><br><span class="line"></span><br><span class="line">    <span class="comment">//进入监听状态</span></span><br><span class="line">    listen(servSock, <span class="number">20</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//接收客户端请求</span></span><br><span class="line">    SOCKADDR clntAddr;</span><br><span class="line">    <span class="keyword">int</span> nSize = <span class="keyword">sizeof</span>(SOCKADDR);</span><br><span class="line">    SOCKET clntSock = accept(servSock, (SOCKADDR*)&amp;clntAddr, &amp;nSize);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//向客户端发送数据</span></span><br><span class="line">    <span class="keyword">char</span> *str = <span class="string">"Hello World!"</span>;</span><br><span class="line">    send(clntSock, str, <span class="built_in">strlen</span>(str)+<span class="keyword">sizeof</span>(<span class="keyword">char</span>), <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//关闭套接字</span></span><br><span class="line">    closesocket(clntSock);</span><br><span class="line">    closesocket(servSock);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//终止 DLL 的使用</span></span><br><span class="line">    WSACleanup();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+
+<p>客户端代码 client.cpp：</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;WinSock2.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> comment(lib, <span class="meta-string">"ws2_32.lib"</span>)  <span class="comment">//加载 ws2_32.dll</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>{</span><br><span class="line">    <span class="comment">//初始化DLL</span></span><br><span class="line">    WSADATA wsaData;</span><br><span class="line">    WSAStartup(MAKEWORD(<span class="number">2</span>, <span class="number">2</span>), &amp;wsaData);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//创建套接字</span></span><br><span class="line">    SOCKET sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//向服务器发起请求</span></span><br><span class="line">    sockaddr_in sockAddr;</span><br><span class="line">    <span class="built_in">memset</span>(&amp;sockAddr, <span class="number">0</span>, <span class="keyword">sizeof</span>(sockAddr));  <span class="comment">//每个字节都用0填充</span></span><br><span class="line">    sockAddr.sin_family = PF_INET;</span><br><span class="line">    sockAddr.sin_addr.s_addr = inet_addr(<span class="string">"127.0.0.1"</span>);</span><br><span class="line">    sockAddr.sin_port = htons(<span class="number">1234</span>);</span><br><span class="line">    connect(sock, (SOCKADDR*)&amp;sockAddr, <span class="keyword">sizeof</span>(SOCKADDR));</span><br><span class="line"></span><br><span class="line">    <span class="comment">//接收服务器传回的数据</span></span><br><span class="line">    <span class="keyword">char</span> szBuffer[MAXBYTE] = {<span class="number">0</span>};</span><br><span class="line">    recv(sock, szBuffer, MAXBYTE, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//输出接收到的数据</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"Message form server: %s\n"</span>, szBuffer);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//关闭套接字</span></span><br><span class="line">    closesocket(sock);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//终止使用 DLL</span></span><br><span class="line">    WSACleanup();</span><br><span class="line"></span><br><span class="line">    system(<span class="string">"pause"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+
+<p>将 server.cpp 和 client.cpp 分别编译为 server.exe 和 client.exe，先运行 server.exe，再运行 client.exe，输出结果为：<br>Message form server: Hello World!</p>
+<p>Windows 下的 socket 程序和 Linux 思路相同，但细节有所差别：</p>
+<ol>
+<li><p>Windows 下的 socket 程序依赖 Winsock.dll 或 ws2_32.dll，必须提前加载。</p>
+</li>
+<li><p>Linux 使用“文件描述符”的概念，而 Windows 使用“文件句柄”的概念；Linux 不区分 socket 文件和普通文件，而 Windows 区分；Linux 下 socket() 函数的返回值为 int 类型，而 Windows 下为 SOCKET 类型，也就是句柄。</p>
+</li>
+<li><p>Linux 下使用 read() / write() 函数读写，而 Windows 下使用 recv() / send() 函数发送和接收。</p>
+</li>
+<li><p>关闭 socket 时，Linux 使用 close() 函数，而 Windows 使用 closesocket() 函数。</p>
+</li>
+</ol>
+<h2 id="socket-函数：创建套接字"><a href="#socket-函数：创建套接字" class="headerlink" title="socket()函数：创建套接字"></a>socket()函数：创建套接字</h2><h3 id="Linux-下的-socket-函数"><a href="#Linux-下的-socket-函数" class="headerlink" title="Linux 下的 socket() 函数"></a>Linux 下的 socket() 函数</h3><p>在 Linux 下使用 &lt;sys/socket.h&gt; 头文件中 socket() 函数来创建套接字，原型为：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int socket(int af, int type, int protocol);</span><br></pre></td></tr></tbody></table></figure>
+
+<ol>
+<li>af 为地址族（Address Family），也就是 IP 地址类型，常用的有 AF_INET 和 AF_INET6。AF 是“Address Family”的简写，INET是“Inetnet”的简写。AF_INET 表示 IPv4 地址，例如 127.0.0.1；AF_INET6 表示 IPv6 地址，例如 1030::C9B4:FF12:48AA:1A2B。</li>
+</ol>
+<blockquote>
+<p><code>127.0.0.1</code>，是一个特殊IP地址，表示本机地址</p>
+</blockquote>
+<ol start="2">
+<li><p>type 为数据传输方式/套接字类型，常用的有 SOCK_STREAM（流格式套接字/面向连接的套接字） 和 SOCK_DGRAM（数据报套接字/无连接的套接字），我们已经在《<a target="_blank" rel="noopener" href="http://c.biancheng.net/view/2124.html">套接字有哪些类型</a>》一节中进行了介绍。</p>
+</li>
+<li><p>protocol 表示传输协议，常用的有 IPPROTO_TCP 和 IPPTOTO_UDP，分别表示 TCP 传输协议和 UDP 传输协议。</p>
+</li>
+</ol>
+<p>一般情况下有了 af 和 type 两个参数就可以创建套接字了，操作系统会自动推演出协议类型，除非遇到这样的情况：有两种不同的协议支持同一种地址类型和数据传输类型。如果我们不指明使用哪种协议，操作系统是没办法自动推演的。</p>
+<p>本教程使用 IPv4 地址，参数 af 的值为 PF_INET。如果使用 SOCK_STREAM 传输数据，那么满足这两个条件的协议只有 TCP，因此可以这样来调用 socket() 函数：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int tcp_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);  //IPPROTO_TCP表示TCP协议</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这种套接字称为 TCP 套接字。</p>
+<p>如果使用 SOCK_DGRAM 传输方式，那么满足这两个条件的协议只有 UDP，因此可以这样来调用 socket() 函数：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int udp_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);  //IPPROTO_UDP表示UDP协议</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这种套接字称为 UDP 套接字。</p>
+<p>上面两种情况都只有一种协议满足条件，可以将 protocol 的值设为 0，系统会自动推演出应该使用什么协议，如下所示：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">int tcp_socket = socket(AF_INET, SOCK_STREAM, 0);  //创建TCP套接字</span><br><span class="line">int udp_socket = socket(AF_INET, SOCK_DGRAM, 0);  //创建UDP套接字</span><br></pre></td></tr></tbody></table></figure>
+
+<h3 id="在Windows下创建socket"><a href="#在Windows下创建socket" class="headerlink" title="在Windows下创建socket"></a>在Windows下创建socket</h3><p>Windows 下也使用 socket() 函数来创建套接字，原型为：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SOCKET socket(int af, int type, int protocol);</span><br></pre></td></tr></tbody></table></figure>
+
+<p>除了返回值类型不同，其他都是相同的。Windows 不把套接字作为普通文件对待，而是返回 SOCKET 类型的句柄。请看下面的例子：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);  //创建TCP套接字</span><br></pre></td></tr></tbody></table></figure>
+
+<h2 id="bind-和connect-函数：绑定套接字并建立连接"><a href="#bind-和connect-函数：绑定套接字并建立连接" class="headerlink" title="bind()和connect()函数：绑定套接字并建立连接"></a>bind()和connect()函数：绑定套接字并建立连接</h2><p>socket() 函数用来创建套接字，确定套接字的各种属性，然后服务器端要用 bind() 函数将套接字与特定的 IP 地址和端口绑定起来，只有这样，流经该 IP 地址和端口的数据才能交给套接字处理。类似地，客户端也要用 connect() 函数建立连接。</p>
+<h3 id="bind-函数"><a href="#bind-函数" class="headerlink" title="bind()函数"></a>bind()函数</h3><p>bind() 函数的原型为：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">int bind(int sock, struct sockaddr *addr, socklen_t addrlen);  //Linux</span><br><span class="line">int bind(SOCKET sock, const struct sockaddr *addr, int addrlen);  //Windows</span><br></pre></td></tr></tbody></table></figure>
+
+<p>sock 为 socket 文件描述符，addr 为 sockaddr 结构体变量的指针，addrlen 为 addr 变量的大小，可由 sizeof() 计算得出。</p>
+<h4 id="sockaddr-in-结构体"><a href="#sockaddr-in-结构体" class="headerlink" title="sockaddr_in 结构体"></a>sockaddr_in 结构体</h4><figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span>{</span></span><br><span class="line">    <span class="keyword">sa_family_t</span>     sin_family;   <span class="comment">//地址族（Address Family），也就是地址类型</span></span><br><span class="line">    <span class="keyword">uint16_t</span>        sin_port;     <span class="comment">//16位的端口号</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">in_addr</span>  <span class="title">sin_addr</span>;</span>     <span class="comment">//32位IP地址</span></span><br><span class="line">    <span class="keyword">char</span>            sin_zero[<span class="number">8</span>];  <span class="comment">//不使用，一般用0填充</span></span><br><span class="line">};</span><br></pre></td></tr></tbody></table></figure>
+
+<ol>
+<li><p>sin_family 和 socket() 的第一个参数的含义相同，取值也要保持一致。</p>
+</li>
+<li><p>sin_prot 为端口号。uint16_t 的长度为两个字节，理论上端口号的取值范围为 0<del>65536，但 0</del>1023 的端口一般由系统分配给特定的服务程序，例如 Web 服务的端口号为 80，FTP 服务的端口号为 21，所以我们的程序要尽量在 1024~65536 之间分配端口号。</p>
+</li>
+</ol>
+<p>端口号需要用 htons() 函数转换，后面会讲解为什么。</p>
+<ol start="3">
+<li><p>sin_addr 是 struct in_addr 结构体类型的变量，下面会详细讲解。</p>
+</li>
+<li><p>sin_zero[8] 是多余的8个字节，没有用，一般使用 memset() 函数填充为 0。</p>
+</li>
+</ol>
+<h4 id="in-addr-结构体"><a href="#in-addr-结构体" class="headerlink" title="in_addr 结构体"></a>in_addr 结构体</h4><p>sockaddr_in 的第3个成员是 in_addr 类型的结构体，该结构体只包含一个成员，如下所示：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">struct in_addr{    in_addr_t  s_addr;  //32位的IP地址};</span><br></pre></td></tr></tbody></table></figure>
+
+<p>in_addr_t 在头文件 &lt;netinet/in.h&gt; 中定义，等价于 unsigned long，长度为4个字节。也就是说，s_addr 是一个整数，而IP地址是一个字符串，所以需要 inet_addr() 函数进行转换。</p>
+<h4 id="为什么使用-sockaddr-in-而不使用-sockaddr"><a href="#为什么使用-sockaddr-in-而不使用-sockaddr" class="headerlink" title="为什么使用 sockaddr_in 而不使用 sockaddr"></a>为什么使用 sockaddr_in 而不使用 sockaddr</h4><figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bind(serv_sock, (struct sockaddr*)&amp;serv_addr, <span class="keyword">sizeof</span>(serv_addr));</span><br></pre></td></tr></tbody></table></figure>
+
+<p>以上代码中 bind() 第二个参数的类型为 sockaddr，实际却使用 sockaddr_in，然后再强制转换为 sockaddr，这是为什么呢？</p>
+<p>sockaddr 结构体的定义如下：</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sockaddr</span>{</span></span><br><span class="line">    <span class="keyword">sa_family_t</span>  sin_family;   <span class="comment">//地址族（Address Family），也就是地址类型</span></span><br><span class="line">    <span class="keyword">char</span>         sa_data[<span class="number">14</span>];  <span class="comment">//IP地址和端口号</span></span><br><span class="line">};</span><br></pre></td></tr></tbody></table></figure>
+
+<p>sockaddr 和 sockaddr_in 的长度相同，都是16字节，只是将IP地址和端口号合并到一起，用一个成员 sa_data 表示。要想给 sa_data 赋值，必须同时指明IP地址和端口号，例如”127.0.0.1:80“，遗憾的是，没有相关函数将这个字符串转换成需要的形式，也就很难给 sockaddr 类型的变量赋值，所以使用 sockaddr_in 来代替。这两个结构体的长度相同，强制转换类型时不会丢失字节，也没有多余的字节。</p>
+<p>可以认为，sockaddr 是一种通用的结构体，可以用来保存多种类型的IP地址和端口号，而 sockaddr_in 是专门用来保存 IPv4 地址的结构体。另外还有 sockaddr_in6，用来保存 IPv6 地址。</p>
+<p>正是由于通用结构体 sockaddr 使用不便，才针对不同的地址类型定义了不同的结构体。</p>
+<h3 id="connect-函数"><a href="#connect-函数" class="headerlink" title="connect() 函数"></a>connect() 函数</h3><p>connect() 函数用来建立连接，它的原型为：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">int connect(int sock, struct sockaddr *serv_addr, socklen_t addrlen);  //Linux</span><br><span class="line">int connect(SOCKET sock, const struct sockaddr *serv_addr, int addrlen);  //Windows</span><br></pre></td></tr></tbody></table></figure>
+
+<p>各个参数的说明和 bind() 相同，不再赘述。</p>
+<h2 id="listen-函数"><a href="#listen-函数" class="headerlink" title="listen()函数"></a>listen()函数</h2><p>通过 listen() 函数可以让套接字进入被动监听状态，它的原型为：</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">listen</span><span class="params">(<span class="keyword">int</span> sock, <span class="keyword">int</span> backlog)</span></span>;  <span class="comment">//Linux</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">listen</span><span class="params">(SOCKET sock, <span class="keyword">int</span> backlog)</span></span>;  <span class="comment">//Windows</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>sock 为需要进入监听状态的套接字，backlog 为请求队列的最大长度。</p>
+<p>所谓被动监听，是指当没有客户端请求时，套接字处于“睡眠”状态，只有当接收到客户端请求时，套接字才会被“唤醒”来响应请求。</p>
+<blockquote>
+<p>当套接字正在处理客户端请求时，如果有新的请求进来，套接字是没法处理的，只能把它放进缓冲区，待当前请求处理完毕后，再从缓冲区中读取出来处理。如果不断有新的请求进来，它们就按照先后顺序在缓冲区中排队，直到缓冲区满。这个缓冲区，就称为<strong>请求队列（Request Queue）</strong>。</p>
+<p>缓冲区的长度（能存放多少个客户端请求）可以通过 listen() 函数的 backlog 参数指定，但究竟为多少并没有什么标准，可以根据你的需求来定，并发量小的话可以是10或者20。</p>
+<p>如果将 backlog 的值设置为 SOMAXCONN，就由系统来决定请求队列长度，这个值一般比较大，可能是几百，或者更多。</p>
+<p>当请求队列满时，就不再接收新的请求，对于 Linux，客户端会收到 ECONNREFUSED 错误，对于 Windows，客户端会收到 WSAECONNREFUSED 错误。</p>
+<p>注意：listen() 只是让套接字处于监听状态，并没有接收请求。接收请求需要使用 accept() 函数。</p>
+</blockquote>
+<h2 id="accept-函数"><a href="#accept-函数" class="headerlink" title="accept()函数"></a>accept()函数</h2><p>当套接字处于监听状态时，可以通过 accept() 函数来接收客户端请求。它的原型为：</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">accept</span><span class="params">(<span class="keyword">int</span> sock, struct sockaddr *addr, <span class="keyword">socklen_t</span> *addrlen)</span></span>;  <span class="comment">//LinuxSOCKET accept(SOCKET sock, struct sockaddr *addr, int *addrlen);  //Windows</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>它的参数与 listen() 和 connect() 是相同的：sock 为服务器端套接字，addr 为 sockaddr_in 结构体变量，addrlen 为参数 addr 的长度，可由 sizeof() 求得。</p>
+<p>accept() 返回一个新的套接字来和客户端通信，addr 保存了客户端的IP地址和端口号，而 sock 是服务器端的套接字，大家注意区分。后面和客户端通信时，要使用这个新生成的套接字，而不是原来服务器端的套接字。</p>
+<p>最后需要说明的是：listen() 只是让套接字进入监听状态，并没有真正接收客户端请求，listen() 后面的代码会继续执行，直到遇到 accept()。accept() 会阻塞程序执行（后面代码不能被执行），直到有新的请求到来。</p>
+<h2 id="send-recv-和write-read-：发送数据和接收数据"><a href="#send-recv-和write-read-：发送数据和接收数据" class="headerlink" title="send()/recv()和write()/read()：发送数据和接收数据"></a>send()/recv()和write()/read()：发送数据和接收数据</h2><h3 id="Linux下数据的接收和发送"><a href="#Linux下数据的接收和发送" class="headerlink" title="Linux下数据的接收和发送"></a>Linux下数据的接收和发送</h3><p>Linux 不区分套接字文件和普通文件，使用 write() 可以向套接字中写入数据，使用 read() 可以从套接字中读取数据。</p>
+<p>两台计算机之间的通信相当于两个套接字之间的通信，在服务器端用 write() 向套接字写入数据，客户端就能收到，然后再使用 read() 从套接字中读取出来，就完成了一次通信。</p>
+<p>write() 的原型为：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssize_t write(int fd, const void *buf, size_t nbytes);</span><br></pre></td></tr></tbody></table></figure>
+
+<p>fd 为要写入的文件的描述符，buf 为要写入的数据的缓冲区地址，nbytes 为要写入的数据的字节数。</p>
+<p>write() 函数会将缓冲区 buf 中的 nbytes 个字节写入文件 fd，成功则返回写入的字节数，失败则返回 -1。</p>
+<p>read() 的原型为：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssize_t read(int fd, void *buf, size_t nbytes);</span><br></pre></td></tr></tbody></table></figure>
+
+<p>fd 为要读取的文件的描述符，buf 为要接收数据的缓冲区地址，nbytes 为要读取的数据的字节数。</p>
+<p>read() 函数会从 fd 文件中读取 nbytes 个字节并保存到缓冲区 buf，成功则返回读取到的字节数（但遇到文件结尾则返回0），失败则返回 -1。</p>
+<h3 id="Windows下数据的接收和发送"><a href="#Windows下数据的接收和发送" class="headerlink" title="Windows下数据的接收和发送"></a>Windows下数据的接收和发送</h3><p>Windows 和 Linux 不同，Windows 区分普通文件和套接字，并定义了专门的接收和发送的函数。</p>
+<p>从服务器端发送数据使用 send() 函数，它的原型为：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int send(SOCKET sock, const char *buf, int len, int flags);</span><br></pre></td></tr></tbody></table></figure>
+
+<p>sock 为要发送数据的套接字，buf 为要发送的数据的缓冲区地址，len 为要发送的数据的字节数，flags 为发送数据时的选项。</p>
+<p>返回值和前三个参数不再赘述，最后的 flags 参数一般设置为 0 或 NULL，初学者不必深究。</p>
+<p>在客户端接收数据使用 recv() 函数，它的原型为：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int recv(SOCKET sock, char *buf, int len, int flags);</span><br></pre></td></tr></tbody></table></figure>
+
+<h2 id="socket缓冲区"><a href="#socket缓冲区" class="headerlink" title="socket缓冲区"></a>socket缓冲区</h2><p>每个 socket 被创建后，都会分配两个缓冲区，输入缓冲区和输出缓冲区。</p>
+<p>write()/send() 并不立即向网络中传输数据，而是先将数据写入缓冲区中，再由TCP协议将数据从缓冲区发送到目标机器。一旦将数据写入到缓冲区，函数就可以成功返回，不管它们有没有到达目标机器，也不管它们何时被发送到网络，这些都是TCP协议负责的事情。</p>
+<p>TCP协议独立于 write()/send() 函数，数据有可能刚被写入缓冲区就发送到网络，也可能在缓冲区中不断积压，多次写入的数据被一次性发送到网络，这取决于当时的网络情况、当前线程是否空闲等诸多因素，不由程序员控制。</p>
+<p>read()/recv() 函数也是如此，也从输入缓冲区中读取数据，而不是直接从网络中读取。</p>
+<p>这些I/O缓冲区特性可整理如下：</p>
+<ul>
+<li>I/O缓冲区在每个TCP套接字中单独存在；</li>
+<li>I/O缓冲区在创建套接字时自动生成；</li>
+<li>即使关闭套接字也会继续传送输出缓冲区中遗留的数据；</li>
+<li>关闭套接字将丢失输入缓冲区中的数据。</li>
+</ul>
+<p>输入输出缓冲区的默认大小一般都是 8K，可以通过 getsockopt() 函数获取</p>
+<h2 id="TCP阻塞模式"><a href="#TCP阻塞模式" class="headerlink" title="TCP阻塞模式"></a>TCP阻塞模式</h2><p>对于TCP套接字（默认情况下），当使用 write()/send() 发送数据时：</p>
+<ol>
+<li><p>首先会检查缓冲区，如果缓冲区的可用空间长度小于要发送的数据，那么 write()/send() 会被阻塞（暂停执行），直到缓冲区中的数据被发送到目标机器，腾出足够的空间，才唤醒 write()/send() 函数继续写入数据。</p>
+</li>
+<li><p>如果TCP协议正在向网络发送数据，那么输出缓冲区会被锁定，不允许写入，write()/send() 也会被阻塞，直到数据发送完毕缓冲区解锁，write()/send() 才会被唤醒。</p>
+</li>
+<li><p>如果要写入的数据大于缓冲区的最大长度，那么将分批写入。</p>
+</li>
+<li><p>直到所有数据被写入缓冲区 write()/send() 才能返回。</p>
+</li>
+</ol>
+<p>当使用 read()/recv() 读取数据时：</p>
+<ol>
+<li><p>首先会检查缓冲区，如果缓冲区中有数据，那么就读取，否则函数会被阻塞，直到网络上有数据到来。</p>
+</li>
+<li><p>如果要读取的数据长度小于缓冲区中的数据长度，那么就不能一次性将缓冲区中的所有数据读出，剩余数据将不断积压，直到有 read()/recv() 函数再次读取。</p>
+</li>
+<li><p>直到读取到数据后 read()/recv() 函数才会返回，否则就一直被阻塞。</p>
+</li>
+</ol>
+<p>这就是TCP套接字的阻塞模式。所谓阻塞，就是上一步动作没有完成，下一步动作将暂停，直到上一步动作完成后才能继续，以保持同步性。</p>
+<h2 id="TCP协议的粘包问题（数据的无边界性）"><a href="#TCP协议的粘包问题（数据的无边界性）" class="headerlink" title="TCP协议的粘包问题（数据的无边界性）"></a>TCP协议的粘包问题（数据的无边界性）</h2><p>由socket缓冲区和数据的传递过程，可以看到数据的接收和发送是无关的，read()/recv() 函数不管数据发送了多少次，都会尽可能多的接收数据。也就是说，read()/recv() 和 write()/send() 的执行次数可能不同。</p>
+<p>例如，write()/send() 重复执行三次，每次都发送字符串”abc”，那么目标机器上的 read()/recv() 可能分三次接收，每次都接收”abc”；也可能分两次接收，第一次接收”abcab”，第二次接收”cabc”；也可能一次就接收到字符串”abcabcabc”。</p>
+<p>假设我们希望客户端每次发送一位学生的学号，让服务器端返回该学生的姓名、住址、成绩等信息，这时候可能就会出现问题，服务器端不能区分学生的学号。例如第一次发送 1，第二次发送 3，服务器可能当成 13 来处理，返回的信息显然是错误的。</p>
+<p>这就是数据的“粘包”问题，客户端发送的多个数据包被当做一个数据包接收。也称数据的无边界性，read()/recv() 函数不知道数据包的开始或结束标志（实际上也没有任何开始或结束标志），只把它们当做连续的数据流来处理。</p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/panchanggui/p/9518735.html">TCP粘包，拆包及解决方法</a></p>
+<h2 id="TCP数据报结构"><a href="#TCP数据报结构" class="headerlink" title="TCP数据报结构"></a>TCP数据报结构</h2><img src="/2021/02/28/C-socket%E7%BC%96%E7%A8%8B%E5%85%A5%E9%97%A8/3.jpg" class="" title="图片">
+
+<p>带阴影的几个字段需要重点说明一下：</p>
+<ol>
+<li><p>序号：Seq（Sequence Number）序号占32位，用来标识从计算机A发送到计算机B的数据包的序号，计算机发送数据时对此进行标记。</p>
+</li>
+<li><p>确认号：Ack（Acknowledge Number）确认号占32位，客户端和服务器端都可以发送，Ack = Seq + 1。</p>
+</li>
+<li><p>标志位：每个标志位占用1Bit，共有6个，分别为 URG、ACK、PSH、RST、SYN、FIN，具体含义如下：</p>
+</li>
+</ol>
+<ul>
+<li>URG：紧急指针（urgent pointer）有效。</li>
+<li>ACK：确认序号有效。</li>
+<li>PSH：接收方应该尽快将这个报文交给应用层。</li>
+<li>RST：重置连接。</li>
+<li>SYN：建立一个新连接。</li>
+<li>FIN：断开一个连接。</li>
+</ul>
+<h2 id="TCP连接的建立（三次握手）"><a href="#TCP连接的建立（三次握手）" class="headerlink" title="TCP连接的建立（三次握手）"></a>TCP连接的建立（三次握手）</h2><p>使用 connect() 建立连接时，客户端和服务器端会相互发送三个数据包</p>
+<img src="/2021/02/28/C-socket%E7%BC%96%E7%A8%8B%E5%85%A5%E9%97%A8/4.jpg" class="" title="图片">
+
+<p>客户端调用 socket() 函数创建套接字后，因为没有建立连接，所以套接字处于CLOSED状态；服务器端调用 listen() 函数后，套接字进入LISTEN状态，开始监听客户端请求。</p>
+<p>这个时候，客户端开始发起请求：</p>
+<ol>
+<li><p>当客户端调用 connect() 函数后，TCP协议会组建一个数据包，并设置 SYN 标志位，表示该数据包是用来建立同步连接的。同时生成一个随机数字 1000，填充“序号（Seq）”字段，表示该数据包的序号。完成这些工作，开始向服务器端发送数据包，客户端就进入了SYN-SEND状态。</p>
+</li>
+<li><p>服务器端收到数据包，检测到已经设置了 SYN 标志位，就知道这是客户端发来的建立连接的“请求包”。服务器端也会组建一个数据包，并设置 SYN 和 ACK 标志位，SYN 表示该数据包用来建立连接，ACK 用来确认收到了刚才客户端发送的数据包。</p>
+</li>
+</ol>
+<p>服务器生成一个随机数 2000，填充“序号（Seq）”字段。2000 和客户端数据包没有关系。</p>
+<p>服务器将客户端数据包序号（1000）加1，得到1001，并用这个数字填充“确认号（Ack）”字段。</p>
+<p>服务器将数据包发出，进入SYN-RECV状态。</p>
+<ol start="3">
+<li>客户端收到数据包，检测到已经设置了 SYN 和 ACK 标志位，就知道这是服务器发来的“确认包”。客户端会检测“确认号（Ack）”字段，看它的值是否为 1000+1，如果是就说明连接建立成功。</li>
+</ol>
+<p>接下来，客户端会继续组建数据包，并设置 ACK 标志位，表示客户端正确接收了服务器发来的“确认包”。同时，将刚才服务器发来的数据包序号（2000）加1，得到 2001，并用这个数字来填充“确认号（Ack）”字段。</p>
+<p>客户端将数据包发出，进入ESTABLISED状态，表示连接已经成功建立。</p>
+<ol start="4">
+<li>服务器端收到数据包，检测到已经设置了 ACK 标志位，就知道这是客户端发来的“确认包”。服务器会检测“确认号（Ack）”字段，看它的值是否为 2000+1，如果是就说明连接建立成功，服务器进入ESTABLISED状态。</li>
+</ol>
+<p>至此，客户端和服务器都进入了ESTABLISED状态，连接建立成功，接下来就可以收发数据了。</p>
+<h2 id="TCP数据传输过程"><a href="#TCP数据传输过程" class="headerlink" title="TCP数据传输过程"></a>TCP数据传输过程</h2><p>为了保证数据准确到达，目标机器在收到数据包（包括SYN包、FIN包、普通数据包等）包后必须立即回传ACK包，这样发送方才能确认数据传输成功。</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Ack号 = Seq号 + 传递的字节数 + 1</span><br></pre></td></tr></tbody></table></figure>
+
+<p>与三次握手协议相同，最后加 1 是为了告诉对方要传递的 Seq 号。</p>
+<p>若传输过程中发生网络错误，发送端未收到接受端的ACK包，发送端就会重传数据包。为了完成数据包的重传，TCP套接字每次发送数据包时都会启动定时器，如果在一定时间内没有收到目标机器传回的 ACK 包，那么定时器超时，数据包会重传。</p>
+<h4 id="重传超时时间（RTO-Retransmission-Time-Out）"><a href="#重传超时时间（RTO-Retransmission-Time-Out）" class="headerlink" title="重传超时时间（RTO, Retransmission Time Out）"></a>重传超时时间（RTO, Retransmission Time Out）</h4><p>这个值太大了会导致不必要的等待，太小会导致不必要的重传，理论上最好是网络 RTT 时间，但又受制于网络距离与瞬态时延变化，所以实际上使用自适应的动态算法（例如 Jacobson 算法和 Karn 算法等）来确定超时时间。</p>
+<blockquote>
+<p>往返时间（RTT，Round-Trip Time）表示从发送端发送数据开始，到发送端收到来自接收端的 ACK 确认包（接收端收到数据后便立即确认），总共经历的时延。</p>
+</blockquote>
+<h4 id="重传次数"><a href="#重传次数" class="headerlink" title="重传次数"></a>重传次数</h4><p>TCP数据包重传次数根据系统设置的不同而有所区别。有些系统，一个数据包只会被重传3次，如果重传3次后还未收到该数据包的 ACK 确认，就不再尝试重传。但有些要求很高的业务系统，会不断地重传丢失的数据包，以尽最大可能保证业务数据的正常交互。</p>
+<h2 id="网络数据传输时的大小端问题"><a href="#网络数据传输时的大小端问题" class="headerlink" title="网络数据传输时的大小端问题"></a>网络数据传输时的大小端问题</h2><h3 id="大端序和小端序"><a href="#大端序和小端序" class="headerlink" title="大端序和小端序"></a>大端序和小端序</h3><p>CPU 向内存保存数据的方式有两种：</p>
+<ul>
+<li>大端序（Big Endian）：高位字节存放到低位地址（高位字节在前）。</li>
+<li>小端序（Little Endian）：高位字节存放到高位地址（低位字节在前）。</li>
+</ul>
+<p>不同 CPU 保存和解析数据的方式不同（主流的 Intel 系列 CPU 为小端序），小端序系统和大端序系统通信时会发生数据解析错误。因此在发送数据前，要将数据转换为统一的格式——网络字节序（Network Byte Order）。网络字节序统一为大端序。</p>
+<p>主机 A 先把数据转换成大端序再进行网络传输，主机 B 收到数据后先转换为自己的格式再解析。</p>
+<h3 id="网络字节序转换函数"><a href="#网络字节序转换函数" class="headerlink" title="网络字节序转换函数"></a>网络字节序转换函数</h3><h4 id="honts-函数"><a href="#honts-函数" class="headerlink" title="honts()函数"></a>honts()函数</h4><p>htons() 用来将当前主机字节序转换为网络字节序，其中<code>h</code>代表主机（host）字节序，<code>n</code>代表网络（network）字节序，<code>s</code>代表short，htons 是 h、to、n、s 的组合，可以理解为”将 short 型数据从当前主机字节序转换为网络字节序“。</p>
+<p>常见的网络字节转换函数有：</p>
+<ul>
+<li>htons()：host to network short，将 short 类型数据从主机字节序转换为网络字节序。</li>
+<li>ntohs()：network to host short，将 short 类型数据从网络字节序转换为主机字节序。</li>
+<li>htonl()：host to network long，将 long 类型数据从主机字节序转换为网络字节序。</li>
+<li>ntohl()：network to host long，将 long 类型数据从网络字节序转换为主机字节序。</li>
+</ul>
+<p>通常，以<code>s</code>为后缀的函数中，<code>s</code>代表 2 个字节 short，因此用于端口号转换；以<code>l</code>为后缀的函数中，<code>l</code>代表 4 个字节的 long，因此用于 IP 地址转换。</p>
+<h4 id="inet-addr-函数"><a href="#inet-addr-函数" class="headerlink" title="inet_addr() 函数"></a>inet_addr() 函数</h4><p>inet_addr() 可以将表示ip地址的字符串转换为 32 位整数。除此之外还进行网络字节序转换。</p>
+<blockquote>
+<p>注意：为 sockaddr_in 成员赋值时需要显式地将主机字节序转换为网络字节序，而通过 write()/send() 发送数据时 TCP 协议会自动转换为网络字节序，不需要再调用相应的函数。</p>
+</blockquote>
+<h2 id="TCP断开连接（四次挥手）"><a href="#TCP断开连接（四次挥手）" class="headerlink" title="TCP断开连接（四次挥手）"></a>TCP断开连接（四次挥手）</h2><img src="/2021/02/28/C-socket%E7%BC%96%E7%A8%8B%E5%85%A5%E9%97%A8/5.jpg" class="" title="图片">
+
+<p>建立连接后，客户端和服务器都处于<code>ESTABLISED</code>状态。这时，客户端发起断开连接的请求：</p>
+<ol>
+<li><p>客户端调用 close() 函数后，向服务器发送 FIN 数据包，进入<code>FIN_WAIT_1</code>状态。FIN 是 Finish 的缩写，表示完成任务需要断开连接。</p>
+</li>
+<li><p>服务器收到数据包后，检测到设置了 FIN 标志位，知道要断开连接，于是向客户端发送“确认包”，进入<code>CLOSE_WAIT</code>状态。</p>
+</li>
+</ol>
+<p>注意：服务器收到请求后并不是立即断开连接，而是先向客户端发送“确认包”，告诉它我知道了，我需要准备一下才能断开连接。</p>
+<ol start="3">
+<li><p>客户端收到“确认包”后进入<code>FIN_WAIT_2</code>状态，等待服务器准备完毕后再次发送数据包。</p>
+</li>
+<li><p>等待片刻后，服务器准备完毕，可以断开连接，于是再主动向客户端发送 FIN 包，告诉它我准备好了，断开连接吧。然后进入<code>LAST_ACK</code>状态。</p>
+</li>
+<li><p>客户端收到服务器的 FIN 包后，再向服务器发送 ACK 包，告诉它你断开连接吧。然后进入<code>TIME_WAIT</code>状态。</p>
+</li>
+<li><p>服务器收到客户端的 ACK 包后，就断开连接，关闭套接字，进入<code>CLOSED</code>状态。</p>
+</li>
+</ol>
+<blockquote>
+<p><strong>关于 TIME_WAIT 状态的说明</strong></p>
+<p>客户端最后一次发送 ACK包后进入 TIME_WAIT 状态，而不是直接进入 CLOSED 状态关闭连接，这是为什么呢？</p>
+<p>TCP 是面向连接的传输方式，必须保证数据能够正确到达目标机器，不能丢失或出错，而网络是不稳定的，随时可能会毁坏数据，所以机器A每次向机器B发送数据包后，都要求机器B”确认“，回传ACK包，告诉机器A我收到了，这样机器A才能知道数据传送成功了。如果机器B没有回传ACK包，机器A会重新发送，直到机器B回传ACK包。</p>
+<p>客户端最后一次向服务器回传ACK包时，有可能会因为网络问题导致服务器收不到，服务器会再次发送 FIN 包，如果这时客户端完全关闭了连接，那么服务器无论如何也收不到ACK包了，所以客户端需要等待片刻、确认对方收到ACK包后才能进入CLOSED状态。那么，要等待多久呢？</p>
+<p>数据包在网络中是有生存时间的，超过这个时间还未到达目标主机就会被丢弃，并通知源主机。这称为报文最大生存时间（MSL，Maximum Segment Lifetime）。TIME_WAIT 要等待 2MSL 才会进入 CLOSED 状态。ACK 包到达服务器需要 MSL 时间，服务器重传 FIN 包也需要 MSL 时间，2MSL 是数据包往返的最大时间，如果 2MSL 后还未收到服务器重传的 FIN 包，就说明服务器已经收到了 ACK 包。</p>
+</blockquote>
+<h2 id="shutdown-函数"><a href="#shutdown-函数" class="headerlink" title="shutdown()函数"></a>shutdown()函数</h2><p>使用 shutdown() 函数可以只断开发送或接收数据的传输通道，函数原型为：</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">shutdown</span><span class="params">(<span class="keyword">int</span> sock, <span class="keyword">int</span> howto)</span></span>;  <span class="comment">//Linux</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">shutdown</span><span class="params">(SOCKET s, <span class="keyword">int</span> howto)</span></span>;  <span class="comment">//Windows</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>sock 为需要断开的套接字，howto 为断开方式。</p>
+<p>howto 在 Linux 下有以下取值：</p>
+<ul>
+<li>SHUT_RD：断开输入流。套接字无法接收数据（即使输入缓冲区收到数据也被抹去），无法调用输入相关函数。</li>
+<li>SHUT_WR：断开输出流。套接字无法发送数据，但如果输出缓冲区中还有未传输的数据，则将传递到目标主机。</li>
+<li>SHUT_RDWR：同时断开 I/O 流。相当于分两次调用 shutdown()，其中一次以 SHUT_RD 为参数，另一次以 SHUT_WR 为参数。</li>
+</ul>
+<p>howto 在 Windows 下有以下取值：</p>
+<ul>
+<li>SD_RECEIVE：关闭接收操作，也就是断开输入流。</li>
+<li>SD_SEND：关闭发送操作，也就是断开输出流。</li>
+<li>SD_BOTH：同时关闭接收和发送操作。</li>
+</ul>
+<blockquote>
+<p><strong>close()/closesocket()和shutdown()的区别</strong><br>确切地说，close() / closesocket() 用来关闭套接字，将套接字描述符（或句柄）从内存清除，之后再也不能使用该套接字，与C语言中的 fclose() 类似。应用程序关闭套接字后，与该套接字相关的连接和缓存也失去了意义，TCP协议会自动触发关闭连接的操作。</p>
+<p>shutdown() 用来关闭连接，而不是套接字，不管调用多少次 shutdown()，套接字依然存在，直到调用 close() / closesocket() 将套接字从内存清除。</p>
+<p>调用 close()/closesocket() 关闭套接字时，或调用 shutdown() 关闭输出流时，都会向对方发送 FIN 包。FIN 包表示数据传输完毕，计算机收到 FIN 包就知道不会再有数据传送过来了。</p>
+<p>默认情况下，close()/closesocket() 会立即向网络中发送FIN包，不管输出缓冲区中是否还有数据，而shutdown() 会等输出缓冲区中的数据传输完毕再发送FIN包。也就意味着，调用 close()/closesocket() 将丢失输出缓冲区中的数据，而调用 shutdown() 不会。</p>
+</blockquote>
+<h2 id="gethostbyname-函数"><a href="#gethostbyname-函数" class="headerlink" title="gethostbyname() 函数"></a>gethostbyname() 函数</h2><p>可借助gethostbyname() 函数通过域名获取IP地址，它的原型为：</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">struct hostent *gethostbyname(const char *hostname);</span><br></pre></td></tr></tbody></table></figure>
+
+<p>hostname 为主机名，也就是域名。使用该函数时，只要传递域名字符串，就会返回域名对应的 IP 地址。返回的地址信息会装入 hostent 结构体，该结构体的定义如下：</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">hostent</span>{</span></span><br><span class="line">    <span class="keyword">char</span> *h_name;  <span class="comment">//official name</span></span><br><span class="line">    <span class="keyword">char</span> **h_aliases;  <span class="comment">//alias list</span></span><br><span class="line">    <span class="keyword">int</span>  h_addrtype;  <span class="comment">//host address type</span></span><br><span class="line">    <span class="keyword">int</span>  h_length;  <span class="comment">//address lenght</span></span><br><span class="line">    <span class="keyword">char</span> **h_addr_list;  <span class="comment">//address list</span></span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>从该结构体可以看出，不只返回 IP 地址，还会附带其他信息，各位读者只需关注最后一个成员 h_addr_list。下面是对各成员的说明：</p>
+<ul>
+<li>h_name：官方域名（Official domain name）。官方域名代表某一主页，但实际上一些著名公司的域名并未用官方域名注册。</li>
+<li>h_aliases：别名，可以通过多个域名访问同一主机。同一 IP 地址可以绑定多个域名，因此除了当前域名还可以指定其他域名。</li>
+<li>h_addrtype：gethostbyname() 不仅支持 IPv4，还支持 IPv6，可以通过此成员获取IP地址的地址族（地址类型）信息，IPv4 对应 AF_INET，IPv6 对应 AF_INET6。</li>
+<li>h_length：保存IP地址长度。IPv4 的长度为 4 个字节，IPv6 的长度为 16 个字节。</li>
+<li>h_addr_list：这是最重要的成员。通过该成员以整数形式保存域名对应的 IP 地址。对于用户较多的服务器，可能会分配多个 IP 地址给同一域名，利用多个服务器进行均衡负载。</li>
+</ul>
+<h2 id="基于UDP的服务器端和客户端"><a href="#基于UDP的服务器端和客户端" class="headerlink" title="基于UDP的服务器端和客户端"></a>基于UDP的服务器端和客户端</h2><p>UDP 不像 TCP，无需在连接状态下交换数据，因此基于 UDP 的服务器端和客户端也无需经过连接过程。也就是说，不必调用 listen() 和 accept() 函数。UDP 中只有创建套接字的过程和数据交换的过程。</p>
+<p>发送数据使用 sendto() 函数：</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">ssize_t</span> <span class="title">sendto</span><span class="params">(<span class="keyword">int</span> sock, <span class="keyword">void</span> *buf, <span class="keyword">size_t</span> nbytes, <span class="keyword">int</span> flags, struct sockaddr *to, <span class="keyword">socklen_t</span> addrlen)</span></span>;  <span class="comment">//Linux</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">sendto</span><span class="params">(SOCKET sock, <span class="keyword">const</span> <span class="keyword">char</span> *buf, <span class="keyword">int</span> nbytes, <span class="keyword">int</span> flags, <span class="keyword">const</span> struct sockadr *to, <span class="keyword">int</span> addrlen)</span></span>;  <span class="comment">//Windows</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>Linux 和 Windows 下的 sendto() 函数类似，下面是详细参数说明：</p>
+<ul>
+<li>sock：用于传输 UDP 数据的套接字；</li>
+<li>buf：保存待传输数据的缓冲区地址；</li>
+<li>nbytes：带传输数据的长度（以字节计）；</li>
+<li>flags：可选项参数，若没有可传递 0；</li>
+<li>to：存有目标地址信息的 sockaddr 结构体变量的地址；</li>
+<li>addrlen：传递给参数 to 的地址值结构体变量的长度。</li>
+</ul>
+<p>UDP 发送函数 sendto() 与TCP发送函数 write()/send() 的最大区别在于，sendto() 函数需要向他传递目标地址信息。</p>
+<p>接收数据使用 recvfrom() 函数：</p>
+<figure class="highlight c++"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">ssize_t</span> <span class="title">recvfrom</span><span class="params">(<span class="keyword">int</span> sock, <span class="keyword">void</span> *buf, <span class="keyword">size_t</span> nbytes, <span class="keyword">int</span> flags, struct sockadr *from, <span class="keyword">socklen_t</span> *addrlen)</span></span>;  <span class="comment">//Linux</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">recvfrom</span><span class="params">(SOCKET sock, <span class="keyword">char</span> *buf, <span class="keyword">int</span> nbytes, <span class="keyword">int</span> flags, <span class="keyword">const</span> struct sockaddr *from, <span class="keyword">int</span> *addrlen)</span></span>;  <span class="comment">//Windows</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>由于 UDP 数据的发送端不定，所以 recvfrom() 函数定义为可接收发送端信息的形式，具体参数如下：</p>
+<ul>
+<li>sock：用于接收 UDP 数据的套接字；</li>
+<li>buf：保存接收数据的缓冲区地址；</li>
+<li>nbytes：可接收的最大字节数（不能超过 buf 缓冲区的大小）；</li>
+<li>flags：可选项参数，若没有可传递 0；</li>
+<li>from：存有发送端地址信息的 sockaddr 结构体变量的地址；</li>
+<li>addrlen：保存参数 from 的结构体变量长度的变量地址值。</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/C/" rel="tag"># C++</a>
+              <a href="/tags/socket/" rel="tag"># socket</a>
+              <a href="/tags/%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/" rel="tag"># 网络编程</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/24/GDB%E5%85%A5%E9%97%A8/" rel="prev" title="GDB入门">
+      <i class="fa fa-chevron-left"></i> GDB入门
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/03/09/%E5%B9%B6%E6%9F%A5%E9%9B%86/" rel="next" title="并查集">
+      并查集 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF-socket%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">什么是 socket？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A5%97%E6%8E%A5%E5%AD%97%E7%B1%BB%E5%9E%8B"><span class="nav-number">2.</span> <span class="nav-text">套接字类型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B5%81%E6%A0%BC%E5%BC%8F%E5%A5%97%E6%8E%A5%E5%AD%97%EF%BC%88SOCK-STREAM%EF%BC%89"><span class="nav-number">2.1.</span> <span class="nav-text">流格式套接字（SOCK_STREAM）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E6%8A%A5%E6%A0%BC%E5%BC%8F%E5%A5%97%E6%8E%A5%E5%AD%97%EF%BC%88SOCK-DGRAM%EF%BC%89"><span class="nav-number">2.2.</span> <span class="nav-text">数据报格式套接字（SOCK_DGRAM）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%A4%E7%A7%8D%E5%A5%97%E6%8E%A5%E5%AD%97%E5%AF%B9%E6%AF%94"><span class="nav-number">2.3.</span> <span class="nav-text">两种套接字对比</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#socket%E7%BC%96%E7%A8%8B%E5%8E%9F%E7%90%86"><span class="nav-number">3.</span> <span class="nav-text">socket编程原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Linux%E4%B8%8B%E7%9A%84socket%E6%BC%94%E7%A4%BA%E7%A8%8B%E5%BA%8F"><span class="nav-number">4.</span> <span class="nav-text">Linux下的socket演示程序</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90"><span class="nav-number">4.1.</span> <span class="nav-text">源码解析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E7%BB%93%E6%9E%9C"><span class="nav-number">4.2.</span> <span class="nav-text">运行结果</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Windows%E4%B8%8B%E7%9A%84socket%E6%BC%94%E7%A4%BA%E7%A8%8B%E5%BA%8F"><span class="nav-number">5.</span> <span class="nav-text">Windows下的socket演示程序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#socket-%E5%87%BD%E6%95%B0%EF%BC%9A%E5%88%9B%E5%BB%BA%E5%A5%97%E6%8E%A5%E5%AD%97"><span class="nav-number">6.</span> <span class="nav-text">socket()函数：创建套接字</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Linux-%E4%B8%8B%E7%9A%84-socket-%E5%87%BD%E6%95%B0"><span class="nav-number">6.1.</span> <span class="nav-text">Linux 下的 socket() 函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9C%A8Windows%E4%B8%8B%E5%88%9B%E5%BB%BAsocket"><span class="nav-number">6.2.</span> <span class="nav-text">在Windows下创建socket</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#bind-%E5%92%8Cconnect-%E5%87%BD%E6%95%B0%EF%BC%9A%E7%BB%91%E5%AE%9A%E5%A5%97%E6%8E%A5%E5%AD%97%E5%B9%B6%E5%BB%BA%E7%AB%8B%E8%BF%9E%E6%8E%A5"><span class="nav-number">7.</span> <span class="nav-text">bind()和connect()函数：绑定套接字并建立连接</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#bind-%E5%87%BD%E6%95%B0"><span class="nav-number">7.1.</span> <span class="nav-text">bind()函数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#sockaddr-in-%E7%BB%93%E6%9E%84%E4%BD%93"><span class="nav-number">7.1.1.</span> <span class="nav-text">sockaddr_in 结构体</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#in-addr-%E7%BB%93%E6%9E%84%E4%BD%93"><span class="nav-number">7.1.2.</span> <span class="nav-text">in_addr 结构体</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BD%BF%E7%94%A8-sockaddr-in-%E8%80%8C%E4%B8%8D%E4%BD%BF%E7%94%A8-sockaddr"><span class="nav-number">7.1.3.</span> <span class="nav-text">为什么使用 sockaddr_in 而不使用 sockaddr</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#connect-%E5%87%BD%E6%95%B0"><span class="nav-number">7.2.</span> <span class="nav-text">connect() 函数</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#listen-%E5%87%BD%E6%95%B0"><span class="nav-number">8.</span> <span class="nav-text">listen()函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#accept-%E5%87%BD%E6%95%B0"><span class="nav-number">9.</span> <span class="nav-text">accept()函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#send-recv-%E5%92%8Cwrite-read-%EF%BC%9A%E5%8F%91%E9%80%81%E6%95%B0%E6%8D%AE%E5%92%8C%E6%8E%A5%E6%94%B6%E6%95%B0%E6%8D%AE"><span class="nav-number">10.</span> <span class="nav-text">send()&#x2F;recv()和write()&#x2F;read()：发送数据和接收数据</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Linux%E4%B8%8B%E6%95%B0%E6%8D%AE%E7%9A%84%E6%8E%A5%E6%94%B6%E5%92%8C%E5%8F%91%E9%80%81"><span class="nav-number">10.1.</span> <span class="nav-text">Linux下数据的接收和发送</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Windows%E4%B8%8B%E6%95%B0%E6%8D%AE%E7%9A%84%E6%8E%A5%E6%94%B6%E5%92%8C%E5%8F%91%E9%80%81"><span class="nav-number">10.2.</span> <span class="nav-text">Windows下数据的接收和发送</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#socket%E7%BC%93%E5%86%B2%E5%8C%BA"><span class="nav-number">11.</span> <span class="nav-text">socket缓冲区</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TCP%E9%98%BB%E5%A1%9E%E6%A8%A1%E5%BC%8F"><span class="nav-number">12.</span> <span class="nav-text">TCP阻塞模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TCP%E5%8D%8F%E8%AE%AE%E7%9A%84%E7%B2%98%E5%8C%85%E9%97%AE%E9%A2%98%EF%BC%88%E6%95%B0%E6%8D%AE%E7%9A%84%E6%97%A0%E8%BE%B9%E7%95%8C%E6%80%A7%EF%BC%89"><span class="nav-number">13.</span> <span class="nav-text">TCP协议的粘包问题（数据的无边界性）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TCP%E6%95%B0%E6%8D%AE%E6%8A%A5%E7%BB%93%E6%9E%84"><span class="nav-number">14.</span> <span class="nav-text">TCP数据报结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TCP%E8%BF%9E%E6%8E%A5%E7%9A%84%E5%BB%BA%E7%AB%8B%EF%BC%88%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8B%EF%BC%89"><span class="nav-number">15.</span> <span class="nav-text">TCP连接的建立（三次握手）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TCP%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93%E8%BF%87%E7%A8%8B"><span class="nav-number">16.</span> <span class="nav-text">TCP数据传输过程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%87%8D%E4%BC%A0%E8%B6%85%E6%97%B6%E6%97%B6%E9%97%B4%EF%BC%88RTO-Retransmission-Time-Out%EF%BC%89"><span class="nav-number">16.0.1.</span> <span class="nav-text">重传超时时间（RTO, Retransmission Time Out）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%87%8D%E4%BC%A0%E6%AC%A1%E6%95%B0"><span class="nav-number">16.0.2.</span> <span class="nav-text">重传次数</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BD%91%E7%BB%9C%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93%E6%97%B6%E7%9A%84%E5%A4%A7%E5%B0%8F%E7%AB%AF%E9%97%AE%E9%A2%98"><span class="nav-number">17.</span> <span class="nav-text">网络数据传输时的大小端问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%A7%E7%AB%AF%E5%BA%8F%E5%92%8C%E5%B0%8F%E7%AB%AF%E5%BA%8F"><span class="nav-number">17.1.</span> <span class="nav-text">大端序和小端序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BD%91%E7%BB%9C%E5%AD%97%E8%8A%82%E5%BA%8F%E8%BD%AC%E6%8D%A2%E5%87%BD%E6%95%B0"><span class="nav-number">17.2.</span> <span class="nav-text">网络字节序转换函数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#honts-%E5%87%BD%E6%95%B0"><span class="nav-number">17.2.1.</span> <span class="nav-text">honts()函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#inet-addr-%E5%87%BD%E6%95%B0"><span class="nav-number">17.2.2.</span> <span class="nav-text">inet_addr() 函数</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TCP%E6%96%AD%E5%BC%80%E8%BF%9E%E6%8E%A5%EF%BC%88%E5%9B%9B%E6%AC%A1%E6%8C%A5%E6%89%8B%EF%BC%89"><span class="nav-number">18.</span> <span class="nav-text">TCP断开连接（四次挥手）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#shutdown-%E5%87%BD%E6%95%B0"><span class="nav-number">19.</span> <span class="nav-text">shutdown()函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#gethostbyname-%E5%87%BD%E6%95%B0"><span class="nav-number">20.</span> <span class="nav-text">gethostbyname() 函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8EUDP%E7%9A%84%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%AB%AF%E5%92%8C%E5%AE%A2%E6%88%B7%E7%AB%AF"><span class="nav-number">21.</span> <span class="nav-text">基于UDP的服务器端和客户端</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Yu Hong</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">25</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+	
+	
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yu Hong</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">211k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">3:12</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

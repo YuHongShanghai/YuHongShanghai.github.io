@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="STL底层数据结构实现 vector      底层数据结构为数组 ，支持快速随机访问  list            底层数据结构为双向链表，支持快速增删  forward_list 底层数据结构为单向链表，支持快速增删  deque       底层数据结构为一个中央控制器和多个缓冲区，详细见STL源码剖析P146，支持首尾（中间不能）快速增删，也支持随机访问deque是一个双端队列(dou">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++STL知识点整理">
+<meta property="og:url" content="http://example.com/2021/01/24/C-STL%E7%9F%A5%E8%AF%86%E7%82%B9%E6%95%B4%E7%90%86/index.html">
+<meta property="og:site_name" content="Hi! Yh">
+<meta property="og:description" content="STL底层数据结构实现 vector      底层数据结构为数组 ，支持快速随机访问  list            底层数据结构为双向链表，支持快速增删  forward_list 底层数据结构为单向链表，支持快速增删  deque       底层数据结构为一个中央控制器和多个缓冲区，详细见STL源码剖析P146，支持首尾（中间不能）快速增删，也支持随机访问deque是一个双端队列(dou">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-01-24T12:19:06.000Z">
+<meta property="article:modified_time" content="2021-03-10T13:25:44.511Z">
+<meta property="article:author" content="Yu Hong">
+<meta property="article:tag" content="面试题">
+<meta property="article:tag" content="C++">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2021/01/24/C-STL%E7%9F%A5%E8%AF%86%E7%82%B9%E6%95%B4%E7%90%86/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>C++STL知识点整理 | Hi! Yh</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hi! Yh</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/24/C-STL%E7%9F%A5%E8%AF%86%E7%82%B9%E6%95%B4%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Yu Hong">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hi! Yh">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          C++STL知识点整理
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-01-24 20:19:06" itemprop="dateCreated datePublished" datetime="2021-01-24T20:19:06+08:00">2021-01-24</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-10 21:25:44" itemprop="dateModified" datetime="2021-03-10T21:25:44+08:00">2021-03-10</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="STL底层数据结构实现"><a href="#STL底层数据结构实现" class="headerlink" title="STL底层数据结构实现"></a>STL底层数据结构实现</h2><ol>
+<li><p>vector      底层数据结构为数组 ，支持快速随机访问</p>
+</li>
+<li><p>list            底层数据结构为双向链表，支持快速增删</p>
+</li>
+<li><p>forward_list 底层数据结构为单向链表，支持快速增删</p>
+</li>
+<li><p>deque       底层数据结构为一个中央控制器和多个缓冲区，详细见STL源码剖析P146，支持首尾（中间不能）快速增删，也支持随机访问<br>deque是一个双端队列(double-ended queue)，也是在堆中保存内容的.它的保存形式如下:<br>[堆1] –&gt; [堆2] –&gt;[堆3] –&gt; …<br>每个堆保存好几个元素,然后堆和堆之间有指针指向,看起来像是list和vector的结合品.<a id="more"></a></p>
+</li>
+<li><p>set                   底层数据结构为红黑树，有序，不重复</p>
+</li>
+<li><p>multiset         底层数据结构为红黑树，有序，可重复 </p>
+</li>
+<li><p>map                底层数据结构为红黑树，有序，不重复</p>
+</li>
+<li><p>multimap    底层数据结构为红黑树，有序，可重复</p>
+</li>
+<li><p>unordered_set     底层数据结构为hash表，无序，不重复</p>
+</li>
+<li><p>unordered_multiset 底层数据结构为hash表，无序，可重复 </p>
+</li>
+<li><p>unordered_map    底层数据结构为hash表，无序，不重复</p>
+</li>
+<li><p>unordered_multimap 底层数据结构为hash表，无序，可重复 </p>
+</li>
+<li><p>stack        底层一般用list或deque实现，封闭头部即可，不用vector的原因应该是容量大小有限制，扩容耗时</p>
+</li>
+<li><p>queue     底层一般用list或deque实现，封闭头部即可，不用vector的原因应该是容量大小有限制，扩容耗时</p>
+</li>
+<li><p>priority_queue     的底层数据结构一般为vector为底层容器，堆heap为处理规则来管理底层容器实现</p>
+</li>
+</ol>
+<h2 id="红黑树简介"><a href="#红黑树简介" class="headerlink" title="红黑树简介"></a>红黑树简介</h2><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/skywang12345/p/3245399.html">参考</a></p>
+<p>R-B Tree，全称是Red-Black Tree，又称为“红黑树”，它一种特殊的二叉查找树。红黑树的每个节点上都有存储位表示节点的颜色，可以是红(Red)或黑(Black)。</p>
+<p>红黑树的特性:<br>（1）每个节点或者是黑色，或者是红色。<br>（2）根节点是黑色。<br>（3）每个叶子节点（NIL）是黑色。<br>（4）如果一个节点是红色的，则它的子节点必须是黑色的。<br>（5）从任一节结点到其每个叶子的所有路径都包含相同数目的黑色结点。</p>
+<p>红黑树是一种特化的AVL树（平衡二叉树），都是在进行插入和删除操作时通过特定操作保持二叉查找树的平衡，从而获得较高的查找性能。<br>它虽然是复杂的，但它的最坏情况运行时间也是非常良好的，并且在实践中是高效的： 它可以在O(log n)时间内做查找，插入和删除，这里的n 是树中元素的数目。 </p>
+<h2 id="hash表原理探究"><a href="#hash表原理探究" class="headerlink" title="hash表原理探究"></a>hash表原理探究</h2><p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/5a2a5f6de440">链接1</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/c602273091/article/details/54798805/">链接2</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_26591517/article/details/79621348">链接3</a></p>
+<h2 id="vector删除元素的几种方式"><a href="#vector删除元素的几种方式" class="headerlink" title="vector删除元素的几种方式"></a>vector删除元素的几种方式</h2><p><a target="_blank" rel="noopener" href="http://c.biancheng.net/view/6846.html">链接</a></p>
+<ol>
+<li><strong>pop_back()：</strong>删除 vector 容器中最后一个元素，该容器的大小（size）会减 1，但容量（capacity）不会发生改变。</li>
+<li><strong>erase(pos)：</strong> 删除 vector 容器中 pos 迭代器指定位置处的元素，并返回指向被删除元素下一个位置元素的迭代器。该容器的大小（size）会减 1，但容量（capacity）不会发生改变。</li>
+<li><strong>swap(beg)、pop_back()：</strong>先调用 swap() 函数交换要删除的目标元素和容器最后一个元素的位置，然后使用 pop_back() 删除该目标元素。</li>
+<li><strong>erase(beg,end)：</strong>删除 vector 容器中位于迭代器 [beg,end)指定区域内的所有元素，并返回指向被删除区域下一个位置元素的迭代器。该容器的大小（size）会减小，但容量（capacity）不会发生改变。</li>
+<li>**remove()**：删除容器中所有和指定元素值相等的元素，并返回指向最后一个元素下一个位置的迭代器。值得一提的是，调用该函数不会改变容器的大小和容量。</li>
+<li><strong>clear()：</strong>删除 vector 容器中所有的元素，使其变成空的 vector 容器。该函数会改变 vector 的大小（变为 0），但不是改变其容量。</li>
+</ol>
+<h2 id="vector扩容原理"><a href="#vector扩容原理" class="headerlink" title="vector扩容原理"></a>vector扩容原理</h2><p>当 vector 的大小和容量相等（size==capacity）也就是满载时，如果再向其添加元素，那么 vector 就需要扩容。vector 容器扩容的过程需要经历以下 3 步：</p>
+<ol>
+<li>分配一块大小是当前 vector 容量几倍的新存储空间。注意，多数 STL 版本中的 vector 容器，其容器都会以 2 的倍数增长，也就是说，每次 vector 容器扩容，它们的容量都会提高到之前的 2 倍；</li>
+<li>将 vector 容器存储的所有元素，依照原有次序从旧的存储空间复制到新的存储空间中；</li>
+<li>析构掉旧存储空间中存储的所有元素；</li>
+<li>释放旧的存储空间。</li>
+</ol>
+<p>这也就解释了，为什么 vector 容器在进行扩容后，与其相关的指针、引用以及迭代器可能会失效的原因。</p>
+<h2 id="如何避免vector容器进行不必要的扩容？"><a href="#如何避免vector容器进行不必要的扩容？" class="headerlink" title="如何避免vector容器进行不必要的扩容？"></a>如何避免vector容器进行不必要的扩容？</h2><p>借助 reserve() 成员方法，在使用 vector 容器初期，将其容量设为足够大的值。</p>
+<p>当然在实际场景中，我们可能并不知道 vector 容器到底要存储多少个元素。这种情况下，可以先预留出足够大的空间，当所有元素都存储到 vector 容器中之后，再去除多余的容量。</p>
+<p>关于怎样去除 vector 容器多余的容量，可以借助该容器模板类提供的 shrink_to_fit() 成员方法。</p>
+<p>使用swap方法：vector&lt; T &gt;(X).swap(X)  和shrink_to_fit() 。另外，vector&lt; T &gt;().swap(X)可以清除X并最小化它的容量。</p>
+<h2 id="关于vector-lt-bool-gt"><a href="#关于vector-lt-bool-gt" class="headerlink" title="关于vector< bool >"></a>关于vector&lt; bool &gt;</h2><p><strong>1. vector&lt; bool &gt;不是容器</strong></p>
+<p>因为vector&lt; bool &gt;无法实现operator[ ] 返回一个指向单个比特位的引用</p>
+<p><strong>2.如何避免使用vector&lt; bool &gt;</strong></p>
+<p>可以选择使用 deque&lt; bool &gt; 或者 bitset 来替代 vector&lt; bool &gt;。</p>
+<p>deque 容器可以正常存储 bool 类型元素，bitset 只能用来存储 bool 类型值，且底层存储机制也采用的是用一个比特位来存储一个 bool 值。</p>
+<h2 id="deque容器的存储结构"><a href="#deque容器的存储结构" class="headerlink" title="deque容器的存储结构"></a>deque容器的存储结构</h2><p>和 vector 容器采用连续的线性空间不同，deque 容器存储数据的空间是由一段一段等长的连续空间构成，各段空间之间并不一定是连续的，可以位于在内存的不同区域。</p>
+<p>为了管理这些连续空间，deque 容器用数组（数组名假设为 map）存储着各个连续空间的首地址。也就是说，map 数组中存储的都是指针，指向那些真正用来存储数据的各个连续空间（如下图 所示）。</p>
+<p><a target="_blank" rel="noopener" href="http://c.biancheng.net/uploads/allimg/191213/2-191213161305R5.gif"></a></p>
+<p>通过建立 map 数组，deque 容器申请的这些分段的连续空间就能实现“整体连续”的效果。换句话说，当 deque 容器需要在头部或尾部增加存储空间时，它会申请一段新的连续空间，同时在 map 数组的开头或结尾添加指向该空间的指针，由此该空间就串接到了 deque 容器的头部或尾部。</p>
+<h2 id="STL-迭代器失效问题"><a href="#STL-迭代器失效问题" class="headerlink" title="STL 迭代器失效问题"></a>STL 迭代器失效问题</h2><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/fnlingnzb-learner/p/9300073.html">参考博文</a></p>
+<p>迭代器失效分三种情况考虑，也是分三种数据结构考虑，分别为数组型，链表型，树型数据结构。</p>
+<p><strong>数组型数据结构：</strong>该数据结构的元素是分配在连续的内存中，insert和erase操作，都会使得删除点和插入点之后的元素挪位置，所以，插入点和删除掉之后的迭代器全部失效，也就是说insert(*iter)(或erase(*iter))，然后在iter++，是没有意义的。解决方法：erase(*iter)的返回值是下一个有效迭代器的值。 iter =cont.erase(iter);</p>
+<p><strong>链表型数据结构：</strong>对于list型的数据结构，使用了不连续分配的内存，删除运算使指向删除位置的迭代器失效，但是不会失效其他迭代器.解决办法两种，erase(*iter)会返回下一个有效迭代器的值，或者erase(iter++).</p>
+<p><strong>树形数据结构：</strong> 使用红黑树来存储数据，插入不会使得任何迭代器失效；删除运算使指向删除位置的迭代器失效，但是不会失效其他迭代器.erase迭代器只是被删元素的迭代器失效，但是返回值为void，所以要采用erase(iter++)的方式删除迭代器。</p>
+<p>注意：经过erase(iter)之后的迭代器完全失效，该迭代器iter不能参与任何运算，包括iter++,*ite</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%9D%A2%E8%AF%95%E9%A2%98/" rel="tag"># 面试题</a>
+              <a href="/tags/C/" rel="tag"># C++</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/01/21/C-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" rel="prev" title="C++基础知识">
+      <i class="fa fa-chevron-left"></i> C++基础知识
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/01/25/C-11%E6%96%B0%E7%89%B9%E6%80%A7/" rel="next" title="C++11新特性">
+      C++11新特性 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#STL%E5%BA%95%E5%B1%82%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E5%AE%9E%E7%8E%B0"><span class="nav-number">1.</span> <span class="nav-text">STL底层数据结构实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BA%A2%E9%BB%91%E6%A0%91%E7%AE%80%E4%BB%8B"><span class="nav-number">2.</span> <span class="nav-text">红黑树简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#hash%E8%A1%A8%E5%8E%9F%E7%90%86%E6%8E%A2%E7%A9%B6"><span class="nav-number">3.</span> <span class="nav-text">hash表原理探究</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#vector%E5%88%A0%E9%99%A4%E5%85%83%E7%B4%A0%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E5%BC%8F"><span class="nav-number">4.</span> <span class="nav-text">vector删除元素的几种方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#vector%E6%89%A9%E5%AE%B9%E5%8E%9F%E7%90%86"><span class="nav-number">5.</span> <span class="nav-text">vector扩容原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E9%81%BF%E5%85%8Dvector%E5%AE%B9%E5%99%A8%E8%BF%9B%E8%A1%8C%E4%B8%8D%E5%BF%85%E8%A6%81%E7%9A%84%E6%89%A9%E5%AE%B9%EF%BC%9F"><span class="nav-number">6.</span> <span class="nav-text">如何避免vector容器进行不必要的扩容？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B3%E4%BA%8Evector-lt-bool-gt"><span class="nav-number">7.</span> <span class="nav-text">关于vector&lt; bool &gt;</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#deque%E5%AE%B9%E5%99%A8%E7%9A%84%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84"><span class="nav-number">8.</span> <span class="nav-text">deque容器的存储结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#STL-%E8%BF%AD%E4%BB%A3%E5%99%A8%E5%A4%B1%E6%95%88%E9%97%AE%E9%A2%98"><span class="nav-number">9.</span> <span class="nav-text">STL 迭代器失效问题</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Yu Hong</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">25</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+	
+	
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yu Hong</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">211k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">3:12</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
