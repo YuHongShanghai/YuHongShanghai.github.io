@@ -4,11 +4,49 @@
   
     
     <entry>
+      <title>Git基础（三）---Git标签</title>
+      <link href="2021/05/01/Git%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%89%EF%BC%89-Git%E6%A0%87%E7%AD%BE/"/>
+      <url>2021/05/01/Git%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%89%EF%BC%89-Git%E6%A0%87%E7%AD%BE/</url>
+      
+        <content type="html"><![CDATA[<p>如果你达到一个重要的阶段，并希望永远记住那个特别的提交快照，你可以使用 git tag 给它打上标签。</p><p>比如说，我们想为我们的项目发布一个”1.0”版本。 我们可以用 git tag -a v1.0 命令给最新一次提交（HEAD）打上”v1.0”的标签。<a id="more"></a></p><p>-a 选项意为”创建一个带注解的标签”。 不用 -a 选项也可以执行的，但它不会记录这标签是啥时候打的，谁打的，也不会让你添加个标签的注解。</p><blockquote><p>Git 使用的标签有两种类型：<strong>轻量级的（lightweight）</strong>和<strong>含附注的（annotated）</strong>。</p><p>轻量级标签就像是个不会变化的分支，实际上它就是个指向特定提交对象的引用。</p><p>而含附注标签，实际上是存储在仓库中的一个独立对象，它有自身的校验和信息，包含着标签的名字，电子邮件地址和日期，以及标签说明，标签本身也允许使用 GNU Privacy Guard (GPG) 来签署或验证。</p><p>一般我们都建议使用含附注型的标签，以便保留相关信息；</p><p>当然，如果只是临时性加注标签，或者不需要旁注额外信息，用轻量级标签也没问题。</p></blockquote><h2 id="创建标签"><a href="#创建标签" class="headerlink" title="创建标签"></a>创建标签</h2><p>创建轻量级标签：git tag &lt;tagname&gt;</p><p>创建带注解标签：</p><ul><li>指定标签信息命令：git tag -a &lt;tagname&gt; -m “标签信息”</li><li>PGP签名标签命令：git tag -s &lt;tagname&gt; -m “签名”</li></ul><p>git tag -a &lt;tagname&gt; &lt;commit version&gt; 可以为某次提交创建标签</p><h2 id="查看已有标签"><a href="#查看已有标签" class="headerlink" title="查看已有标签"></a>查看已有标签</h2><p>git tag</p><p> git log –decorate 可以在提交历史中显示标签</p><h2 id="删除标签"><a href="#删除标签" class="headerlink" title="删除标签"></a>删除标签</h2><p>git tag -d &lt;tagname&gt;</p><h2 id="查看标签信息和与之对应的提交信息"><a href="#查看标签信息和与之对应的提交信息" class="headerlink" title="查看标签信息和与之对应的提交信息"></a>查看标签信息和与之对应的提交信息</h2><p>git show  &lt;tagname&gt;</p>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> Git </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>Git基础（二）---Git分支管理</title>
+      <link href="2021/05/01/Git%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%8C%EF%BC%89-Git%E5%88%86%E6%94%AF%E7%AE%A1%E7%90%86/"/>
+      <url>2021/05/01/Git%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%8C%EF%BC%89-Git%E5%88%86%E6%94%AF%E7%AE%A1%E7%90%86/</url>
+      
+        <content type="html"><![CDATA[<p>几乎每一种版本控制系统都以某种形式支持分支。使用分支意味着你可以从开发主线上分离开来，然后在不影响主线的同时继续工作。</p><p>有人把 Git 的分支模型称为<strong>必杀技特性</strong>，而正是因为它，将 <strong>Git</strong> 从版本控制系统家族里区分出来。<a id="more"></a></p><p>创建分支命令：git branch (branchname)</p><p>切换分支命令：git checkout (branchname)</p><p>创建新分支并立即切换到该分支下：git checkout -b (branchname)</p><blockquote><p>当你切换分支的时候，Git 会用该分支的最后提交的快照替换你的工作目录的内容， 所以多个分支不需要多个目录。</p></blockquote><p>合并分支命令：git merge (branchname) 将branchname分支合并到当前分支</p><p>删除分支命令：git branch -d (branchname)</p><p>列出分支基本命令：git branch</p>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> Git </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>Git基础（一）---Git基本操作</title>
       <link href="2021/05/01/Git%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89-Git%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/"/>
       <url>2021/05/01/Git%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89-Git%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/</url>
       
-        <content type="html"><![CDATA[<p>Git 的工作就是创建和保存你项目的快照及与之后的快照进行对比。</p><p>Git 常用的是以下 6 个命令：<strong>git clone</strong>、<strong>git push</strong>、<strong>git add</strong> 、<strong>git commit</strong>、<strong>git checkout</strong>、<strong>git pull</strong><a id="more"></a></p><img src="/2021/05/01/Git%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89-Git%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/1.jpg" class="" title="图片描述"><p><strong>说明：</strong></p><ul><li>workspace：工作区</li><li>staging area：暂存区/缓存区</li><li>local repository：版本库或本地仓库</li><li>remote repository：远程仓库</li></ul><h2 id="创建仓库命令"><a href="#创建仓库命令" class="headerlink" title="创建仓库命令"></a>创建仓库命令</h2><ul><li><a href="https://www.runoob.com/git/git-init.html">git init</a>：初始化仓库</li><li><a href="https://www.runoob.com/git/git-clone.html">git clone</a>：拷贝一份远程仓库，也就是下载一个项目</li></ul><h2 id="提交与修改"><a href="#提交与修改" class="headerlink" title="提交与修改"></a>提交与修改</h2><ul><li><a href="https://www.runoob.com/git/git-add.html">git add</a>：添加文件到仓库</li><li><a href="https://www.runoob.com/git/git-status.html">git status</a>：查看仓库当前的状态，显示有变更的文件</li><li><a href="https://www.runoob.com/git/git-diff.html">git diff</a>：比较文件的不同，即暂存区和工作区的差异</li><li><a href="https://www.runoob.com/git/git-commit.html">git commit</a>：提交暂存区到本地仓库</li><li><a href="https://www.runoob.com/git/git-reset.html">git reset</a>：回退版本</li><li><a href="https://www.runoob.com/git/git-rm.html">git rm</a>：删除工作区文件</li><li><a href="https://www.runoob.com/git/git-mv.html">git mv</a>：移动或重命名工作区文件</li></ul><h2 id="提交日志"><a href="#提交日志" class="headerlink" title="提交日志"></a>提交日志</h2><ul><li><a href="https://www.runoob.com/git/git-commit-history.html#git-log">git log</a>：查看历史提交记录</li><li><a href="https://www.runoob.com/git/git-commit-history.html#git-blame">git blame &lt;file&gt;</a>：以列表形式查看指定文件的历史修改记录</li></ul><h2 id="远程操作"><a href="#远程操作" class="headerlink" title="远程操作"></a>远程操作</h2><ul><li><a href="https://www.runoob.com/git/git-remote.html">git remote</a>：远程仓库操作</li><li><a href="https://www.runoob.com/git/git-fetch.html">git fetch</a>：从远程获取代码库</li><li><a href="https://www.runoob.com/git/git-pull.html">git pull</a>：下载远程代码并合并</li><li><a href="https://www.runoob.com/git/git-push.html">git push</a>：上传远程代码并合并</li></ul><p>一般工作流程如下：</p><ul><li>克隆 Git 资源作为工作目录。</li><li>在克隆的资源上添加或修改文件。</li><li>如果其他人修改了，你可以更新资源。</li><li>在提交前查看修改。</li><li>提交修改。</li><li>在修改完成后，如果发现错误，可以撤回提交并再次修改并提交</li></ul><img src="/2021/05/01/Git%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89-Git%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/1.png" class="" title="图片描述">]]></content>
+        <content type="html"><![CDATA[<p>Git 的工作就是创建和保存你项目的快照及与之后的快照进行对比。</p><p>Git 常用的是以下 6 个命令：<strong>git clone</strong>、<strong>git push</strong>、<strong>git add</strong> 、<strong>git commit</strong>、<strong>git checkout</strong>、<strong>git pull</strong><a id="more"></a></p><img src="/2021/05/01/Git%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89-Git%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/1.jpg" class="" title="图片描述"><p><strong>说明：</strong></p><ul><li>workspace：工作区</li><li>staging area：暂存区/缓存区</li><li>local repository：版本库或本地仓库</li><li>remote repository：远程仓库</li></ul><h2 id="创建仓库命令"><a href="#创建仓库命令" class="headerlink" title="创建仓库命令"></a>创建仓库命令</h2><ul><li><a href="https://www.runoob.com/git/git-init.html">git init</a>：初始化仓库</li><li><a href="https://www.runoob.com/git/git-clone.html">git clone</a>：拷贝一份远程仓库，也就是下载一个项目</li></ul><h2 id="提交与修改"><a href="#提交与修改" class="headerlink" title="提交与修改"></a>提交与修改</h2><ul><li><a href="https://www.runoob.com/git/git-add.html">git add</a>：添加文件到仓库</li><li><a href="https://www.runoob.com/git/git-status.html">git status</a>：查看仓库当前的状态，显示有变更的文件</li><li><a href="https://www.runoob.com/git/git-diff.html">git diff</a>：比较文件的不同，即暂存区和工作区的差异</li><li><a href="https://www.runoob.com/git/git-commit.html">git commit</a>：提交暂存区到本地仓库</li><li><a href="https://www.runoob.com/git/git-reset.html">git reset</a>：回退版本</li><li><a href="https://www.runoob.com/git/git-rm.html">git rm</a>：删除工作区文件后域名</li><li><a href="https://www.runoob.com/git/git-mv.html">git mv</a>：移动或重命名工作区文件</li></ul><h2 id="提交日志"><a href="#提交日志" class="headerlink" title="提交日志"></a>提交日志</h2><ul><li><a href="https://www.runoob.com/git/git-commit-history.html#git-log">git log</a>：查看历史提交记录</li><li><a href="https://www.runoob.com/git/git-commit-history.html#git-blame">git blame &lt;file&gt;</a>：以列表形式查看指定文件的历史修改记录</li></ul><h2 id="远程操作"><a href="#远程操作" class="headerlink" title="远程操作"></a>远程操作</h2><ul><li><a href="https://www.runoob.com/git/git-remote.html">git remote</a>：远程仓库操作</li><li><a href="https://www.runoob.com/git/git-fetch.html">git fetch</a>：从远程获取代码库</li><li><a href="https://www.runoob.com/git/git-pull.html">git pull</a>：下载远程代码并合并</li><li><a href="https://www.runoob.com/git/git-push.html">git push</a>：上传远程代码并合并</li></ul><p>一般工作流程如下：</p><ul><li>克隆 Git 资源作为工作目录。</li><li>在克隆的资源上添加或修改文件。</li><li>如果其他人修改了，你可以更新资源。</li><li>在提交前查看修改。</li><li>提交修改。</li><li>在修改完成后，如果发现错误，可以撤回提交并再次修改并提交</li></ul><img src="/2021/05/01/Git%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89-Git%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/1.png" class="" title="图片描述">]]></content>
       
       
       
