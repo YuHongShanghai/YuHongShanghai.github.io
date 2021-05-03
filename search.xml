@@ -5599,4 +5599,89 @@
         <tag>Git</tag>
       </tags>
   </entry>
+  <entry>
+    <title>正则表达式必备知识</title>
+    <url>/2021/05/02/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86/</url>
+    <content><![CDATA[<p>正则表达式是对字符串操作的一种逻辑公式，就是用事先定义好的一些特定字符、及这些特定字符的组合，组成一个“规则字符串”，这个“规则字符串”用来表达对字符串的一种过滤逻辑。<a id="more"></a></p>
+<h2 id="匹配单个字符"><a href="#匹配单个字符" class="headerlink" title="匹配单个字符"></a>匹配单个字符</h2><p>纯文本匹配：<code>abc</code>可匹配字符串<code>abc</code></p>
+<p><code>.</code> 可匹配任何单个字符、字母、数字甚至是<code>.</code>本身</p>
+<h2 id="匹配一组字符"><a href="#匹配一组字符" class="headerlink" title="匹配一组字符"></a>匹配一组字符</h2><p><code>[]</code>中可定义字符集合，表示匹配字符集合中的任意一个字符。例如<code>[abc]</code>表示匹配<code>a</code>、<code>b</code>、<code>c</code>任意一个字符</p>
+<p>为简化字符集合定义，可以用<code>-</code>定义一个字符区间，例如<code>[0-9]</code>、<code>[a-z]</code>、<code>[A-Z]</code></p>
+<blockquote>
+<p>区间是按字符ASCII码顺序定义</p>
+<p>在定义一个字符区间时，一定要保证区间首字符小于区间尾字符</p>
+</blockquote>
+<p>在同一字符集合里可以给出多个字符区间，如<code>[0-9a-zA-Z]</code>可以匹配任意一个字母或数字</p>
+<p>在集合中可以使用<code>^</code>进行取非匹配，例如<code>[^0-9]</code>匹配一个非数字字符</p>
+<h2 id="使用元字符"><a href="#使用元字符" class="headerlink" title="使用元字符"></a>使用元字符</h2><p>元字符是指<code>.</code>、<code>[</code>、<code>]</code>等在特殊含义字符，若要匹配的是元字符本身，则需使用转义字符<code>\</code>对元字符进行转义，如<code>\.</code>匹配<code>.</code>本身。</p>
+<p><strong>空白元字符：</strong></p>
+<ul>
+<li><code>[\b]</code>：回退并删除一个字符（Backspace键）</li>
+<li><code>\f</code>：换页符</li>
+<li><code>\n</code>：换行符</li>
+<li><code>\r</code>：回车符</li>
+<li><code>\t</code>：制表符（Tab键）</li>
+<li><code>\v</code>：垂直制表符</li>
+</ul>
+<blockquote>
+<p><code>\r\n</code>配置一个“回车+换行”组合，有许多操作系统（如Windows）将这个组合用作文本行的结束标志</p>
+</blockquote>
+<p><strong>特殊元字符：</strong></p>
+<ul>
+<li><code>\d</code>：任何一个数字字符（等价于<code>[0-9]</code>）</li>
+<li><code>\D</code>：任何一个非数字字符（等价于<code>[^0-9]</code>）</li>
+<li><code>\w</code>：任何一个字母数字字符（大小写均可）或下划线（等价于<code>[a-zA-Z0-9_]</code>）</li>
+<li><code>\W</code>：任何一个非字母数字字符或下划线（等价于<code>[^a-zA-Z0-9_]</code>）</li>
+<li><code>\s</code>：任何一个空白字符（等价于<code>[\f\n\r\t\v]</code>）</li>
+<li><code>\S</code>：任何一个非空白字符（等价于<code>[^\f\n\r\t\v]</code>）</li>
+</ul>
+<p><code>\x</code>前缀可匹配十六进制数，如<code>\x0A</code>对应于ASCII字符10（换行符），其效果等价于<code>\n</code></p>
+<p><code>\0</code>前缀可匹配八进制数，如<code>\011</code>对应于ASCII字符9（制表符），其效果等价于<code>\t</code></p>
+<h2 id="重复匹配"><a href="#重复匹配" class="headerlink" title="重复匹配"></a>重复匹配</h2><p><code>+</code>匹配一次或多次</p>
+<p><code>*</code>匹配零次或多次</p>
+<p><code>?</code>匹配零次或一次</p>
+<p><code>{n}</code>匹配n次</p>
+<p><code>{m,n}</code>匹配至少m次，至多n次</p>
+<p><code>{m,}</code>匹配至少m次</p>
+<p>非贪婪匹配：<code>*?</code>、<code>+?</code>、<code>{n,}?</code></p>
+<h2 id="位置匹配"><a href="#位置匹配" class="headerlink" title="位置匹配"></a>位置匹配</h2><p><code>\b</code>匹配一个单词的开始或结尾（单词边界）</p>
+<p><code>\B</code>不匹配单词边界</p>
+<p><code>^</code>匹配字符串开头</p>
+<p><code>$</code>匹配字符串结尾</p>
+<p><code>(?m)</code>前缀启用分行匹配模式</p>
+<h2 id="使用子表达式"><a href="#使用子表达式" class="headerlink" title="使用子表达式"></a>使用子表达式</h2><p><code>()</code>中的表达式为子表达式，可将其作为一个独立元素</p>
+<p>子表达式允许嵌套，可以使用<code>|</code>连接多个子表达式，表示只需匹配其中之一即可</p>
+<h2 id="回溯引用"><a href="#回溯引用" class="headerlink" title="回溯引用"></a>回溯引用</h2><p><code>\n</code>表示模式里的第n个表达式</p>
+<p>回溯引用只能用来引用模式里的子表达式</p>
+<p>回溯引用匹配通常从1开始计数。<code>\0</code>可以用来代表整个表达式</p>
+<p>回溯引用可以跨模式使用（搜索模式与替换模式），在替换模式中一般使用<code>$n</code>代表第n个表达式</p>
+<p><strong>用来进行大小写转换的元字符：</strong></p>
+<ul>
+<li><code>\E</code>：结束<code>\L</code>或<code>\U</code>转换</li>
+<li><code>\l</code>：把下一个字符（或子表达式）转换为小写</li>
+<li><code>\L</code>：把<code>\L</code>到<code>\E</code>之间的字符全部转换为小写</li>
+<li><code>\u</code>：把下一个字符（或子表达式）转换为大写</li>
+<li><code>\U</code>：把<code>\U</code>到<code>\E</code>之间的字符全部转换为大写</li>
+</ul>
+<p>如<code>\U$2\E</code>表示把第2个表达式转换为大写</p>
+<h2 id="前后查找"><a href="#前后查找" class="headerlink" title="前后查找"></a>前后查找</h2><p>向前查找：以<code>?=</code>开头的子表达式，表示匹配结果到该表达式内容为止（不包括该表达式内容）</p>
+<p>向后查找：以<code>?&lt;=</code>开头的子表达式，表示匹配结果以该表达式内容开始查找（不包括该表达式内容）</p>
+<p>负向前查找：以<code>?!</code>开头的子表达式，查找时不匹配指定内容</p>
+<p>负向后查找：以<code>?&lt;!</code>开头的子表达式，查找时不匹配指定内容</p>
+<h2 id="嵌入条件"><a href="#嵌入条件" class="headerlink" title="嵌入条件"></a>嵌入条件</h2><p><strong>回溯引用条件：</strong>回溯引用条件只在一个前面的子表达式搜索取得成功的情况下才允许使用一个表达式。语法为<code>(?backreference)true-regex</code>，其中<code>?</code>表明这是一个条件，<code>backreference</code>是一个回溯引用，<code>true-regex</code>是一个只在<code>backreference</code>存在时才会被执行的子表达式。</p>
+<p><strong>前后查找条件：</strong>前后查找条件只在一个向前查找或向后查找操作取得成功的情况下才允许使用一个表达式。其语法与回溯引用条件类似，只需要把回溯引用替换为一个完整的前后查找表达式即可。</p>
+<h2 id="常见问题的正则表达式解决方案"><a href="#常见问题的正则表达式解决方案" class="headerlink" title="常见问题的正则表达式解决方案"></a>常见问题的正则表达式解决方案</h2><p>中国固定电话号码：<code>\(?0[1-9]\d{1,3}\)?[-]?[2-9]\d{2,3}[-]?\d{4}</code></p>
+<p>中国邮政编码：<code>\d(9|[0-7])\d{4}</code></p>
+<p>中华人民共和国公民身份证号码：<code>[1-8]\d{5}((18)|(19)|(20))?\d{2}[0-1]\d[0-3]\d{4}[\dx]?</code></p>
+<p>IP地址：<code>(((\d{1,2})|(1\d{2})|(2[0-4]\d)|(25[0-5]))\.){3}((\d{1,2})|(1\d{2})|(2[0-4]\d)|(25[0-5]))</code></p>
+<p>URL地址：<code>https?://[-\w.]+(:\d+)?(/([\w/_.]*)?)?</code></p>
+<p>完整的URL地址：<code>https?://(\w*:\w*@)?[-\w.]+(:\d+)?(/([\w/_.]*(\?\S+)?)?)?</code></p>
+<p>电子邮件地址：<code>(\w+\.)*\w+@(\w+\.)+[A-Za-z]+</code></p>
+<p>HTML注释：<code>&lt;!-{2,}.*?-{2,}&gt;</code></p>
+<p>JS注释：<code>//.*</code></p>
+<h2 id="元字符汇总"><a href="#元字符汇总" class="headerlink" title="元字符汇总"></a>元字符汇总</h2><img src="/2021/05/02/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E5%BF%85%E5%A4%87%E7%9F%A5%E8%AF%86/1.png" class="" title="图片">]]></content>
+      <tags>
+        <tag>正则表达式</tag>
+      </tags>
+  </entry>
 </search>
