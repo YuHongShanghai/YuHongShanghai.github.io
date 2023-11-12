@@ -1,0 +1,831 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="原文地址 https:&#x2F;&#x2F;wiki.qt.io&#x2F;D-Pointer 前言d-point是Qt的一种代码设计模式，可以使库的实现细节可能对其用户隐藏，并且可以在不破坏二进制兼容性（Binary compatibility）的情况下对库进行实现更改 二进制兼容sdk库升级后，动态链接该库的某个app不必重新编译，仍然可以运行，可以认为该库是二进制兼容的 某些情况下会破坏二进制兼容性，例如 123456">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Qt学习-D-Pointer">
+<meta property="og:url" content="http://example.com/2023/11/12/Qt%E5%AD%A6%E4%B9%A0-D-Pointer/index.html">
+<meta property="og:site_name" content="欢迎来到我的博客">
+<meta property="og:description" content="原文地址 https:&#x2F;&#x2F;wiki.qt.io&#x2F;D-Pointer 前言d-point是Qt的一种代码设计模式，可以使库的实现细节可能对其用户隐藏，并且可以在不破坏二进制兼容性（Binary compatibility）的情况下对库进行实现更改 二进制兼容sdk库升级后，动态链接该库的某个app不必重新编译，仍然可以运行，可以认为该库是二进制兼容的 某些情况下会破坏二进制兼容性，例如 123456">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/Users/yuhong/Library/Application%20Support/typora-user-images/image-20230422225911213.png">
+<meta property="og:image" content="http://example.com/Users/yuhong/Library/Application%20Support/typora-user-images/image-20230422230845253.png">
+<meta property="article:published_time" content="2023-11-12T05:56:02.000Z">
+<meta property="article:modified_time" content="2023-11-12T05:58:07.194Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/Users/yuhong/Library/Application%20Support/typora-user-images/image-20230422225911213.png">
+  
+  
+  
+  <title>Qt学习-D-Pointer - 欢迎来到我的博客</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.5","typing":{"enable":true,"typeSpeed":30,"cursorChar":"🐱","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"a2j6BolcztYUYmg02LjYD8QV-gzGzoHsz","app_key":"pVCC39Lgpeq0KUDjILJf2sBg","server_url":"https://a2j6bolc.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>不吃鱼的猫</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/c1.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Qt学习-D-Pointer"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-11-12 13:56" pubdate>
+          2023年11月12日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          76 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span>次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Qt学习-D-Pointer</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>原文地址 <a target="_blank" rel="noopener" href="https://wiki.qt.io/D-Pointer">https://wiki.qt.io/D-Pointer</a></p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>d-point是Qt的一种代码设计模式，可以使库的实现细节可能对其用户隐藏，并且可以在不破坏二进制兼容性（Binary compatibility）的情况下对库进行实现更改</p>
+<h2 id="二进制兼容"><a href="#二进制兼容" class="headerlink" title="二进制兼容"></a>二进制兼容</h2><p>sdk库升级后，动态链接该库的某个app不必重新编译，仍然可以运行，可以认为该库是二进制兼容的</p>
+<p>某些情况下会破坏二进制兼容性，例如</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Widget</span><br> &#123;<br> <span class="hljs-comment">// ...</span><br> <span class="hljs-keyword">private</span>:<br>    Rect m_geometry;<br> &#125;;<br> <br> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Label</span> : <span class="hljs-keyword">public</span> Widget<br> &#123;<br> <span class="hljs-keyword">public</span>:<br>    <span class="hljs-comment">// ... </span><br>    <span class="hljs-function">String <span class="hljs-title">text</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span><br><span class="hljs-function">    </span>&#123;<br>        <span class="hljs-keyword">return</span> m_text;<br>    &#125;<br> <br> <span class="hljs-keyword">private</span>:<br>     String m_text;<br> &#125;;<br></code></pre></td></tr></table></figure>
+
+<p>以上代码发布为<em>WidgetLib 1.0</em>.</p>
+<p>而在WidgetLib 1.1版本中，在Widget类中增加了成员变量m_stylesheet</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Widget</span><br> &#123;<br>    <span class="hljs-comment">// ...</span><br> <span class="hljs-keyword">private</span>:<br>     Rect m_geometry;<br>     String m_stylesheet; <span class="hljs-comment">// NEW in WidgetLib 1.1</span><br> &#125;;<br> <br> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Label</span> : <span class="hljs-keyword">public</span> Widget<br> &#123;<br> <span class="hljs-keyword">public</span>:<br>     <span class="hljs-comment">// ...</span><br>     <span class="hljs-function">String <span class="hljs-title">text</span><span class="hljs-params">()</span> <span class="hljs-type">const</span></span><br><span class="hljs-function">     </span>&#123;<br>         <span class="hljs-keyword">return</span> m_text;<br>     &#125;<br> <br> <span class="hljs-keyword">private</span>:<br>     String m_text;<br> &#125;;<br></code></pre></td></tr></table></figure>
+
+<p>升级为WidgetLib 1.1后，原来使用WidgetLib 1.0的app就会crash</p>
+<p>原因是通过添加一个新的数据成员，我们最终改变了 Widget 和 Label 对象的大小。当C++ 编译器生成代码时，它使用偏移量来访问对象内的数据。</p>
+<table>
+<thead>
+<tr>
+<th align="center">Label object layout in WidgetLib 1.0</th>
+<th align="center">Label object layout in WidgetLib 1.1</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">m_geometry &lt;offset 0&gt;</td>
+<td align="center">m_geometry &lt;offset 0&gt;</td>
+</tr>
+<tr>
+<td align="center">- - -</td>
+<td align="center">m_stylesheet &lt;offset 1&gt;</td>
+</tr>
+<tr>
+<td align="center">m_text &lt;offset 1&gt;</td>
+<td align="center">- - -</td>
+</tr>
+<tr>
+<td align="center">- - -</td>
+<td align="center">m_text &lt;offset 2&gt;</td>
+</tr>
+</tbody></table>
+<p>Label::text()原来访问的offset 1的位置m_text，现在是m_stylesheet的位置，就会crash</p>
+<p>至于为什么 Label::text() 的偏移量计算代码最终出现在 CuteApp 二进制文件中而不是 WidgetLib 二进制文件中。 答案是 Label::text() 的代码是在头文件中定义的，编译器最终将其内联。</p>
+<p>如果Label::text()不是内联的，也会有问题。C++ 编译器依赖于对象的大小在编译时和运行时相同。 例如，堆栈卷绕/展开——如果您在堆栈上创建了一个 Label 对象，编译器会生成代码以在编译时根据 Label 的大小在堆栈上分配空间。 由于 Label 的大小在 WidgetLib 1.1 的运行时是不同的，Label 的构造函数会覆盖现有的堆栈数据并最终破坏堆栈。</p>
+<p>总之，一旦您的库发布，<strong>永远不要更改导出的（即对用户可见的）C++ 类的大小或布局（不要四处移动数据）</strong>。 C++ 编译器生成代码时假定类中数据的大小或顺序在编译应用程序后不会改变。</p>
+<h2 id="d-point"><a href="#d-point" class="headerlink" title="d-point"></a>d-point</h2><p>诀窍是通过仅存储单个指针来保持库的所有公共类的大小不变。 该指针指向包含所有数据的私有/内部数据结构。 这个内部结构的大小可以收缩或增长而不会对应用程序产生任何副作用，因为指针仅在库代码中访问，并且从应用程序的角度来看，对象的大小永远不会改变 - 它始终是指针。 该指针称为 d 指针（d-point）。</p>
+<p>以下是其实现代码</p>
+<p><strong>widget.h</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">class</span> <span class="hljs-title class_">WidgetPrivate</span>;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Widget</span><br>&#123;<br>   <span class="hljs-comment">// ...</span><br>   <span class="hljs-function">Rect <span class="hljs-title">geometry</span><span class="hljs-params">()</span> <span class="hljs-type">const</span></span>;<br>   <span class="hljs-comment">// ... </span><br><br><span class="hljs-keyword">private</span>:<br>   WidgetPrivate *d_ptr;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>这里WidgetPrivate作为内部类，不包含其头文件，仅做前置声明</p>
+<p><strong>widget_p.h</strong>，WidgetPrivate类的头文件</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">WidgetPrivate</span><br>&#123;<br>    Rect geometry;<br>    String stylesheet;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p><strong>widget.cpp</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;widget_p.h&quot;</span></span><br><br>Widget::<span class="hljs-built_in">Widget</span>() : <span class="hljs-built_in">d_ptr</span>(<span class="hljs-keyword">new</span> WidgetPrivate)<br>&#123;<br>    <span class="hljs-comment">// Creation of private data</span><br>&#125;<br><br><span class="hljs-function">Rect <span class="hljs-title">Widget::geometry</span><span class="hljs-params">()</span> <span class="hljs-type">const</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-comment">// The d-ptr is only accessed in the library code</span><br>    <span class="hljs-keyword">return</span> d_ptr-&gt;geometry;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>在这里#include “widget_p.h”</p>
+<p>Label类继承Widget类，Label类也有自己的私有类LabelPrivate</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Label</span> : <span class="hljs-keyword">public</span> Widget<br>&#123;<br>    <span class="hljs-comment">// ...</span><br>    <span class="hljs-function">String <span class="hljs-title">text</span><span class="hljs-params">()</span></span>;<br><br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-comment">// Each class maintains its own d-pointer</span><br>    LabelPrivate *d_ptr;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p><strong>label.cpp</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-comment">// Unlike WidgetPrivate, the author decided LabelPrivate</span><br><span class="hljs-comment">// to be defined in the source file itself</span><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">LabelPrivate</span><br>&#123;<br>    String text;<br>&#125;;<br><br>Label::<span class="hljs-built_in">Label</span>() : <span class="hljs-built_in">d_ptr</span>(<span class="hljs-keyword">new</span> LabelPrivate)<br>&#123;<br>&#125;<br><br><span class="hljs-function">String <span class="hljs-title">Label::text</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">return</span> d_ptr-&gt;text;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>通过上述结构，app 永远不会直接访问 d 指针。由于 d 指针仅在 WidgetLib 中访问，并且 WidgetLib 会在每次发布时重新编译，因此 Private 类可以自由更改，而不会影响 app。</p>
+<p>使用d-point还有其他的好处</p>
+<ul>
+<li>隐藏了实现细节——我们可以仅将 WidgetLib 与头文件和二进制文件一起发布。 .cpp 文件可以是封闭源代码。</li>
+<li>头文件没有实现细节，可以作为 API 参考。</li>
+<li>由于实现所需的头文件已从头文件移动到实现（源）文件中，因此编译速度要快得多。</li>
+</ul>
+<h2 id="q-point"><a href="#q-point" class="headerlink" title="q-point"></a>q-point</h2><p>到目前为止，我们只看到了 d 指针作为 C 风格的数据结构。 实际上，它包含私有方法（辅助函数）。 例如，LabelPrivate 可能有一个 getLinkTargetFromPoint() 辅助函数，单击鼠标时需要它来查找链接目标。 在许多情况下，这些辅助方法需要访问公共类，即一些来自 Label 或其基类 Widget 的函数。 例如，辅助方法 setTextAndUpdateWidget() 可能需要调用 Widget::update()，这是一个公共方法来安排重绘 Widget。 因此，<strong>WidgetPrivate 存储了一个指向公共类的指针，称为 q 指针（q-point）</strong>。 为 q 指针修改上面的代码，我们得到：</p>
+<p><strong>widget.h</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">class</span> <span class="hljs-title class_">WidgetPrivate</span>;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Widget</span><br>&#123;<br>    <span class="hljs-comment">// ...</span><br>    <span class="hljs-function">Rect <span class="hljs-title">geometry</span><span class="hljs-params">()</span> <span class="hljs-type">const</span></span>;<br>    <span class="hljs-comment">// ...</span><br><span class="hljs-keyword">private</span>:<br>    WidgetPrivate *d_ptr;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p><strong>widget_p.h</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">WidgetPrivate</span><br>&#123;<br>    <span class="hljs-comment">// Constructor that initializes the q-ptr</span><br>    <span class="hljs-built_in">WidgetPrivate</span>(Widget *q) : <span class="hljs-built_in">q_ptr</span>(q) &#123; &#125;<br>    Widget *q_ptr; <span class="hljs-comment">// q-ptr points to the API class</span><br>    Rect geometry;<br>    String stylesheet;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p><strong>widget.cpp</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;widget_p.h&quot;</span></span><br><span class="hljs-comment">// Create private data.</span><br><span class="hljs-comment">// Pass the &#x27;this&#x27; pointer to initialize the q-ptr</span><br>Widget::<span class="hljs-built_in">Widget</span>() : <span class="hljs-built_in">d_ptr</span>(<span class="hljs-keyword">new</span> <span class="hljs-built_in">WidgetPrivate</span>(<span class="hljs-keyword">this</span>))<br>&#123;<br>&#125;<br><br><span class="hljs-function">Rect <span class="hljs-title">Widget::geometry</span><span class="hljs-params">()</span> <span class="hljs-type">const</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-comment">// the d-ptr is only accessed in the library code</span><br>    <span class="hljs-keyword">return</span> d_ptr-&gt;geometry;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>label.h</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Label</span> : <span class="hljs-keyword">public</span> Widget<br>&#123;<br>    <span class="hljs-comment">// ...</span><br>    <span class="hljs-function">String <span class="hljs-title">text</span><span class="hljs-params">()</span> <span class="hljs-type">const</span></span>;<br><br><span class="hljs-keyword">private</span>:<br>    LabelPrivate *d_ptr;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p><strong>label.cpp</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">LabelPrivate</span><br>&#123;<br>    <span class="hljs-built_in">LabelPrivate</span>(Label *q) : <span class="hljs-built_in">q_ptr</span>(q) &#123; &#125;<br>    Label *q_ptr;<br>    String text;<br>&#125;;<br><br>Label::<span class="hljs-built_in">Label</span>() : <span class="hljs-built_in">d_ptr</span>(<span class="hljs-keyword">new</span> <span class="hljs-built_in">LabelPrivate</span>(<span class="hljs-keyword">this</span>))<br>&#123;<br>&#125;<br><br><span class="hljs-function">String <span class="hljs-title">Label::text</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">return</span> d_ptr-&gt;text;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>在上面的代码中，创建单个 Label 导致为 LabelPrivate 和 WidgetPrivate 分配内存。 如下图所示</p>
+<img src="/Users/yuhong/Library/Application Support/typora-user-images/image-20230422225911213.png" srcset="/img/loading.gif" lazyload alt="image-20230422225911213" style="zoom:50%;" />
+
+<p>如果我们对 Qt 采用这种策略，对于像 QListWidget 这样的类，情况会变得更糟——它在类继承层次结构中有 6 层深，这将导致多达 6 次内存分配！</p>
+<p>可以通过私有类设置继承层次结构并让实例化的类一直向上传递 d 指针来优化</p>
+<p>请注意，在继承 d 指针时，私有类的声明必须在单独的文件中，例如 widget_p.h。不再可能在 widget.cpp 文件中声明它。</p>
+<p><strong>widget.h</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Widget</span><br>&#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">Widget</span>();<br>    <span class="hljs-comment">// ...</span><br><span class="hljs-keyword">protected</span>:<br>    <span class="hljs-comment">// only subclasses may access the below</span><br>    <span class="hljs-comment">// allow subclasses to initialize with their own concrete Private</span><br>    <span class="hljs-built_in">Widget</span>(WidgetPrivate &amp;d);<br>    WidgetPrivate *d_ptr;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p><strong>widget_p.h</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">WidgetPrivate</span><br>&#123;<br>    <span class="hljs-built_in">WidgetPrivate</span>(Widget *q) : <span class="hljs-built_in">q_ptr</span>(q) &#123; &#125; <span class="hljs-comment">// constructor that initializes the q-ptr</span><br>    Widget *q_ptr; <span class="hljs-comment">// q-ptr that points to the API class</span><br>    Rect geometry;<br>    String stylesheet;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p><strong>widget.cpp</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs c++">Widget::<span class="hljs-built_in">Widget</span>() : <span class="hljs-built_in">d_ptr</span>(<span class="hljs-keyword">new</span> <span class="hljs-built_in">WidgetPrivate</span>(<span class="hljs-keyword">this</span>))<br>&#123;<br>&#125;<br><br>Widget::<span class="hljs-built_in">Widget</span>(WidgetPrivate &amp;d) : <span class="hljs-built_in">d_ptr</span>(&amp;d)<br>&#123;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>label.h</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Label</span> : <span class="hljs-keyword">public</span> Widget<br>&#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">Label</span>();<br>    <span class="hljs-comment">// ...</span><br><span class="hljs-keyword">protected</span>:<br>    <span class="hljs-built_in">Label</span>(LabelPrivate &amp;d); <span class="hljs-comment">// allow Label subclasses to pass on their Private</span><br>    <span class="hljs-comment">// notice how Label does not have a d_ptr! It just uses Widget&#x27;s d_ptr.</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p><strong>label.cpp</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;widget_p.h&quot;</span></span><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">LabelPrivate</span> : <span class="hljs-keyword">public</span> WidgetPrivate<br>&#123;<br><span class="hljs-keyword">public</span>:<br>    String text;<br>&#125;;<br><br>Label::<span class="hljs-built_in">Label</span>()<br> : <span class="hljs-built_in">Widget</span>(*<span class="hljs-keyword">new</span> LabelPrivate) <span class="hljs-comment">// initialize the d-pointer with our own Private</span><br>&#123;<br>&#125;<br><br>Label::<span class="hljs-built_in">Label</span>(LabelPrivate &amp;d) : <span class="hljs-built_in">Widget</span>(d)<br>&#123;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>当我们现在创建一个 Label 对象时，它会创建一个 LabelPrivate（它是 WidgetPrivate 的子类）。 它将具体的 d 指针传递给 Widget 的受保护构造函数！ 现在，当创建一个 Label 对象时，只有一次内存分配。 Label 还有一个受保护的构造函数，它的子类可以使用它来提供自己的私有类。如下图所示</p>
+<img src="/Users/yuhong/Library/Application Support/typora-user-images/image-20230422230845253.png" srcset="/img/loading.gif" lazyload alt="image-20230422230845253" style="zoom:50%;" />
+
+<h2 id="Qt中的d指针"><a href="#Qt中的d指针" class="headerlink" title="Qt中的d指针"></a>Qt中的d指针</h2><p>在 Qt 中，几乎每个公共类都使用 d 指针方法。 唯一不使用它的情况是事先知道该类永远不会添加额外的成员变量。 例如，对于像 QPoint、QRect 这样的类，不需要添加新成员，因此数据成员直接存储到类本身而不是使用 d 指针。</p>
+<p>请注意，在 Qt 中，所有 Private 对象的基类都是 QObjectPrivate。</p>
+<h3 id="Q-D-and-Q-Q"><a href="#Q-D-and-Q-Q" class="headerlink" title="Q_D and Q_Q"></a>Q_D and Q_Q</h3><p>我们在上一步中进行的优化的一个副作用是 q-ptr 和 d-ptr 是 Widget 和 WidgetPrivate 类型。这意味着以下将不起作用。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">Label::setText</span><span class="hljs-params">(<span class="hljs-type">const</span> String &amp;text)</span></span><br><span class="hljs-function"></span>&#123;<br>   <span class="hljs-comment">// won&#x27;t work! since d_ptr is of type WidgetPrivate even though</span><br>   <span class="hljs-comment">// it points to LabelPrivate object</span><br>   d_ptr-&gt;text = text;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>因此，当访问子类中的 d 指针时，我们需要将 static_cast 转换为适当的类型。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">Label::setText</span><span class="hljs-params">(<span class="hljs-type">const</span> String &amp;text)</span></span><br><span class="hljs-function"></span>&#123;<br>    LabelPrivate *d = <span class="hljs-built_in">static_cast</span>&lt;LabelPrivate*&gt;(d_ptr); <span class="hljs-comment">// cast to our private type</span><br>    d-&gt;text = text;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>如您所见，到处都是 static_cast 并不是一件好事。相反，在 src/corelib/global/qglobal.h 中定义了两个宏，这使得它变得直截了当</p>
+<p><strong>global.h</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-keyword">define</span> Q_D(Class) Class##Private * const d = d_func()</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> Q_Q(Class) Class * const q = q_func()</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>label.cpp</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-comment">// With Q_D you can use the members of LabelPrivate from Label</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">Label::setText</span><span class="hljs-params">(<span class="hljs-type">const</span> String &amp;text)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-built_in">Q_D</span>(Label);<br>    d-&gt;text = text;<br>&#125;<br><br><span class="hljs-comment">// With Q_Q you can use the members of Label from LabelPrivate</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">LabelPrivate::someHelperFunction</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-built_in">Q_Q</span>(Label);<br>    q-&gt;<span class="hljs-built_in">selectAll</span>();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="Q-DECLARE-PRIVATE-and-Q-DECLARE-PUBLIC"><a href="#Q-DECLARE-PRIVATE-and-Q-DECLARE-PUBLIC" class="headerlink" title="Q_DECLARE_PRIVATE and Q_DECLARE_PUBLIC"></a>Q_DECLARE_PRIVATE and Q_DECLARE_PUBLIC</h3><p>Qt 类在公共类中有一个 Q_DECLARE_PRIVATE 宏。宏是这么写的：</p>
+<p><strong>qglobal.h</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-keyword">define</span> Q_DECLARE_PRIVATE(Class)\</span><br><span class="hljs-meta">inline Class##Private* d_func() &#123;\</span><br><span class="hljs-meta">    return reinterpret_cast<span class="hljs-string">&lt;Class##Private *&gt;</span>(qGetPtrHelper(d_ptr));\</span><br><span class="hljs-meta">&#125;\</span><br><span class="hljs-meta">inline const Class##Private* d_func() const &#123;\</span><br><span class="hljs-meta">    return reinterpret_cast<span class="hljs-string">&lt;const Class##Private *&gt;</span>(qGetPtrHelper(d_ptr));\</span><br><span class="hljs-meta">&#125;\</span><br><span class="hljs-meta">friend class Class##Private;</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> Q_DECLARE_PUBLIC(Class)                                    \</span><br><span class="hljs-meta">inline Class* q_func() &#123; return static_cast<span class="hljs-string">&lt;Class *&gt;</span>(q_ptr); &#125; \</span><br><span class="hljs-meta">inline const Class* q_func() const &#123; return static_cast<span class="hljs-string">&lt;const Class *&gt;</span>(q_ptr); &#125; \</span><br><span class="hljs-meta">friend class Class;</span><br></code></pre></td></tr></table></figure>
+
+<p>这个宏可以这样使用：</p>
+<p><strong>qlabel.h</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">class</span> <span class="hljs-title class_">QLabel</span><br>&#123;<br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-built_in">Q_DECLARE_PRIVATE</span>(QLabel)<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>这个想法是 QLabel 提供了一个允许访问其私有内部类的函数 d_func() 。 该方法本身是私有的（因为宏位于 qlabel.h 的私有部分中）。 然而，d_func() 可以被 QLabel 的友类调用。 这主要用于无法使用公共 api 访问某些 QLabel 信息的 Qt 类访问信息。 举一个奇怪的例子，QLabel 可能会跟踪用户点击链接的次数。 但是，没有公共 API 来访问此信息。 QStatistics 是一个需要此信息的类。 Qt 开发人员会将 QStatistics 添加为 QLabel 的好友，然后 QStatistics 可以执行 label-&gt;d_func()-&gt;linkClickCount。</p>
+<p>d_func 还具有强制 const 正确性的优点：在 MyClass 的 const 成员函数中，您需要一个 Q_D(const MyClass)，因此您只能调用 MyClassPrivate 中的 const 成员函数。 使用裸 d_ptr，您还可以调用非常量函数。</p>
+<h3 id="使用示例"><a href="#使用示例" class="headerlink" title="使用示例"></a>使用示例</h3><p><strong>mywidget.h</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-keyword">ifndef</span> MYWIDGET_H</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> MYWIDGET_H</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QObject&gt;</span></span><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">MyWidgetPrivate</span>;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">MyWidget</span> : <span class="hljs-keyword">public</span> QObject<br>&#123;<br>    Q_OBJECT<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-keyword">explicit</span> <span class="hljs-title">MyWidget</span><span class="hljs-params">(QObject *parent = <span class="hljs-literal">nullptr</span>)</span></span>;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">fun</span><span class="hljs-params">()</span></span>;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">api</span><span class="hljs-params">()</span></span>;<br><br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-built_in">Q_DECLARE_PRIVATE</span>(MyWidget)<br>    MyWidgetPrivate *d_ptr;<br>&#125;;<br><br><span class="hljs-meta">#<span class="hljs-keyword">endif</span> <span class="hljs-comment">// MYWIDGET_H</span></span><br></code></pre></td></tr></table></figure>
+
+<p><strong>mywidget_p.h</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-keyword">ifndef</span> MYWIDGETPRIVATE_H</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> MYWIDGETPRIVATE_H</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QObject&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;mywidget.h&quot;</span></span><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">MyWidgetPrivate</span> : <span class="hljs-keyword">public</span> QObject<br>&#123;<br>    <span class="hljs-function">Q_OBJECT</span><br><span class="hljs-function">    <span class="hljs-title">Q_DECLARE_PUBLIC</span><span class="hljs-params">(MyWidget)</span></span><br><span class="hljs-function"></span><br><span class="hljs-function"><span class="hljs-keyword">public</span>:</span><br><span class="hljs-function">    explicit MyWidgetPrivate(QObject *parent =</span> <span class="hljs-literal">nullptr</span>);<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">func</span><span class="hljs-params">()</span></span>;<br><br><span class="hljs-keyword">private</span>:<br>    MyWidget *q_ptr;<br>    QString text;<br>&#125;;<br><br><span class="hljs-meta">#<span class="hljs-keyword">endif</span> <span class="hljs-comment">// MYWIDGETPRIVATE_H</span></span><br><br></code></pre></td></tr></table></figure>
+
+<p><strong>mywidget.cpp</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;mywidget.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;mywidget_p.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QDebug&gt;</span></span><br><br>MyWidget::<span class="hljs-built_in">MyWidget</span>(QObject *parent)<br>    : QObject&#123;parent&#125;, <span class="hljs-built_in">d_ptr</span>(<span class="hljs-keyword">new</span> <span class="hljs-built_in">MyWidgetPrivate</span>(<span class="hljs-keyword">this</span>))<br><br>&#123;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">MyWidget::fun</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-built_in">Q_D</span>(MyWidget);<br>    <span class="hljs-keyword">return</span> d-&gt;<span class="hljs-built_in">func</span>();<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">MyWidget::api</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-built_in">qDebug</span>() &lt;&lt; __PRETTY_FUNCTION__;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<p><strong>mywidget_p.cpp</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;mywidget_p.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QDebug&gt;</span></span><br><br>MyWidgetPrivate::<span class="hljs-built_in">MyWidgetPrivate</span>(QObject *parent)<br>    : QObject&#123;parent&#125;<br>&#123;<br>    text = <span class="hljs-string">&quot;aaa&quot;</span>;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">MyWidgetPrivate::func</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-built_in">qDebug</span>() &lt;&lt; __PRETTY_FUNCTION__;<br>    <span class="hljs-built_in">Q_Q</span>(MyWidget);<br>    q-&gt;<span class="hljs-built_in">api</span>();<br>    <span class="hljs-built_in">qDebug</span>() &lt;&lt; text;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<p><strong>main.cpp</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;mywidget.h&quot;</span></span><br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">char</span> *argv[])</span></span><br><span class="hljs-function"></span>&#123;<br><br>    MyWidget *myWidget = <span class="hljs-keyword">new</span> MyWidget;<br>    myWidget-&gt;<span class="hljs-built_in">fun</span>();<br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Qt/" class="category-chain-item">Qt</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2023/11/12/Qt%E5%AD%A6%E4%B9%A0-%E9%9A%90%E5%BC%8F%E5%85%B1%E4%BA%AB/" title="Qt学习-隐式共享">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Qt学习-隐式共享</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"a2j6BolcztYUYmg02LjYD8QV-gzGzoHsz","appKey":"pVCC39Lgpeq0KUDjILJf2sBg","path":"window.location.pathname","placeholder":"请发表你的评论","avatar":"retro","meta":["nick","mail"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

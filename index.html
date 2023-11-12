@@ -253,15 +253,15 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2023/11/10/hello-world/" target="_self">
-          Hello World
+        <a href="/2023/11/12/Qt%E5%AD%A6%E4%B9%A0-%E5%8F%AF%E9%87%8D%E5%85%A5%E5%92%8C%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8/" target="_self">
+          Qt学习-可重入和线程安全
         </a>
       </h2>
 
       
-      <a class="index-excerpt index-excerpt__noimg" href="/2023/11/10/hello-world/" target="_self">
+      <a class="index-excerpt index-excerpt__noimg" href="/2023/11/12/Qt%E5%AD%A6%E4%B9%A0-%E5%8F%AF%E9%87%8D%E5%85%A5%E5%92%8C%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8/" target="_self">
         <div>
-          Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick
+          原文地址 https://doc.qt.io/qt-6/threads-reentrancy.html  一个线程安全的函数可以从多个线程被同时调用，即使调用使用共享数据也是如此，因为对共享数据的所有引用都是序列化的。  可重入函数也可以从多个线程被同时调用，但前提是每次调用都使用自己的数据。   因此，线程安全函数总是可重入的，但可重入函数并不总是线程安全的。 通过扩展，如果一个类的成员函数可以
         </div>
       </a>
 
@@ -269,11 +269,194 @@
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>
-            <time datetime="2023-11-10 22:59" pubdate>
-              2023-11-10
+            <time datetime="2023-11-12 14:07" pubdate>
+              2023-11-12
             </time>
           </div>
         
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Qt/" class="category-chain-item">Qt</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2023/11/12/Qt%E5%AD%A6%E4%B9%A0-%E7%BA%BF%E7%A8%8B%E5%92%8CQObjects/" target="_self">
+          Qt学习-线程和QObjects
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2023/11/12/Qt%E5%AD%A6%E4%B9%A0-%E7%BA%BF%E7%A8%8B%E5%92%8CQObjects/" target="_self">
+        <div>
+          原文地址 https://doc.qt.io/qt-6/threads-qobject.html QThread 继承了QObject。它发出信号以指示线程开始或完成执行，并提供一些槽函数。 更有趣的是，QObjects 可以在多个线程中使用，发出调用其他线程中的槽的信号，并将事件发布到“存在”在其他线程中的对象。这是可能的，因为允许每个线程有自己的事件循环。 QObject 重入QObject
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2023-11-12 14:06" pubdate>
+              2023-11-12
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Qt/" class="category-chain-item">Qt</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2023/11/12/Qt%E5%AD%A6%E4%B9%A0-%E9%9A%90%E5%BC%8F%E5%85%B1%E4%BA%AB/" target="_self">
+          Qt学习-隐式共享
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2023/11/12/Qt%E5%AD%A6%E4%B9%A0-%E9%9A%90%E5%BC%8F%E5%85%B1%E4%BA%AB/" target="_self">
+        <div>
+          原文地址 https://doc.qt.io/qt-6/implicit-sharing.html Qt 中的许多 C++ 类使用隐式数据共享来最大化资源使用并最小化复制。 当作为参数传递时，隐式共享类既安全又高效，因为只传递指向数据的指针，并且只有当函数写入数据时才会复制数据，即写时复制。 概述共享类由指向包含引用计数和数据的共享数据块的指针组成。 创建共享对象时，它会将引用计数设置为 1。每当
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2023-11-12 14:00" pubdate>
+              2023-11-12
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Qt/" class="category-chain-item">Qt</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2023/11/12/Qt%E5%AD%A6%E4%B9%A0-D-Pointer/" target="_self">
+          Qt学习-D-Pointer
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2023/11/12/Qt%E5%AD%A6%E4%B9%A0-D-Pointer/" target="_self">
+        <div>
+          原文地址 https://wiki.qt.io/D-Pointer 前言d-point是Qt的一种代码设计模式，可以使库的实现细节可能对其用户隐藏，并且可以在不破坏二进制兼容性（Binary compatibility）的情况下对库进行实现更改 二进制兼容sdk库升级后，动态链接该库的某个app不必重新编译，仍然可以运行，可以认为该库是二进制兼容的 某些情况下会破坏二进制兼容性，例如 123456
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2023-11-12 13:56" pubdate>
+              2023-11-12
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Qt/" class="category-chain-item">Qt</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
         
         
       </div>
