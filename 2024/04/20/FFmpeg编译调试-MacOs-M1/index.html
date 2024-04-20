@@ -23,16 +23,16 @@
 <meta property="og:site_name" content="欢迎来到我的博客">
 <meta property="og:description" content="下载源码下载地址：https:&#x2F;&#x2F;ffmpeg.org&#x2F;download.html 编译进入源码根目录 配置编译选项12345678910111213141516171819.&#x2F;configure \--prefix&#x3D;&#x2F;usr&#x2F;local \ --enable-gpl \ --enable-version3 \ --enable-nonfree \ --enable-static \ --disa">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/Users/yuhong/Desktop/blog/hexo-blog/source/images/image-20240420134006206.png">
-<meta property="og:image" content="http://example.com/Users/yuhong/Desktop/blog/hexo-blog/source/images/image-20240420133328750.png">
-<meta property="og:image" content="http://example.com/Users/yuhong/Desktop/blog/hexo-blog/source/images/image-20240420134508471.png">
-<meta property="og:image" content="http://example.com/Users/yuhong/Desktop/blog/hexo-blog/source/images/image-20240420134800310.png">
+<meta property="og:image" content="http://example.com/images/image-20240420134006206.png">
+<meta property="og:image" content="http://example.com/images/image-20240420133328750.png">
+<meta property="og:image" content="http://example.com/images/image-20240420134508471.png">
+<meta property="og:image" content="http://example.com/images/image-20240420134800310.png">
 <meta property="article:published_time" content="2024-04-20T05:12:11.000Z">
-<meta property="article:modified_time" content="2024-04-20T05:49:14.921Z">
+<meta property="article:modified_time" content="2024-04-20T05:56:56.674Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="FFmpeg">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://example.com/Users/yuhong/Desktop/blog/hexo-blog/source/images/image-20240420134006206.png">
+<meta name="twitter:image" content="http://example.com/images/image-20240420134006206.png">
   
   
   
@@ -332,7 +332,7 @@
 
 <p>这个命令会根据你的CPU核心数并行编译，以加快编译速度。</p>
 <p>会生成ffmpeg、ffmpeg_g、ffplay、ffplay_g、ffprobe、ffprobe_g。其中后面有 <code>_g</code> 的代表有调试符号，没有 <code>_g</code> 的是进行了 <code>strip</code> 操作，把调试信息去掉了，要选择 _g 后缀的可执行文件来调试</p>
-<p><img src="/Users/yuhong/Desktop/blog/hexo-blog/source/images/image-20240420134006206.png" srcset="/img/loading.gif" lazyload alt="image-20240420134006206"></p>
+<p><img src="/../images/image-20240420134006206.png" srcset="/img/loading.gif" lazyload alt="image-20240420134006206"></p>
 <h3 id="安装FFmpeg"><a href="#安装FFmpeg" class="headerlink" title="安装FFmpeg"></a>安装FFmpeg</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">sudo make install<br></code></pre></td></tr></table></figure>
 
 <p>这会将FFmpeg安装到<code>/usr/local</code>目录下。</p>
@@ -345,13 +345,13 @@
 <li><p>打开FFmpeg源码目录</p>
 </li>
 <li><p>右上角 Edit Configurations 配置调试目标和参数</p>
-<p><img src="/Users/yuhong/Desktop/blog/hexo-blog/source/images/image-20240420133328750.png" srcset="/img/loading.gif" lazyload alt="image-20240420133328750"></p>
+<p><img src="/../images/image-20240420133328750.png" srcset="/img/loading.gif" lazyload alt="image-20240420133328750"></p>
 </li>
 <li><p>以ffplay的调试为例：</p>
-<p><img src="/Users/yuhong/Desktop/blog/hexo-blog/source/images/image-20240420134508471.png" srcset="/img/loading.gif" lazyload alt="image-20240420134508471"></p>
+<p><img src="/../images/image-20240420134508471.png" srcset="/img/loading.gif" lazyload alt="image-20240420134508471"></p>
 </li>
 <li><p>找到ffplay源码，位于 <code>fftools/ffplay.c</code>，增加断点，然后点击右上角调试</p>
-<p><img src="/Users/yuhong/Desktop/blog/hexo-blog/source/images/image-20240420134800310.png" srcset="/img/loading.gif" lazyload alt="image-20240420134800310"></p>
+<p><img src="/../images/image-20240420134800310.png" srcset="/img/loading.gif" lazyload alt="image-20240420134800310"></p>
 </li>
 </ul>
 <p>参考：<a target="_blank" rel="noopener" href="https://ffmpeg.xianwaizhiyin.net/debug-ffmpeg/ubuntu18-clion.html">https://ffmpeg.xianwaizhiyin.net/debug-ffmpeg/ubuntu18-clion.html</a></p>
