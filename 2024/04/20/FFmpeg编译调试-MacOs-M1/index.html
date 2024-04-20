@@ -16,21 +16,27 @@
   <meta name="author" content="John Doe">
   <meta name="keywords" content="">
   
-    <meta name="description" content="原视频：https:&#x2F;&#x2F;www.youtube.com&#x2F;watch?v&#x3D;tiN6T1LewmQ 搜索技术的重要性 搜索技术是普通人变强的唯一外挂,可以帮助人们学习的比别人快,做的比别人好。  掌握搜索技术是互联网时代获取信息的关键,可以极大程度地缩小信息差距  搜索技术的分类 搜索目的可分为4类:    (1) 了解信息(Know Something)      ​    (2) 学习技能(Lea">
+    <meta name="description" content="下载源码下载地址：https:&#x2F;&#x2F;ffmpeg.org&#x2F;download.html 编译进入源码根目录 配置编译选项12345678910111213141516171819.&#x2F;configure \--prefix&#x3D;&#x2F;usr&#x2F;local \ --enable-gpl \ --enable-version3 \ --enable-nonfree \ --enable-static \ --disa">
 <meta property="og:type" content="article">
-<meta property="og:title" content="搜索技术">
-<meta property="og:url" content="http://example.com/2023/11/18/%E6%90%9C%E7%B4%A2%E6%8A%80%E6%9C%AF/index.html">
+<meta property="og:title" content="FFmpeg编译调试(MacOs M1)">
+<meta property="og:url" content="http://example.com/2024/04/20/FFmpeg%E7%BC%96%E8%AF%91%E8%B0%83%E8%AF%95-MacOs-M1/index.html">
 <meta property="og:site_name" content="欢迎来到我的博客">
-<meta property="og:description" content="原视频：https:&#x2F;&#x2F;www.youtube.com&#x2F;watch?v&#x3D;tiN6T1LewmQ 搜索技术的重要性 搜索技术是普通人变强的唯一外挂,可以帮助人们学习的比别人快,做的比别人好。  掌握搜索技术是互联网时代获取信息的关键,可以极大程度地缩小信息差距  搜索技术的分类 搜索目的可分为4类:    (1) 了解信息(Know Something)      ​    (2) 学习技能(Lea">
+<meta property="og:description" content="下载源码下载地址：https:&#x2F;&#x2F;ffmpeg.org&#x2F;download.html 编译进入源码根目录 配置编译选项12345678910111213141516171819.&#x2F;configure \--prefix&#x3D;&#x2F;usr&#x2F;local \ --enable-gpl \ --enable-version3 \ --enable-nonfree \ --enable-static \ --disa">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2023-11-18T07:27:42.000Z">
-<meta property="article:modified_time" content="2023-11-18T09:05:19.443Z">
+<meta property="og:image" content="http://example.com/Users/yuhong/Desktop/blog/hexo-blog/source/images/image-20240420134006206.png">
+<meta property="og:image" content="http://example.com/Users/yuhong/Desktop/blog/hexo-blog/source/images/image-20240420133328750.png">
+<meta property="og:image" content="http://example.com/Users/yuhong/Desktop/blog/hexo-blog/source/images/image-20240420134508471.png">
+<meta property="og:image" content="http://example.com/Users/yuhong/Desktop/blog/hexo-blog/source/images/image-20240420134800310.png">
+<meta property="article:published_time" content="2024-04-20T05:12:11.000Z">
+<meta property="article:modified_time" content="2024-04-20T05:49:14.921Z">
 <meta property="article:author" content="John Doe">
+<meta property="article:tag" content="FFmpeg">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/Users/yuhong/Desktop/blog/hexo-blog/source/images/image-20240420134006206.png">
   
   
   
-  <title>搜索技术 - 欢迎来到我的博客</title>
+  <title>FFmpeg编译调试(MacOs M1) - 欢迎来到我的博客</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -225,7 +231,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="搜索技术"></span>
+            <span id="subtitle" data-typed-text="FFmpeg编译调试(MacOs M1)"></span>
           
         </div>
 
@@ -236,8 +242,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2023-11-18 15:27" pubdate>
-          2023年11月18日 下午
+        <time datetime="2024-04-20 13:12" pubdate>
+          2024年4月20日 下午
         </time>
       </span>
     
@@ -248,7 +254,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.6k 字
+          1.3k 字
         
       </span>
     
@@ -259,7 +265,7 @@
         
         
         
-          14 分钟
+          11 分钟
         
       </span>
     
@@ -304,176 +310,51 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">搜索技术</h1>
+            <h1 id="seo-header">FFmpeg编译调试(MacOs M1)</h1>
             
             
               <div class="markdown-body">
                 
-                <p>原视频：<a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=tiN6T1LewmQ">https://www.youtube.com/watch?v=tiN6T1LewmQ</a></p>
-<h2 id="搜索技术的重要性"><a href="#搜索技术的重要性" class="headerlink" title="搜索技术的重要性"></a>搜索技术的重要性</h2><ol>
-<li>搜索技术是普通人变强的唯一外挂,可以帮助人们学习的比别人快,做的比别人好。 </li>
-<li>掌握搜索技术是互联网时代获取信息的关键,可以极大程度地缩小信息差距</li>
-</ol>
-<h2 id="搜索技术的分类"><a href="#搜索技术的分类" class="headerlink" title="搜索技术的分类"></a>搜索技术的分类</h2><ol>
-<li><p>搜索目的可分为4类:  </p>
-<p> (1) 了解信息(Know Something)   </p>
-</li>
-</ol>
-<p>​    (2) 学习技能(Learn Something)     </p>
-<p>​    (3) 创作内容(Create Something)    </p>
-<p>​    (4) 完成任务(Do Something) </p>
-<ol start="2">
-<li>搜索内容可分为4类:  </li>
-</ol>
-<p>​    (1) 信息资讯:新闻、事件等  </p>
-<p>​    (2) 知识技能:概念、教程等    </p>
-<p>​    (3) 素材文件:图片、视频、文档等   </p>
-<p>​    (4) 工具软件:各类工具、插件等 </p>
-<h2 id="搜索信息资讯"><a href="#搜索信息资讯" class="headerlink" title="搜索信息资讯"></a>搜索信息资讯</h2><ol>
-<li>要快速准确,谷歌效率最高</li>
-<li>可运用搜索语法提升效率:<ul>
-<li>限定关键词:用双引号””包裹   </li>
-<li> 限定标题:intitle</li>
-<li>限定内容:intext</li>
-<li>限定网址:inurl</li>
-<li>限定网站:site</li>
-<li>限定图片大小:imagesize</li>
-<li>限定文件类型:filetype</li>
-</ul>
-</li>
-<li>信息源头最准确可信，要注意判断来源</li>
-</ol>
-<h2 id="搜索知识技能"><a href="#搜索知识技能" class="headerlink" title="搜索知识技能"></a>搜索知识技能</h2><ol>
-<li>主要平台:谷歌、youtube、得到APP、优质视频网站等</li>
-<li>注意知识质量,尽量采用一手资料</li>
-<li>可下载研究报告、学术论文等高质量文档</li>
-<li>视频教程可在视频网站、短视频平台获取</li>
-</ol>
-<p>搜索网页：</p>
+                <h2 id="下载源码"><a href="#下载源码" class="headerlink" title="下载源码"></a>下载源码</h2><p>下载地址：<a target="_blank" rel="noopener" href="https://ffmpeg.org/download.html">https://ffmpeg.org/download.html</a></p>
+<h2 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h2><p>进入源码根目录</p>
+<h3 id="配置编译选项"><a href="#配置编译选项" class="headerlink" title="配置编译选项"></a>配置编译选项</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs bash">./configure \--prefix=/usr/local \<br> --enable-gpl \<br> --enable-version3 \<br> --enable-nonfree \<br> --enable-static \<br> --disable-shared \<br> --enable-debug=3 \<br> --enable-pthreads \<br> --enable-ffplay \<br> --enable-ffprobe \<br> --enable-libx264 \<br> --enable-libx265 \<br> --extra-cflags=<span class="hljs-string">&quot;-I/usr/local/include&quot;</span> \<br> --extra-ldflags=<span class="hljs-string">&quot;-L/usr/local/lib&quot;</span> \<br> --<span class="hljs-built_in">arch</span>=arm64 \<br> --enable-videotoolbox \<br> --disable-optimizations \<br> --disable-asm \<br> --disable-stripping<br></code></pre></td></tr></table></figure>
+
+<p>这里的配置选项包括：</p>
 <ul>
-<li>谷歌</li>
-<li>公众号文章：搜狗搜索、微信搜一搜</li>
-<li>垂类社群：GitHub、stack overflow、CSDN</li>
-<li>聚合网站：导航网站</li>
+<li><code>--enable-gpl</code> 和 <code>--enable-version3</code>：启用GPL和版本3的功能，这通常是必要的，因为一些编解码库如x264是在GPL下发布的。</li>
+<li><code>--enable-static</code> 和 <code>--disable-shared</code>：生成静态库，不生成动态库。</li>
+<li><code>--enable-debug=3</code>：启用高级别的调试信息。</li>
+<li><code>--arch=arm64</code>：为M1芯片指定架构。</li>
+<li><code>--enable-ffplay</code>：生成ffplay</li>
+<li><code>--enable-ffprobe</code>：生成ffprobe</li>
 </ul>
-<p>搜索研究报告：</p>
-<ul>
-<li>filetype：pdf</li>
-<li>Inure: baogao</li>
-<li>SimilarSites网站搜索 baogao.com，得到类似网站</li>
-</ul>
-<p>搜索学术论文：</p>
-<ul>
-<li><p>中文：淘宝买账号搞定</p>
+<h3 id="编译FFmpeg"><a href="#编译FFmpeg" class="headerlink" title="编译FFmpeg"></a>编译FFmpeg</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">make -j$(sysctl -n hw.logicalcpu)<br></code></pre></td></tr></table></figure>
+
+<p>这个命令会根据你的CPU核心数并行编译，以加快编译速度。</p>
+<p>会生成ffmpeg、ffmpeg_g、ffplay、ffplay_g、ffprobe、ffprobe_g。其中后面有 <code>_g</code> 的代表有调试符号，没有 <code>_g</code> 的是进行了 <code>strip</code> 操作，把调试信息去掉了，要选择 _g 后缀的可执行文件来调试</p>
+<p><img src="/Users/yuhong/Desktop/blog/hexo-blog/source/images/image-20240420134006206.png" srcset="/img/loading.gif" lazyload alt="image-20240420134006206"></p>
+<h3 id="安装FFmpeg"><a href="#安装FFmpeg" class="headerlink" title="安装FFmpeg"></a>安装FFmpeg</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">sudo make install<br></code></pre></td></tr></table></figure>
+
+<p>这会将FFmpeg安装到<code>/usr/local</code>目录下。</p>
+<h3 id="验证安装"><a href="#验证安装" class="headerlink" title="验证安装"></a>验证安装</h3><p>安装完成后，可以通过下面的命令检查安装的版本，确认是否正确安装：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">ffmpeg -version<br>ffplay -version<br>ffprobe -version<br></code></pre></td></tr></table></figure>
+
+<h2 id="使用CLion调试"><a href="#使用CLion调试" class="headerlink" title="使用CLion调试"></a>使用CLion调试</h2><ul>
+<li><p>下载CLion：<a target="_blank" rel="noopener" href="https://www.jetbrains.com/zh-cn/clion/download/">https://www.jetbrains.com/zh-cn/clion/download/</a></p>
 </li>
-<li><p>国际前沿：谷歌学术、sci-hub</p>
+<li><p>打开FFmpeg源码目录</p>
 </li>
-</ul>
-<p>搜索电子书：</p>
-<ul>
-<li>中文：鸠摩搜书</li>
-<li>英文：谷歌 best free ebook download sites</li>
-<li>微信读书、得到app</li>
-</ul>
-<p>搜索视频：</p>
-<ul>
-<li>短视频平台</li>
-<li>b站、YouTube、网易云课堂、可汗学院、腾讯课堂、OpenCulture、edX、Coursera</li>
-<li>谷歌 best online learning websites</li>
-<li>百度网盘搜索引擎</li>
-</ul>
-<h2 id="搜索素材文件"><a href="#搜索素材文件" class="headerlink" title="搜索素材文件"></a>搜索素材文件</h2><ol>
-<li><p>可利用免费素材网站、版权网站等</p>
-<ul>
-<li><p>视频：</p>
-<ul>
-<li><p>网站：pixels、pixabay、video、mixkit</p>
+<li><p>右上角 Edit Configurations 配置调试目标和参数</p>
+<p><img src="/Users/yuhong/Desktop/blog/hexo-blog/source/images/image-20240420133328750.png" srcset="/img/loading.gif" lazyload alt="image-20240420133328750"></p>
 </li>
-<li><p>谷歌 best sites for free stock videos</p>
+<li><p>以ffplay的调试为例：</p>
+<p><img src="/Users/yuhong/Desktop/blog/hexo-blog/source/images/image-20240420134508471.png" srcset="/img/loading.gif" lazyload alt="image-20240420134508471"></p>
 </li>
-<li><p>youtube视频下载：视频地址栏youtube前输入9x</p>
-</li>
-<li><p>4k素材：SaveTube、4k + 城市或国家搜索</p>
+<li><p>找到ffplay源码，位于 <code>fftools/ffplay.c</code>，增加断点，然后点击右上角调试</p>
+<p><img src="/Users/yuhong/Desktop/blog/hexo-blog/source/images/image-20240420134800310.png" srcset="/img/loading.gif" lazyload alt="image-20240420134800310"></p>
 </li>
 </ul>
-</li>
-<li><p>音频：</p>
-<ul>
-<li>谷歌 best site for free bgm</li>
-<li>pixels</li>
-</ul>
-</li>
-<li><p>图片：</p>
-<ul>
-<li><p>谷歌图片 + imagesize</p>
-</li>
-<li><p>pixabay、unsplash、gettyimages+gettyimages downloader</p>
-</li>
-<li><p>gif: 谷歌 best sites for gif</p>
-</li>
-<li><p>icon: 谷歌 xxx inco filetype:png、incofont</p>
-</li>
-</ul>
-</li>
-<li><p>ppt模版:</p>
-<ul>
-<li>islide插件</li>
-<li>canva</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>注意遵守版权,非商用基本没有风险。</p>
-</li>
-<li><p> 可用各种下载工具下载素材</p>
-</li>
-<li><p>需注意素材的质量、风格等符合要求</p>
-</li>
-</ol>
-<h2 id="搜索工具软件"><a href="#搜索工具软件" class="headerlink" title="搜索工具软件"></a>搜索工具软件</h2><p>思考逻辑：在线工具-&gt;下载软件-&gt;安装插件</p>
-<ul>
-<li><p>在线工具：</p>
-<ul>
-<li><p>在线海报设计：canva.com</p>
-</li>
-<li><p>在线抠图：remove.bg</p>
-</li>
-<li><p>文字抓语音：腾讯智影、Azure</p>
-</li>
-<li><p>画脑图、概念图：miro、canva</p>
-</li>
-<li><p>找台词：找台词网</p>
-</li>
-<li><p> 在线剪辑视频：clicpchamp、flexclip</p>
-</li>
-<li><p>测网速：fast.com</p>
-</li>
-<li><p>检测陌生链接安全性：virustotal.com</p>
-</li>
-<li><p>谷歌 xxx需求+online</p>
-</li>
-</ul>
-</li>
-<li><p>软件：</p>
-<ul>
-<li>谷歌 best apps for xxx</li>
-<li>alternative.net(寻找某个软件的替代软件)</li>
-</ul>
-</li>
-<li><p>插件：</p>
-<ul>
-<li>Chrome插件：谷歌商店搜使用的软件的插件</li>
-<li>谷歌 best chrome extension productivity</li>
-<li>谷歌 best xxx plugin</li>
-</ul>
-</li>
-</ul>
-<h2 id="运用AI工具"><a href="#运用AI工具" class="headerlink" title="运用AI工具"></a>运用AI工具</h2><ol>
-<li>ChatGPT等AI工具可直接回答问题,无需搜索</li>
-<li> 可进行追问、对比、推理等,功能强大</li>
-<li>结合传统搜索技术和AI工具,形成超级搜索技术</li>
-<li>AI将深刻影响搜索方式,要积极运用</li>
-</ol>
+<p>参考：<a target="_blank" rel="noopener" href="https://ffmpeg.xianwaizhiyin.net/debug-ffmpeg/ubuntu18-clion.html">https://ffmpeg.xianwaizhiyin.net/debug-ffmpeg/ubuntu18-clion.html</a></p>
 
                 
               </div>
@@ -482,27 +363,13 @@
             <div>
               <div class="post-metas my-3">
   
-    <div class="post-meta mr-3 d-flex align-items-center">
-      <i class="iconfont icon-category"></i>
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
       
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/%E5%AE%9E%E7%94%A8%E6%8A%80%E8%83%BD/" class="category-chain-item">实用技能</a>
-  
-  
-
-      </span>
-    
-  
-</span>
-
+        <a href="/tags/FFmpeg/" class="print-no-link">#FFmpeg</a>
+      
     </div>
-  
   
 </div>
 
@@ -514,18 +381,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2024/04/20/FFmpeg%E7%BC%96%E8%AF%91%E8%B0%83%E8%AF%95-MacOs-M1/" title="FFmpeg编译调试(MacOs M1)">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">FFmpeg编译调试(MacOs M1)</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2023/11/12/YOLOV8%E8%AE%AD%E7%BB%83%E8%87%AA%E5%B7%B1%E7%9A%84%E6%95%B0%E6%8D%AE%E9%9B%86/" title="YOLOv8训练自己的数据集">
-                        <span class="hidden-mobile">YOLOv8训练自己的数据集</span>
+                      <a href="/2023/11/18/%E6%90%9C%E7%B4%A2%E6%8A%80%E6%9C%AF/" title="搜索技术">
+                        <span class="hidden-mobile">搜索技术</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
