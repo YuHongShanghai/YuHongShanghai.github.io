@@ -16,27 +16,23 @@
   <meta name="author" content="John Doe">
   <meta name="keywords" content="">
   
-    <meta name="description" content="下载源码下载地址：https:&#x2F;&#x2F;ffmpeg.org&#x2F;download.html 编译进入源码根目录 配置编译选项12345678910111213141516171819.&#x2F;configure \--prefix&#x3D;&#x2F;usr&#x2F;local \ --enable-gpl \ --enable-version3 \ --enable-nonfree \ --enable-static \ --disa">
+    <meta name="description" content="1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606162636465666768extern &quot;C&quot; &amp;#123;#include &quot;SDL2&#x2F;SDL.h&quot;&amp;#125;#define">
 <meta property="og:type" content="article">
-<meta property="og:title" content="FFmpeg编译调试(MacOs M1)">
-<meta property="og:url" content="http://example.com/2024/04/20/FFmpeg%E7%BC%96%E8%AF%91%E8%B0%83%E8%AF%95-MacOs-M1/index.html">
+<meta property="og:title" content="SDL学习-画板">
+<meta property="og:url" content="http://example.com/2025/03/16/SDL%E5%AD%A6%E4%B9%A0-%E7%94%BB%E6%9D%BF/index.html">
 <meta property="og:site_name" content="欢迎来到我的博客">
-<meta property="og:description" content="下载源码下载地址：https:&#x2F;&#x2F;ffmpeg.org&#x2F;download.html 编译进入源码根目录 配置编译选项12345678910111213141516171819.&#x2F;configure \--prefix&#x3D;&#x2F;usr&#x2F;local \ --enable-gpl \ --enable-version3 \ --enable-nonfree \ --enable-static \ --disa">
+<meta property="og:description" content="1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606162636465666768extern &quot;C&quot; &amp;#123;#include &quot;SDL2&#x2F;SDL.h&quot;&amp;#125;#define">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/images/image-20240420134006206.png">
-<meta property="og:image" content="http://example.com/images/image-20240420133328750.png">
-<meta property="og:image" content="http://example.com/images/image-20240420134508471.png">
-<meta property="og:image" content="http://example.com/images/image-20240420134800310.png">
-<meta property="article:published_time" content="2024-04-20T05:12:11.000Z">
-<meta property="article:modified_time" content="2024-04-20T06:01:35.215Z">
+<meta property="og:image" content="http://example.com/Users/yuhong/Desktop/blog/hexo-blog/source/images/output.gif">
+<meta property="article:published_time" content="2025-03-16T02:25:05.000Z">
+<meta property="article:modified_time" content="2025-03-16T02:39:49.557Z">
 <meta property="article:author" content="John Doe">
-<meta property="article:tag" content="FFmpeg">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://example.com/images/image-20240420134006206.png">
+<meta name="twitter:image" content="http://example.com/Users/yuhong/Desktop/blog/hexo-blog/source/images/output.gif">
   
   
   
-  <title>FFmpeg编译调试(MacOs M1) - 欢迎来到我的博客</title>
+  <title>SDL学习-画板 - 欢迎来到我的博客</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -231,7 +227,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="FFmpeg编译调试(MacOs M1)"></span>
+            <span id="subtitle" data-typed-text="SDL学习-画板"></span>
           
         </div>
 
@@ -242,8 +238,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2024-04-20 13:12" pubdate>
-          2024年4月20日 下午
+        <time datetime="2025-03-16 10:25" pubdate>
+          2025年3月16日 上午
         </time>
       </span>
     
@@ -254,7 +250,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.3k 字
+          1.6k 字
         
       </span>
     
@@ -265,7 +261,7 @@
         
         
         
-          11 分钟
+          14 分钟
         
       </span>
     
@@ -310,51 +306,13 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">FFmpeg编译调试(MacOs M1)</h1>
+            <h1 id="seo-header">SDL学习-画板</h1>
             
             
               <div class="markdown-body">
                 
-                <h2 id="下载源码"><a href="#下载源码" class="headerlink" title="下载源码"></a>下载源码</h2><p>下载地址：<a target="_blank" rel="noopener" href="https://ffmpeg.org/download.html">https://ffmpeg.org/download.html</a></p>
-<h2 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h2><p>进入源码根目录</p>
-<h3 id="配置编译选项"><a href="#配置编译选项" class="headerlink" title="配置编译选项"></a>配置编译选项</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs bash">./configure \--prefix=/usr/local \<br> --enable-gpl \<br> --enable-version3 \<br> --enable-nonfree \<br> --enable-static \<br> --disable-shared \<br> --enable-debug=3 \<br> --enable-pthreads \<br> --enable-ffplay \<br> --enable-ffprobe \<br> --enable-libx264 \<br> --enable-libx265 \<br> --extra-cflags=<span class="hljs-string">&quot;-I/usr/local/include&quot;</span> \<br> --extra-ldflags=<span class="hljs-string">&quot;-L/usr/local/lib&quot;</span> \<br> --<span class="hljs-built_in">arch</span>=arm64 \<br> --enable-videotoolbox \<br> --disable-optimizations \<br> --disable-asm \<br> --disable-stripping<br></code></pre></td></tr></table></figure>
-
-<p>这里的配置选项包括：</p>
-<ul>
-<li><code>--enable-gpl</code> 和 <code>--enable-version3</code>：启用GPL和版本3的功能，这通常是必要的，因为一些编解码库如x264是在GPL下发布的。</li>
-<li><code>--enable-static</code> 和 <code>--disable-shared</code>：生成静态库，不生成动态库。</li>
-<li><code>--enable-debug=3</code>：启用高级别的调试信息。</li>
-<li><code>--arch=arm64</code>：为M1芯片指定架构。</li>
-<li><code>--enable-ffplay</code>：生成ffplay</li>
-<li><code>--enable-ffprobe</code>：生成ffprobe</li>
-</ul>
-<h3 id="编译FFmpeg"><a href="#编译FFmpeg" class="headerlink" title="编译FFmpeg"></a>编译FFmpeg</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">make -j$(sysctl -n hw.logicalcpu)<br></code></pre></td></tr></table></figure>
-
-<p>这个命令会根据你的CPU核心数并行编译，以加快编译速度。</p>
-<p>会生成ffmpeg、ffmpeg_g、ffplay、ffplay_g、ffprobe、ffprobe_g。其中后面有 <code>_g</code> 的代表有调试符号，没有 <code>_g</code> 的是进行了 <code>strip</code> 操作，把调试信息去掉了，要选择 _g 后缀的可执行文件来调试</p>
-<p><img src="/../images/image-20240420134006206.png" srcset="/img/loading.gif" lazyload alt="image-20240420134006206"></p>
-<h3 id="安装FFmpeg"><a href="#安装FFmpeg" class="headerlink" title="安装FFmpeg"></a>安装FFmpeg</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">sudo make install<br></code></pre></td></tr></table></figure>
-
-<p>这会将FFmpeg安装到<code>/usr/local</code>目录下。</p>
-<h3 id="验证安装"><a href="#验证安装" class="headerlink" title="验证安装"></a>验证安装</h3><p>安装完成后，可以通过下面的命令检查安装的版本，确认是否正确安装：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">ffmpeg -version<br>ffplay -version<br>ffprobe -version<br></code></pre></td></tr></table></figure>
-
-<h2 id="使用CLion调试"><a href="#使用CLion调试" class="headerlink" title="使用CLion调试"></a>使用CLion调试</h2><ul>
-<li><p>下载CLion：<a target="_blank" rel="noopener" href="https://www.jetbrains.com/zh-cn/clion/download/">https://www.jetbrains.com/zh-cn/clion/download/</a></p>
-</li>
-<li><p>打开FFmpeg源码目录</p>
-</li>
-<li><p>右上角 Edit Configurations 配置调试目标和参数</p>
-<p><img src="/../images/image-20240420133328750.png" srcset="/img/loading.gif" lazyload alt="image-20240420133328750"></p>
-</li>
-<li><p>以ffplay的调试为例：</p>
-<p><img src="/../images/image-20240420134508471.png" srcset="/img/loading.gif" lazyload alt="image-20240420134508471"></p>
-</li>
-<li><p>找到ffplay源码，位于 <code>fftools/ffplay.c</code>，增加断点，然后点击右上角调试</p>
-<p><img src="/../images/image-20240420134800310.png" srcset="/img/loading.gif" lazyload alt="image-20240420134800310"></p>
-</li>
-</ul>
-<p>参考：<a target="_blank" rel="noopener" href="https://ffmpeg.xianwaizhiyin.net/debug-ffmpeg/ubuntu18-clion.html">https://ffmpeg.xianwaizhiyin.net/debug-ffmpeg/ubuntu18-clion.html</a></p>
+                <p><img src="/Users/yuhong/Desktop/blog/hexo-blog/source/images/output.gif" srcset="/img/loading.gif" lazyload alt="output"></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">extern</span> <span class="hljs-string">&quot;C&quot;</span> &#123;<br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;SDL2/SDL.h&quot;</span></span><br>&#125;<br><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> WINDOW_W 800</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> WINDOW_H 600</span><br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">drawLine</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-built_in">SDL_Init</span>(SDL_INIT_VIDEO);<br>    SDL_Window* window = <span class="hljs-built_in">SDL_CreateWindow</span>(<span class="hljs-string">&quot;drawLine&quot;</span>, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,<br>                                          WINDOW_W, WINDOW_H, SDL_WINDOW_SHOWN);<br>    SDL_Renderer* rend = <span class="hljs-built_in">SDL_CreateRenderer</span>(window, <span class="hljs-number">-1</span>, SDL_RENDERER_SOFTWARE);<br>    <span class="hljs-built_in">SDL_SetRenderDrawBlendMode</span>(rend, SDL_BLENDMODE_BLEND);<br><br>    <span class="hljs-built_in">SDL_SetRenderDrawColor</span>(rend, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">255</span>);<br>    <span class="hljs-built_in">SDL_RenderClear</span>(rend);<br>    <span class="hljs-built_in">SDL_RenderPresent</span>(rend);<br><br>    <span class="hljs-built_in">SDL_SetRenderDrawColor</span>(rend, <span class="hljs-number">255</span>, <span class="hljs-number">255</span>, <span class="hljs-number">255</span>, <span class="hljs-number">255</span>);<br><br>    <span class="hljs-type">bool</span> mousePressed = <span class="hljs-literal">false</span>;<br>    <span class="hljs-type">int</span> lastMouseX = <span class="hljs-number">-1</span>;<br>    <span class="hljs-type">int</span> lastMouseY = <span class="hljs-number">-1</span>;<br><br>    SDL_Event event;<br>    <span class="hljs-type">bool</span> quit = <span class="hljs-literal">false</span>;<br>    <span class="hljs-keyword">while</span> (!quit) &#123;<br>        <span class="hljs-keyword">while</span> (<span class="hljs-built_in">SDL_PollEvent</span>(&amp;event)) &#123;<br>            <span class="hljs-comment">// printf(&quot;get event %d\n&quot;, event.type);</span><br>            <span class="hljs-keyword">if</span> (event.type == SDL_QUIT) &#123;<br>                quit = <span class="hljs-literal">true</span>;<br>            &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (event.type == SDL_KEYDOWN) &#123;<br>                <span class="hljs-keyword">if</span> (event.key.keysym.sym == SDLK_ESCAPE) &#123;<br>                    quit = <span class="hljs-literal">true</span>;<br>                &#125;<br>            &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (event.type == SDL_MOUSEBUTTONDOWN) &#123;<br>                mousePressed = <span class="hljs-literal">true</span>;<br>            &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (event.type == SDL_MOUSEBUTTONUP) &#123;<br>                mousePressed = <span class="hljs-literal">false</span>;<br>            &#125;<br>            <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (event.type == SDL_MOUSEMOTION) &#123;<br>                <span class="hljs-type">int</span> x = event.motion.x;<br>                <span class="hljs-type">int</span> y = event.motion.y;<br>                <span class="hljs-keyword">if</span> (mousePressed) &#123;<br>                    <span class="hljs-keyword">if</span> (lastMouseX != <span class="hljs-number">-1</span> &amp;&amp; lastMouseY != <span class="hljs-number">-1</span>) &#123;<br>                        <span class="hljs-built_in">SDL_RenderDrawLine</span>(rend, lastMouseX, lastMouseY, x, y);<br>                        <span class="hljs-built_in">SDL_RenderPresent</span>(rend);<br>                    &#125;<br>                    lastMouseX = x;<br>                    lastMouseY = y;<br>                &#125; <span class="hljs-keyword">else</span> &#123;<br>                    lastMouseX = <span class="hljs-number">-1</span>;<br>                    lastMouseY = <span class="hljs-number">-1</span>;<br>                &#125;<br>            &#125;<br>        &#125;<br>        <span class="hljs-built_in">SDL_Delay</span>(<span class="hljs-number">10</span>);<br>    &#125;<br><br>    <span class="hljs-built_in">SDL_DestroyRenderer</span>(rend);<br>    <span class="hljs-built_in">SDL_DestroyWindow</span>(window);<br>    <span class="hljs-built_in">SDL_Quit</span>();<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">char</span>* argv[])</span> </span>&#123;<br>    <span class="hljs-built_in">drawLine</span>();<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
 
                 
               </div>
@@ -373,7 +331,7 @@
     
       <span class="category-chain">
         
-  <a href="/categories/%E9%9F%B3%E8%A7%86%E9%A2%91%E6%8A%80%E6%9C%AF/" class="category-chain-item">音视频技术</a>
+  <a href="/categories/SDL/" class="category-chain-item">SDL</a>
   
   
 
@@ -385,13 +343,6 @@
     </div>
   
   
-    <div class="post-meta">
-      <i class="iconfont icon-tags"></i>
-      
-        <a href="/tags/FFmpeg/" class="print-no-link">#FFmpeg</a>
-      
-    </div>
-  
 </div>
 
 
@@ -402,18 +353,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2025/03/16/SDL%E5%AD%A6%E4%B9%A0-%E7%94%BB%E6%9D%BF/" title="SDL学习-画板">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">SDL学习-画板</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2023/11/18/%E6%90%9C%E7%B4%A2%E6%8A%80%E6%9C%AF/" title="搜索技术">
-                        <span class="hidden-mobile">搜索技术</span>
+                      <a href="/2024/04/20/FFmpeg%E7%BC%96%E8%AF%91%E8%B0%83%E8%AF%95-MacOs-M1/" title="FFmpeg编译调试(MacOs M1)">
+                        <span class="hidden-mobile">FFmpeg编译调试(MacOs M1)</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
